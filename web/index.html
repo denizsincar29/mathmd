@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MDEditor</title>
+  <script>
+    // let\s configure mathjax and define that we want to use ascii math, because it is set to latex by default
+    MathJax = {
+      loader: {load: ['input/asciimath', 'output/chtml', 'ui/menu']},
+    };
+  </script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+  <style>
+    .mdeditor {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    #mdeditor__result {
+      height: 420px;
+      overflow-y: auto;
+    }
+
+    #mdeditor__textarea {
+      width: 100%;
+      height: 200px;
+    }
+  </style>
+  <script>
+// make a showdown extension that interprets packtick (ascii math delimiter) literary, but works like a code block
+function mathext(){
+	return [{
+		type: "output",
+		filter: function(text, converter, options) {
+			return text
+				.replaceAll("<p><code>","`").replaceAll("</p></code>","`")
+				.replaceAll("<code>","`").replaceAll("</code>","`") // replaceAlld back to backtick
+				.replaceAll("¨D","$") // replaceAlld the dollar string to dollar, because markdown replaceAlls dollar to trema+D
+				;
+				// add more replaceAllments here, for more compatibilities with mathjax
+		}
+	}
+];}
+
+let extensions=["mathext"];
+// load the extension
+showdown.extension("mathext",mathext);
+// create a converter
+let converter = new showdown.Converter({extensions: extensions});
+
+// make a function to convert markdown to html with pre-configured extension
+function mathmd(md, elem){
+elem.innerHTML=converter.makeHtml(md); // make md;
+MathJax.typeset();
+
+}
+
+function openfile(){
+  pywebview.api.openfile().then(reply=>{
+    if(reply==""){return;}
+    pywebview.api.name().then(response => {document.getElementById("filename").innerHTML=response});
+    var d=document.getElementById("mdeditor__textarea");
+    d.value=reply;
+    mathmd(reply, document.getElementById("mdeditor__result"));
+  });
+}
+
+function savefile(){
+  pywebview.api.savefile(document.getElementById("mdeditor__textarea").value);
+}
+
+function savehtml(){
+  pywebview.api.exporthtml(converter.makeHtml(document.getElementById("mdeditor__textarea").value));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var result = document.getElementById('mdeditor__result');
+  var textarea = document.getElementById('mdeditor__textarea');
+  textarea.addEventListener('input', function(ev) {
+  var input = ev.target.value;
+  mathmd(input, result);  
+});
+});
+
+
+  window.onbeforeunload(async event => {
+    let wannasave=await pywebview.api.youreallywanttosave();
+    if(wannasave){
+      await pywebview.api.savefile(document.getElementById("mdeditor__textarea").value);
+    }
+  });
+  </script>
+</head>
+<body>
+  <h1 id="filename" tabindex="0">new document</h1>
+  <div class="mdeditor">
+    <div id="mdeditor__result"></div>
+    <textarea id="mdeditor__textarea" accesskey="t"></textarea>
+    <button onclick="openfile()" accesskey="o">Открыть файл</button>
+    <button onclick="savefile()" accesskey="s">Сохранить файл</button>
+    <button onclick="savehtml()" accesskey="d">Сохранить готовый html</button>
+
+  </div>
+</body>
+</html>

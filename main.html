@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Математика</title>
+<script>
+// let\s configure mathjax and define that we want to use ascii math, because it is set to latex by default
+MathJax = {
+loader: {load: ['input/asciimath', 'output/chtml', 'ui/menu']},
+};
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<h1 id="">вот это заголовок.</h1>
+<h2 id="-1">а вот это- решение моего тригонометр.уравнения из егэ:</h2>
+<p><em>однострочные выражения пишутся между тройным знаком доллара, а внутрестрочные- двумя.</em></p>
+`2sin^3 x +cos^2 x =0`
+Приведём всё к синусу с помощью ОТТ.
+`2sin^3 x -sin^2 x +1=1`
+`2sin^3 x -sin^2 x=0`
+Вынесем `sin^2 x` за скобку:
+`sin^2 x *(2sin x -1) =0`
+При `sin x =0 -&gt; x=pi k`.
+При `2sin x -1=0 -&gt; x=pi/6+2pi k; (5pi)/6+2pi k`</p>
+<h1 id="-2">примечание:</h1>
+<p>чтобы объединить большое выражение в одно целое, чтобы например возвести в степень или записать дробью, нужно заключить его в скобку.
+Если не заключить:
+`2x+3y /3pi`
+Если заключить:
+`(2x+3y) /(3pi)`</p>
+<h1 id="-3">как писать выражения:</h1>
+<p>действия пишутся так же, как на калькуляторе или в языках программирования:
+`a*x^2 +b*x -c /pi =1`
+степень пишется через крышку (^).
+квадратный корень- это sqrt
+`sqrt x; sqrt(2x+3); sqrt x +3`
+кубический корень cbrt.
+но можно сделать просто root.
+допустим корень 5 степени числа 35 будет 
+`root(5)(35)`</p>
+<h1 id="-4">остальные знаки</h1>
+<p>синтаксис этого миниязыка можно найти на сайте <a href="http://asciimath.org">asciimath</a>
+В таблице обозначены обозначения разных знаков и их вид.
+В первом столбце обозначено написание определённого знака, во втором столбце может быть альтернативное написание. В третьем- его вид на экране после обработки.</p>
+</body>
+</html>
