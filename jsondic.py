@@ -12,7 +12,7 @@ class JSON:
         self.filename=filename
 
     def save(self) -> None:
-        with open(self.filename, "r", encoding="UTF-8") as f:
+        with open(self.filename, "w", encoding="UTF-8") as f:
             f.write(json.dumps(self.j, indent=2))
 
     def __getitem__(self, k):
