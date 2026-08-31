@@ -3,10 +3,10 @@
 // Рендер markdown с математикой и графиками, предпросмотр по Ctrl+Enter на
 // строке курсора, помощники вставки формул, доступность для скринридера.
 
-// Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>
-// (субмодуль chessjax). Импорт по side-effect: регистрирует кастомный элемент
-// и document-level делегат для кнопок <button chess="id" move="N">.
-import "./chessjax/chessjax.js";
+// Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
+// Импорт с CDN (jsdelivr, GH-тег v0.1.0) по side-effect: регистрирует
+// кастомный элемент и document-level делегат для кнопок <button chess="id" move="N">.
+import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.1.0/chessjax.js";
 
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");

@@ -1,6 +1,6 @@
 // Service worker: PWA + offline. Bump CACHE_NAME whenever static assets
 // change so old clients drop the stale cache on their next visit.
-const CACHE_NAME = "mathmd-v8";
+const CACHE_NAME = "mathmd-v9";
 
 const ASSETS = [
   "./",
@@ -11,8 +11,6 @@ const ASSETS = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
-  "./chessjax/chessjax.js",
-  "./chessjax/vendor/chess.js",
 ];
 
 self.addEventListener("install", (event) => {
