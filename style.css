@@ -269,3 +269,72 @@ h2 {
   overflow-x: auto;
   max-width: 100%;
 }
+
+/* --- Chess boards (chessjax submodule) ---
+   Правила скопированы из chessjax/style.css (сам файл — полноценная тема
+   страницы, подключать его нельзя). Префикс .preview перебивает общие
+   .preview th/td и возвращает клеткам их собственные размеры. */
+.preview .chessjax-board {
+  border-collapse: collapse;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+}
+
+.preview .chessjax-board th {
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  text-align: center;
+  border: 0;
+}
+
+.preview .chessjax-board td {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  text-align: center;
+  font-size: 1.7rem;
+  line-height: 52px;
+  border: 0;
+}
+
+.preview .chessjax-board td.square-dark { background: #769656; }
+.preview .chessjax-board td.square-light { background: #eeeed2; }
+
+.preview .chessjax-board td.piece-w { color: #fff; text-shadow: 0 0 2px #000; }
+.preview .chessjax-board td.piece-b { color: #000; text-shadow: 0 0 2px #fff; }
+
+.preview .chessjax-summary {
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  max-width: 560px;
+}
+
+.preview .chessjax-controls {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.preview .chessjax-btn { min-width: 44px; }
+
+.preview .chessjax-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.preview .chessjax-live {
+  min-height: 1.2em;
+  margin: 0.4rem 0 0;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+.preview .chessjax-error {
+  color: var(--danger);
+  font-size: 0.9rem;
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+}

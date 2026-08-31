@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#14181c">
-<title>Математический редактор — Markdown, LaTeX, AsciiMath, Desmos</title>
-<meta name="description" content="Доступный веб-редактор markdown с математикой MathJax 4, поддержкой LaTeX и AsciiMath и графиками Desmos. Для незрячих пользователей.">
+<title>Математический редактор — Markdown, LaTeX, AsciiMath, Desmos, шахматы</title>
+<meta name="description" content="Доступный веб-редактор markdown с математикой MathJax 4, поддержкой LaTeX и AsciiMath, графиками Desmos и шахматными досками chessjax. Для незрячих пользователей.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -38,7 +38,7 @@
 <body>
 <header>
   <h1>Математический редактор</h1>
-  <p>Markdown + LaTeX, AsciiMath и графики Desmos. Предпросмотр — <strong>Alt+ё</strong>, вставка формул — кнопки (хоткеи Alt+1..9).</p>
+  <p>Markdown + LaTeX, AsciiMath, графики Desmos и шахматные доски. Предпросмотр — <strong>Alt+ё</strong>, вставка формул — кнопки (хоткеи Alt+1..9).</p>
 </header>
 
 <main>
@@ -55,7 +55,7 @@
 
   <section aria-labelledby="preview-heading" id="preview-section">
     <h2 id="preview-heading">Предпросмотр</h2>
-    <p class="hint">Текст обновляется при наборе. Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть.</p>
+    <p class="hint">Текст обновляется при наборе. Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть. Шахматная доска — fenced-блок <code>```chess</code> с атрибутами (например <code>```chess fen="…"```</code>).</p>
     <div id="preview" class="preview"></div>
   </section>
 
@@ -76,6 +76,6 @@
   </section>
 </main>
 
-<script src="script.js?v=7" type="module"></script>
+<script src="script.js?v=8" type="module"></script>
 </body>
 </html>

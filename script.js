@@ -3,6 +3,11 @@
 // Рендер markdown с математикой и графиками, предпросмотр по Ctrl+Enter на
 // строке курсора, помощники вставки формул, доступность для скринридера.
 
+// Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>
+// (субмодуль chessjax). Импорт по side-effect: регистрирует кастомный элемент
+// и document-level делегат для кнопок <button chess="id" move="N">.
+import "./chessjax/chessjax.js";
+
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
 const previewSection = document.getElementById("preview-section");
@@ -57,6 +62,39 @@ function extractDesmos(md) {
     desmosBlocks.push(body);
     return `@@DESMOS${idx}@@`;
   });
+}
+
+// Шахматные доски: ```chess ... ```, тело — атрибуты <chessjax-board>:
+//   ```chess fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+//   ```chess pgn="morphy.pgn" move="10"
+//   ```chess id="carlsen" pgn="Carlsen.pgn" move="25"
+// Поддерживаются fen, pgn/pgn-src, move, lang, controls, id (по умолчанию
+// id = chessjax-<номер доски> — на него можно вешать кнопки в тексте).
+// Значения с пробелами (FEN целиком) — обязательно в кавычках.
+let chessBlocks = [];
+
+function extractChess(md) {
+  chessBlocks = [];
+  return md.replace(/```chess[ \t]*\n?([\s\S]*?)```/g, (match, body) => {
+    const attrs = {};
+    const re = /([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+))/g;
+    let m;
+    while ((m = re.exec(body)) !== null) {
+      attrs[m[1]] = m[2] !== undefined ? m[2] : m[3] !== undefined ? m[3] : m[4];
+    }
+    chessBlocks.push(attrs);
+    return `@@CHESS${chessBlocks.length - 1}@@`;
+  });
+}
+
+function chessSlot(idx) {
+  const attrs = chessBlocks[idx];
+  if (!attrs) return "";
+  const id = attrs.id || "chessjax-" + (idx + 1);
+  const attrHtml = Object.entries({ id, ...attrs })
+    .map(([k, v]) => ` ${k}="${String(v).replace(/"/g, "&quot;")}"`)
+    .join("");
+  return `<chessjax-board${attrHtml}></chessjax-board>`;
 }
 
 function lineClass(line) {
@@ -125,7 +163,7 @@ function segmentMarkdown(md) {
 }
 
 function renderMarkdown(md, live) {
-  const body = extractDesmos(md).replace(/`([^`\n]+)`/g, (m, expr) => ASM_OPEN + expr + ASM_CLOSE);
+  const body = extractDesmos(extractChess(md)).replace(/`([^`\n]+)`/g, (m, expr) => ASM_OPEN + expr + ASM_CLOSE);
   const segments = segmentMarkdown(body);
   let html = "";
   for (const seg of segments) {
@@ -133,8 +171,10 @@ function renderMarkdown(md, live) {
     html += `<div class="preview-block" data-line="${seg.start + 1}" tabindex="0">${converter.makeHtml(seg.lines)}</div>\n`;
   }
   html = html.split(ASM_OPEN).join("`").split(ASM_CLOSE).join("`");
-  // Desmos-плейсхолдер showdown заворачивает в <p> — div внутри p невалиден.
-  // Вырываем плейсхолдер из абзаца, потом инжектим контейнер графика.
+  // Плейсхолдеры showdown заворачивает в <p> — блочные элементы внутри p
+  // невалидны, поэтому вырываем их из абзаца и подставляем разметку.
+  html = html.replace(/<p>@@CHESS(\d+)@@<\/p>/g, (m, i) => chessSlot(Number(i)));
+  html = html.replace(/@@CHESS(\d+)@@/g, (m, i) => chessSlot(Number(i)));
   html = html.replace(/<p>@@DESMOS(\d+)@@<\/p>/g, (m, i) => desmosSlot(i, live));
   html = html.replace(/@@DESMOS(\d+)@@/g, (m, i) => desmosSlot(i, live));
   return html;
@@ -335,6 +375,16 @@ const TOOLBAR_GROUPS = [
       ["набла", "\\nabla {cursor}", "∇"],
     ],
   },
+  {
+    title: "Шахматы",
+    items: [
+      [
+        "Шахматная доска (fenced-блок chess)",
+        "```chess\nfen=\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"\n```\n{cursor}",
+        "♟",
+      ],
+    ],
+  },
 ];
 
 function buildToolbar() {
@@ -377,8 +427,50 @@ function download(filename, text, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
-function exportHtml() {
-  const bodyHtml = renderMarkdown(editor.getValue());
+// Экспорт делает документ самодостаточным: доски встают статичным снимком
+// (семантическая таблица + резюме), без JS-компонента и без субмодуля.
+function chessExportSnapshot(id) {
+  const live = document.getElementById(id);
+  if (!live) return "";
+  const table = live.querySelector(".chessjax-board-wrap .chessjax-board");
+  const summary = live.querySelector(".chessjax-summary");
+  const liveText = live.querySelector(".chessjax-live");
+  const parts = [];
+  if (table) parts.push(table.outerHTML);
+  if (summary && summary.textContent.trim()) parts.push(`<p class="chessjax-summary">${summary.textContent}</p>`);
+  if (liveText && liveText.textContent.trim()) parts.push(`<p class="chessjax-live">${liveText.textContent}</p>`);
+  if (!parts.length) return "";
+  return `<div class="chessjax-export">\n${parts.join("\n")}\n</div>`;
+}
+
+// Ждём, пока все доски предпросмотра отрисовали таблицу или ошибку
+// (рендер асинхронный — доски грузят FEN/PGN через движок).
+function waitForBoards(timeoutMs = 3000) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const check = () => {
+      const boards = document.querySelectorAll("#preview chessjax-board");
+      const done = Array.from(boards).every((b) =>
+        b.querySelector(".chessjax-board-wrap .chessjax-board") || b.querySelector(".chessjax-board-wrap .chessjax-error"));
+      if (done || Date.now() - start > timeoutMs) resolve();
+      else setTimeout(check, 60);
+    };
+    check();
+  });
+}
+
+async function exportHtml() {
+  // Сначала доводим предпросмотр и доски до отрисованного состояния, потом
+  // снимаем снимки с живых досок — иначе в экспорт попадут пустые теги.
+  await renderPreview();
+  await waitForBoards();
+  const bodyHtml = renderMarkdown(editor.getValue()).replace(
+    /<chessjax-board\b([^>]*)><\/chessjax-board>/g,
+    (m, attrs) => {
+      const idMatch = /id="([^"]+)"/.exec(attrs);
+      return idMatch ? chessExportSnapshot(idMatch[1]) : "";
+    }
+  );
   const doc = `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -394,6 +486,14 @@ function exportHtml() {
   table { border-collapse: collapse; }
   th, td { border: 1px solid #ccc; padding: .3rem .6rem; }
   .desmos { width: 100%; height: 380px; margin: .5rem 0; }
+  .chessjax-board { border-collapse: collapse; margin: .5rem 0; background: #fff; }
+  .chessjax-board th { font-size: .8rem; padding: .2rem .4rem; }
+  .chessjax-board td { width: 48px; height: 48px; text-align: center; font-size: 1.5rem; }
+  .chessjax-board td.square-dark { background: #769656; }
+  .chessjax-board td.square-light { background: #eeeed2; }
+  .chessjax-board td.piece-w { color: #fff; text-shadow: 0 0 2px #000; }
+  .chessjax-board td.piece-b { color: #000; text-shadow: 0 0 2px #fff; }
+  .chessjax-summary, .chessjax-live { color: #555; font-size: .9rem; }
 </style>
 <script>
 window.MathJax = {
