@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -38,14 +38,14 @@
 <body>
 <header>
   <h1>Математический редактор</h1>
-  <p>Markdown-документ с математикой. LaTeX (<code>$x^2$</code>), AsciiMath (обратные кавычки: <code>sqrt(2)</code>) и графики Desmos (блок <code>```desmos</code>). <strong>Ctrl+Enter</strong> — предпросмотр на строке курсора.</p>
+  <p>Markdown-документ с математикой. LaTeX (<code>$x^2$</code>), AsciiMath (обратные кавычки: <code>sqrt(2)</code>) и графики Desmos (блок <code>```desmos</code>). Предпросмотр обновляется по мере набора; <strong>Ctrl+Enter</strong> — перейти к строке курсора и пересоздать графики.</p>
 </header>
 
 <main>
   <section aria-labelledby="toolbar-heading">
     <h2 id="toolbar-heading" class="visually-hidden">Панель вставки формул</h2>
     <div class="toolbar" role="toolbar" aria-label="Вставка формул и уравнений" id="toolbar"></div>
-    <p class="hint">Кнопки вставляют шаблон в место курсора. Хоткеи: Alt+1 — формула LaTeX, Alt+2 — формула на отдельной строке, Alt+3 — AsciiMath, Alt+4 — дробь, Alt+5 — степень, Alt+6 — корень, Alt+7 — сумма, Alt+8 — интеграл, Alt+9 — матрица.</p>
+    <p class="hint">Выделите текст и нажмите кнопку или хоткей — выделение обернётся в <code>$...$</code>, <code>$$...$$</code> или <code>`...`</code>. Без выделения кнопка вставит шаблон-пример с курсором внутри. Хоткеи: Alt+1 — LaTeX в строке, Alt+2 — на отдельной строке, Alt+3 — AsciiMath, Alt+4 — дробь, Alt+5 — степень, Alt+6 — корень, Alt+7 — сумма, Alt+8 — интеграл, Alt+9 — матрица.</p>
   </section>
 
   <section aria-labelledby="editor-heading">
@@ -55,7 +55,7 @@
 
   <section aria-labelledby="preview-heading" id="preview-section">
     <h2 id="preview-heading">Предпросмотр</h2>
-    <p class="hint">Нажмите Ctrl+Enter, чтобы обновить и перейти к строке курсора. По Ctrl+Shift+Enter предпросмотр скрывается.</p>
+    <p class="hint">Предпросмотр обновляется автоматически при наборе. Ctrl+Enter — перейти к строке курсора и пересоздать графики Desmos; Ctrl+Shift+Enter — скрыть предпросмотр.</p>
     <div id="preview" class="preview"></div>
     <div id="preview-status" class="visually-hidden" aria-live="assertive"></div>
   </section>
@@ -73,6 +73,6 @@
   </section>
 </main>
 
-<script src="script.js?v=3" type="module"></script>
+<script src="script.js?v=4" type="module"></script>
 </body>
 </html>

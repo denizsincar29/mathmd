@@ -178,11 +178,46 @@ h2 {
 .preview a { color: var(--accent); }
 
 /* Marked block containing the editor line under the cursor. */
-.preview .preview-block { border-radius: 6px; }
+.preview .preview-block { border-radius: 6px; cursor: pointer; }
+
+.preview .preview-block:hover { background: rgba(255, 255, 255, 0.03); }
 
 .preview .preview-block--active {
   outline: 2px solid var(--accent);
   background: rgba(79, 209, 197, 0.08);
+  position: relative;
+}
+
+/* Плашка с номером строки у активного блока — видно, к какой строке перешли. */
+.preview .preview-block--active::after {
+  content: "строка " attr(data-line);
+  position: absolute;
+  top: -0.6em;
+  right: 0.6em;
+  background: var(--accent);
+  color: #0d1117;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.1em 0.5em;
+  border-radius: 4px;
+  line-height: 1.3;
+}
+
+/* Заглушка графика в живом режиме (Desmos не пересоздаётся при наборе). */
+.preview .desmos-placeholder {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+.preview .desmos-fallback {
+  display: block;
+  padding: 1rem;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
 }
 
 /* Desmos graph container. */

@@ -124,23 +124,38 @@ function segmentMarkdown(md) {
   return segments;
 }
 
-function renderMarkdown(md) {
+function renderMarkdown(md, live) {
   const body = extractDesmos(md).replace(/`([^`\n]+)`/g, (m, expr) => ASM_OPEN + expr + ASM_CLOSE);
   const segments = segmentMarkdown(body);
   let html = "";
   for (const seg of segments) {
-    html += `<div class="preview-block" data-line="${seg.start}" tabindex="0">${converter.makeHtml(seg.lines)}</div>\n`;
+    // data-line — 1-based номер строки Monaco, чтобы совпадал с lineNumber.
+    html += `<div class="preview-block" data-line="${seg.start + 1}" tabindex="0">${converter.makeHtml(seg.lines)}</div>\n`;
   }
   html = html.split(ASM_OPEN).join("`").split(ASM_CLOSE).join("`");
   // Desmos-плейсхолдер showdown заворачивает в <p> — div внутри p невалиден.
   // Вырываем плейсхолдер из абзаца, потом инжектим контейнер графика.
-  html = html.replace(/<p>@@DESMOS(\d+)@@<\/p>/g, (m, i) => `<div class="desmos" data-desmos-idx="${i}"></div>`);
-  html = html.replace(/@@DESMOS(\d+)@@/g, (m, i) => `<div class="desmos" data-desmos-idx="${i}"></div>`);
+  html = html.replace(/<p>@@DESMOS(\d+)@@<\/p>/g, (m, i) => desmosSlot(i, live));
+  html = html.replace(/@@DESMOS(\d+)@@/g, (m, i) => desmosSlot(i, live));
   return html;
 }
 
+// Живой рендер (пока печатаешь) не грузит тяжёлый SDK Desmos на каждый тик —
+// вместо графика показываем подсказку; график пересоздаётся по Ctrl+Enter.
+function desmosSlot(idx, live) {
+  if (live) {
+    return `<div class="desmos-placeholder" data-desmos-idx="${idx}">График Desmos обновится по Ctrl+Enter.</div>`;
+  }
+  return `<div class="desmos" data-desmos-idx="${idx}"></div>`;
+}
+
 function initDesmosGraphs() {
-  if (!window.Desmos || typeof Desmos.Calculator !== "function") return;
+  if (!window.Desmos || typeof Desmos.Calculator !== "function") {
+    document.querySelectorAll(".desmos[data-desmos-idx]").forEach((el) => {
+      el.innerHTML = "<span class='desmos-fallback'>График Desmos недоступен — не удалось загрузить API.</span>";
+    });
+    return;
+  }
   document.querySelectorAll(".desmos[data-desmos-idx]").forEach((el) => {
     const body = desmosBlocks[parseInt(el.dataset.desmosIdx, 10)];
     if (!body) return;
@@ -179,15 +194,28 @@ async function typesetMath() {
   }
 }
 
-async function renderPreview() {
+async function renderPreview(live) {
   try {
-    const html = renderMarkdown(editor.getValue());
+    const html = renderMarkdown(editor.getValue(), live);
+    // Ничего не изменилось — не дёргаем MathJax/Desmos впустую.
+    if (html === previewEl.dataset.lastHtml) return;
+    previewEl.dataset.lastHtml = html;
     previewEl.innerHTML = html;
-    initDesmosGraphs();
+    if (!live) initDesmosGraphs();
     await typesetMath();
   } catch (err) {
     console.error("[mathmd] рендер предпросмотра:", err);
   }
+}
+
+// Живой предпросмотр: при наборе рендер откладывается на 800 мс, чтобы
+// каждое нажатие не грузило процессор (MathJax). Формулы обновляются сами;
+// графики Desmos пересоздаются только по Ctrl+Enter.
+let liveTimer = null;
+function scheduleLivePreview() {
+  if (previewSection.hidden) return;
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(() => renderPreview(true), 800);
 }
 
 // --- Предпросмотр на строке курсора ----------------------------------------
@@ -215,7 +243,9 @@ function focusPreviewAtLine(line) {
     block.scrollIntoView({ block: "start", behavior: "smooth" });
     block.focus({ preventScroll: true });
     const label = cleanText(block.textContent);
-    speak(`Строка ${line + 1}. ` + (label || "Пустой блок."));
+    speak(`Строка ${line}. ` + (label || "Пустой блок."));
+    // MathJax мог изменить высоту блоков после typeset — доводим скролл.
+    setTimeout(() => block.scrollIntoView({ block: "start", behavior: "smooth" }), 250);
   } else {
     speak("Нет предпросмотра для этой строки.");
   }
@@ -228,17 +258,30 @@ function showPreviewAndFocus(line) {
 
 // --- Вставка сниппетов ------------------------------------------------------
 
-function insertSnippet(template) {
+// snippet — строка (шаблон с {cursor}) или объект { template, wrap }. Если
+// в редакторе есть выделение и задан wrap — выделенный текст оборачивается
+// (инлайн $...$, блочная $$...$$, AsciiMath `...`); иначе вставляется шаблон.
+function insertSnippet(snippet) {
   const sel = editor.getSelection();
-  const text = template.replace(/\{cursor\}/g, "");
+  const model = editor.getModel();
+  const selectedText = model.getValueInRange(sel);
+  const isObj = typeof snippet === "object";
+  const template = isObj ? snippet.template : snippet;
+  const wrap = isObj ? snippet.wrap : null;
+
+  const text = selectedText && wrap ? wrap(selectedText) : template.replace(/\{cursor\}/g, "");
   const range = new monaco.Range(sel.startLineNumber, sel.startColumn, sel.endLineNumber, sel.endColumn);
   editor.executeEdits("mathmd-snippet", [{ range, text }]);
   // Курсор — на место {cursor} в шаблоне: offset старта вставки + индекс маркера.
   // Считаем по offset, а не по column, чтобы корректно работали многострочные шаблоны.
-  const model = editor.getModel();
   const startOffset = model.getOffsetAt({ lineNumber: sel.startLineNumber, column: sel.startColumn });
-  const cursorIdx = template.indexOf("{cursor}");
-  const target = cursorIdx === -1 ? startOffset + text.length : startOffset + cursorIdx;
+  let target;
+  if (selectedText && wrap) {
+    target = startOffset + text.length;
+  } else {
+    const cursorIdx = template.indexOf("{cursor}");
+    target = cursorIdx === -1 ? startOffset + text.length : startOffset + cursorIdx;
+  }
   editor.setPosition(model.getPositionAt(target));
   editor.focus();
 }
@@ -248,9 +291,9 @@ const TOOLBAR_GROUPS = [
   {
     title: "Математика",
     items: [
-      ["Формула LaTeX в строке", "$x^2{cursor}$", "$x^2$"],
-      ["Формула на отдельной строке", "$$\n{cursor}\n$$", "$$ ... $$"],
-      ["Формула AsciiMath", "`sqrt(2){cursor}`", "`sqrt(2)`"],
+      ["Формула LaTeX в строке", { template: "$x^2{cursor}$", wrap: (s) => `$${s}$` }, "$x^2$"],
+      ["Формула на отдельной строке", { template: "$$\n{cursor}\n$$", wrap: (s) => `$$\n${s}\n$$` }, "$$ ... $$"],
+      ["Формула AsciiMath", { template: "`sqrt(2){cursor}`", wrap: (s) => "`" + s + "`" }, "`sqrt(2)`"],
       ["Дробь", "\\frac{a}{b}{cursor}", "Дробь"],
       ["Степень", "x^{2}{cursor}", "Степень"],
       ["Корень", "\\sqrt{{cursor}}", "Корень"],
@@ -429,6 +472,9 @@ require(["vs/editor/editor.main"], function () {
 
   buildToolbar();
 
+  // Живой предпросмотр: формулы обновляются по мере набора (с дебаунсом).
+  editor.onDidChangeModelContent(() => scheduleLivePreview());
+
   // Хоткеи на уровне document в capture-фазе: перехватываем до Monaco, не
   // завися от фокуса редактора, его keybinding-приоритетов и режима
   // доступности. Монако не увидит эти клавиши (stopImmediatePropagation).
@@ -465,6 +511,18 @@ require(["vs/editor/editor.main"], function () {
   document.getElementById("btn-preview").addEventListener("click", () => {
     const line = editor.getPosition().lineNumber;
     showPreviewAndFocus(line);
+  });
+  // Клик по блоку предпросмотра (удобно зрячему): курсор редактора прыгает
+  // на строку этого блока, и можно сразу править markdown.
+  previewEl.addEventListener("click", (e) => {
+    if (e.target.closest("a")) return;
+    const block = e.target.closest(".preview-block");
+    if (!block) return;
+    const line = parseInt(block.dataset.line, 10);
+    if (!Number.isInteger(line)) return;
+    editor.setPosition({ lineNumber: line, column: 1 });
+    editor.revealLineInCenter(line);
+    editor.focus();
   });
   document.getElementById("btn-export").addEventListener("click", exportHtml);
   document.getElementById("btn-save").addEventListener("click", saveMd);
