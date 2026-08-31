@@ -475,10 +475,10 @@ require(["vs/editor/editor.main"], function () {
   // Живой предпросмотр: формулы обновляются по мере набора (с дебаунсом).
   editor.onDidChangeModelContent(() => scheduleLivePreview());
 
-  // Хоткеи на уровне document в capture-фазе: перехватываем до Monaco, не
-  // завися от фокуса редактора, его keybinding-приоритетов и режима
-  // доступности. Монако не увидит эти клавиши (stopImmediatePropagation).
-  document.addEventListener(
+  // Хоткеи на уровне window в capture-фазе: это самая ранняя точка, в которую
+  // доходит событие, — раньше Monaco, раньше любых обработчиков на document.
+  // Монако не увидит эти клавиши (stopImmediatePropagation).
+  window.addEventListener(
     "keydown",
     (e) => {
       const ctrl = e.ctrlKey || e.metaKey;
@@ -492,6 +492,15 @@ require(["vs/editor/editor.main"], function () {
           const line = editor.getPosition().lineNumber;
           showPreviewAndFocus(line);
         }
+        return;
+      }
+      // F9 — запасной полный предпросмотр: если окружение (расширение
+      // браузера, раскладка, скринридер) перехватывает Ctrl+Enter.
+      if (e.key === "F9" && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const line = editor.getPosition().lineNumber;
+        showPreviewAndFocus(line);
         return;
       }
       // Alt+1..9 — вставка шаблонов (e.code от раскладки не зависит).

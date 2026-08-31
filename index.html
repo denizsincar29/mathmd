@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -38,7 +38,7 @@
 <body>
 <header>
   <h1>Математический редактор</h1>
-  <p>Markdown-документ с математикой. LaTeX (<code>$x^2$</code>), AsciiMath (обратные кавычки: <code>sqrt(2)</code>) и графики Desmos (блок <code>```desmos</code>). Предпросмотр обновляется по мере набора; <strong>Ctrl+Enter</strong> — перейти к строке курсора и пересоздать графики.</p>
+  <p>Markdown-документ с математикой. LaTeX (<code>$x^2$</code>), AsciiMath (обратные кавычки: <code>sqrt(2)</code>) и графики Desmos (блок <code>```desmos</code>). Предпросмотр обновляется по мере набора; <strong>Ctrl+Enter</strong> (или <strong>F9</strong>, если Ctrl+Enter перехватывает что-то в браузере) — перейти к строке курсора и пересоздать графики.</p>
 </header>
 
 <main>
@@ -55,7 +55,7 @@
 
   <section aria-labelledby="preview-heading" id="preview-section">
     <h2 id="preview-heading">Предпросмотр</h2>
-    <p class="hint">Предпросмотр обновляется автоматически при наборе. Ctrl+Enter — перейти к строке курсора и пересоздать графики Desmos; Ctrl+Shift+Enter — скрыть предпросмотр.</p>
+    <p class="hint">Предпросмотр обновляется автоматически при наборе. Ctrl+Enter (или F9) — перейти к строке курсора и пересоздать графики Desmos; Ctrl+Shift+Enter — скрыть предпросмотр.</p>
     <div id="preview" class="preview"></div>
   </section>
 
@@ -76,6 +76,6 @@
   </section>
 </main>
 
-<script src="script.js?v=5" type="module"></script>
+<script src="script.js?v=6" type="module"></script>
 </body>
 </html>
