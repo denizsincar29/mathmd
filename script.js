@@ -180,11 +180,14 @@ async function typesetMath() {
 }
 
 async function renderPreview() {
-  const html = renderMarkdown(editor.getValue());
-  previewEl.innerHTML = html;
-  assignLineMarks(previewEl);
-  initDesmosGraphs();
-  await typesetMath();
+  try {
+    const html = renderMarkdown(editor.getValue());
+    previewEl.innerHTML = html;
+    initDesmosGraphs();
+    await typesetMath();
+  } catch (err) {
+    console.error("[mathmd] рендер предпросмотра:", err);
+  }
 }
 
 // --- Предпросмотр на строке курсора ----------------------------------------
@@ -226,19 +229,17 @@ function showPreviewAndFocus(line) {
 // --- Вставка сниппетов ------------------------------------------------------
 
 function insertSnippet(template) {
-  const marker = " ";
-  const text = template.replace(/\{cursor\}/g, marker);
   const sel = editor.getSelection();
+  const text = template.replace(/\{cursor\}/g, "");
   const range = new monaco.Range(sel.startLineNumber, sel.startColumn, sel.endLineNumber, sel.endColumn);
   editor.executeEdits("mathmd-snippet", [{ range, text }]);
+  // Курсор — на место {cursor} в шаблоне: offset старта вставки + индекс маркера.
+  // Считаем по offset, а не по column, чтобы корректно работали многострочные шаблоны.
   const model = editor.getModel();
-  const idx = model.getValue().indexOf(marker);
-  if (idx >= 0) {
-    const pos = model.getPositionAt(idx);
-    const markerRange = new monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column + 1);
-    editor.executeEdits("mathmd-snippet-clean", [{ range: markerRange, text: "" }]);
-    editor.setPosition(pos);
-  }
+  const startOffset = model.getOffsetAt({ lineNumber: sel.startLineNumber, column: sel.startColumn });
+  const cursorIdx = template.indexOf("{cursor}");
+  const target = cursorIdx === -1 ? startOffset + text.length : startOffset + cursorIdx;
+  editor.setPosition(model.getPositionAt(target));
   editor.focus();
 }
 
@@ -294,7 +295,6 @@ const TOOLBAR_GROUPS = [
 ];
 
 function buildToolbar() {
-  let accel = 0;
   for (const group of TOOLBAR_GROUPS) {
     const span = document.createElement("span");
     span.className = "toolbar-group";
@@ -307,10 +307,6 @@ function buildToolbar() {
       btn.setAttribute("aria-label", label);
       btn.addEventListener("click", () => insertSnippet(snippet));
       toolbarEl.appendChild(btn);
-      accel++;
-      if (accel <= 9) {
-        editor.addCommand(monaco.KeyMod.Alt | (monaco.KeyCode.Key1 + accel - 1), () => insertSnippet(snippet));
-      }
     }
   }
 }
@@ -433,16 +429,38 @@ require(["vs/editor/editor.main"], function () {
 
   buildToolbar();
 
-  // Ctrl+Enter — обновить предпросмотр и перейти к строке курсора.
-  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-    const line = editor.getPosition().lineNumber;
-    showPreviewAndFocus(line);
-  });
-  // Ctrl+Shift+Enter — скрыть предпросмотр.
-  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
-    previewSection.hidden = true;
-    speak("Предпросмотр скрыт.");
-  });
+  // Хоткеи на уровне document в capture-фазе: перехватываем до Monaco, не
+  // завися от фокуса редактора, его keybinding-приоритетов и режима
+  // доступности. Монако не увидит эти клавиши (stopImmediatePropagation).
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      const ctrl = e.ctrlKey || e.metaKey;
+      if (ctrl && e.code === "Enter") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (e.shiftKey) {
+          previewSection.hidden = true;
+          speak("Предпросмотр скрыт.");
+        } else {
+          const line = editor.getPosition().lineNumber;
+          showPreviewAndFocus(line);
+        }
+        return;
+      }
+      // Alt+1..9 — вставка шаблонов (e.code от раскладки не зависит).
+      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.code.startsWith("Digit")) {
+        const n = Number(e.code.slice(5));
+        if (n >= 1 && n <= 9) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          const all = TOOLBAR_GROUPS.flatMap((g) => g.items);
+          insertSnippet(all[n - 1][1]);
+        }
+      }
+    },
+    true,
+  );
 
   document.getElementById("btn-preview").addEventListener("click", () => {
     const line = editor.getPosition().lineNumber;
