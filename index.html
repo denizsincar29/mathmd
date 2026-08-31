@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14181c">
+<title>Математический редактор — Markdown, LaTeX, AsciiMath, Desmos</title>
+<meta name="description" content="Доступный веб-редактор markdown с математикой MathJax 4, поддержкой LaTeX и AsciiMath и графиками Desmos. Для незрячих пользователей.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+
+<script>
+  // MathJax must be configured before the MathJax script loads.
+  window.MathJax = {
+    loader: { load: ["input/tex", "input/asciimath", "output/chtml"] },
+    tex: {
+      inlineMath: [["$", "$"], ["\\(", "\\)"]],
+      displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+      packages: { "[+]": ["ams"] }
+    },
+    // AsciiMath uses backtick as its delimiter by default (`sqrt(2)`).
+    asciimath: {
+      delimiters: { backtick: [["`", "`"]] }
+    },
+    options: {
+      enableMenu: false,
+      renderActions: {}
+    }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+<script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+</head>
+<body>
+<header>
+  <h1>Математический редактор</h1>
+  <p>Markdown-документ с математикой. LaTeX (<code>$x^2$</code>), AsciiMath (обратные кавычки: <code>sqrt(2)</code>) и графики Desmos (блок <code>```desmos</code>). <strong>Ctrl+Enter</strong> — предпросмотр на строке курсора.</p>
+</header>
+
+<main>
+  <section aria-labelledby="toolbar-heading">
+    <h2 id="toolbar-heading" class="visually-hidden">Панель вставки формул</h2>
+    <div class="toolbar" role="toolbar" aria-label="Вставка формул и уравнений" id="toolbar"></div>
+    <p class="hint">Кнопки вставляют шаблон в место курсора. Хоткеи: Alt+1 — формула LaTeX, Alt+2 — формула на отдельной строке, Alt+3 — AsciiMath, Alt+4 — дробь, Alt+5 — степень, Alt+6 — корень, Alt+7 — сумма, Alt+8 — интеграл, Alt+9 — матрица.</p>
+  </section>
+
+  <section aria-labelledby="editor-heading">
+    <h2 id="editor-heading" class="visually-hidden">Редактор</h2>
+    <div id="editor" class="editor" role="textbox" aria-label="Редактор математики: пишите markdown, LaTeX или AsciiMath"></div>
+  </section>
+
+  <section aria-labelledby="preview-heading" id="preview-section">
+    <h2 id="preview-heading">Предпросмотр</h2>
+    <p class="hint">Нажмите Ctrl+Enter, чтобы обновить и перейти к строке курсора. По Ctrl+Shift+Enter предпросмотр скрывается.</p>
+    <div id="preview" class="preview"></div>
+    <div id="preview-status" class="visually-hidden" aria-live="assertive"></div>
+  </section>
+
+  <section aria-labelledby="file-heading">
+    <h2 id="file-heading">Файл и вывод</h2>
+    <div class="file-row">
+      <button id="btn-preview" type="button">Обновить предпросмотр (Ctrl+Enter)</button>
+      <button id="btn-export" type="button">Сохранить готовый HTML</button>
+      <button id="btn-save" type="button">Скачать .md</button>
+      <button id="btn-open" type="button">Открыть .md</button>
+      <input id="open-input" type="file" accept=".md,.markdown,.txt,text/markdown" hidden>
+    </div>
+    <div id="file-status" class="visually-hidden" aria-live="assertive"></div>
+  </section>
+</main>
+
+<script src="script.js" type="module"></script>
+</body>
+</html>
