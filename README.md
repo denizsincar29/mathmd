@@ -5,7 +5,7 @@
 - **MathJax 4** — математика LaTeX (`$x^2$`, `$$...$$`) и AsciiMath (обратные кавычки: `` `sqrt(2)` ``)
 - **Monaco** — редактор кода (как в VS Code)
 - **Desmos** — интерактивные графики: блок ``` ```desmos ``` в документе
-- **chessjax** — доступные шахматные доски: блок ``` ```chess ``` в документе (субмодуль)
+- **chessjax** — доступные шахматные доски: блок ``` ```chess ``` в документе (завендорено в `chessjax/`)
 - **showdown** — рендер markdown
 
 ## Горячие клавиши
@@ -44,9 +44,14 @@
 
 ## Запуск локально
 
-Это чистая статика, но нужен субмодуль chessjax:
+Это чистая статика:
 
 ```sh
-git submodule update --init --recursive
 python3 -m http.server 8000
 ```
+
+Движок chessjax завендорен в `chessjax/` (chessjax.js + vendor/chess.js),
+субмодуля нет — GitHub Pages project-сайтов субмодули не разворачивает.
+Исходник — репозиторий [denizsincar29/chessjax](https://github.com/denizsincar29/chessjax);
+при обновлении библиотеки скопируй `chessjax.js` и `vendor/chess.js` и подними
+`?v=`-версии в index.html + CACHE_NAME в sw.js.
