@@ -103,6 +103,16 @@ h2 {
   outline-offset: 1px;
 }
 
+/* Бейдж хоткея под текстом кнопки тулбара. */
+.toolbar button .hotkey {
+  display: block;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
 .toolbar-group {
   color: var(--fg-muted);
   font-size: 0.85rem;

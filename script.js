@@ -338,6 +338,8 @@ const TOOLBAR_GROUPS = [
 ];
 
 function buildToolbar() {
+  // Первые 9 кнопок получают хоткей Alt+1..9 (порядок в TOOLBAR_GROUPS).
+  let hotkey = 0;
   for (const group of TOOLBAR_GROUPS) {
     const span = document.createElement("span");
     span.className = "toolbar-group";
@@ -349,6 +351,13 @@ function buildToolbar() {
       btn.textContent = face;
       btn.setAttribute("aria-label", label);
       btn.addEventListener("click", () => insertSnippet(snippet));
+      if (hotkey < 9) {
+        hotkey += 1;
+        const badge = document.createElement("span");
+        badge.className = "hotkey";
+        badge.textContent = "Alt+" + hotkey;
+        btn.appendChild(badge);
+      }
       toolbarEl.appendChild(btn);
     }
   }
@@ -481,26 +490,22 @@ require(["vs/editor/editor.main"], function () {
   window.addEventListener(
     "keydown",
     (e) => {
-      const ctrl = e.ctrlKey || e.metaKey;
-      if (ctrl && e.code === "Enter") {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        if (e.shiftKey) {
-          previewSection.hidden = true;
-          speak("Предпросмотр скрыт.");
-        } else {
-          const line = editor.getPosition().lineNumber;
-          showPreviewAndFocus(line);
-        }
-        return;
-      }
-      // F9 — запасной полный предпросмотр: если окружение (расширение
-      // браузера, раскладка, скринридер) перехватывает Ctrl+Enter.
-      if (e.key === "F9" && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+      // Alt+ё (та же клавиша, что и `) — полный предпросмотр: показать секцию,
+      // пересоздать графики Desmos и объявить содержимое строки курсора.
+      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.code === "Backquote") {
         e.preventDefault();
         e.stopImmediatePropagation();
         const line = editor.getPosition().lineNumber;
         showPreviewAndFocus(line);
+        return;
+      }
+      // Ctrl+Shift+Enter — скрыть предпросмотр.
+      const ctrl = e.ctrlKey || e.metaKey;
+      if (ctrl && e.shiftKey && e.code === "Enter") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        previewSection.hidden = true;
+        speak("Предпросмотр скрыт.");
         return;
       }
       // Alt+1..9 — вставка шаблонов (e.code от раскладки не зависит).
