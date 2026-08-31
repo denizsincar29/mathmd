@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -57,8 +57,11 @@
     <h2 id="preview-heading">Предпросмотр</h2>
     <p class="hint">Предпросмотр обновляется автоматически при наборе. Ctrl+Enter — перейти к строке курсора и пересоздать графики Desmos; Ctrl+Shift+Enter — скрыть предпросмотр.</p>
     <div id="preview" class="preview"></div>
-    <div id="preview-status" class="visually-hidden" aria-live="assertive"></div>
   </section>
+
+  <!-- Live-регион вне #preview-section: NVDA обязан читать объявления и когда
+       предпросмотр скрыт (Ctrl+Shift+Enter), и когда показан. -->
+  <div id="preview-status" class="visually-hidden" aria-live="assertive"></div>
 
   <section aria-labelledby="file-heading">
     <h2 id="file-heading">Файл и вывод</h2>
@@ -73,6 +76,6 @@
   </section>
 </main>
 
-<script src="script.js?v=4" type="module"></script>
+<script src="script.js?v=5" type="module"></script>
 </body>
 </html>

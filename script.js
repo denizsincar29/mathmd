@@ -502,6 +502,8 @@ require(["vs/editor/editor.main"], function () {
           e.stopImmediatePropagation();
           const all = TOOLBAR_GROUPS.flatMap((g) => g.items);
           insertSnippet(all[n - 1][1]);
+          // Скринридеру важно знать, что хоткей сработал.
+          speak("Вставлено: " + all[n - 1][0]);
         }
       }
     },
