@@ -51,6 +51,125 @@ const converter = new showdown.Converter({
   headerLevelStart: 1,
 });
 
+// --- YAML frontmatter --------------------------------------------------------
+//
+// В начале markdown-документа можно объявить метаданные и какие модули грузить
+// в готовом HTML (экспорт / ?preview=html):
+//   ---
+//   title: Морфи
+//   lang: ru
+//   mathjax: no            # не грузить MathJax в этом экспорте
+//   chessjax: yes          # подключить шахматный компонент (по умолчанию нет)
+//   desmos: yes            # подключить Desmos (по умолчанию нет)
+//   author: Дениз
+//   description: Партия Морфи
+//   css: https://…/style.css
+//   mathjax:               # вложенные настройки MathJax (мержатся в конфиг)
+//     tex:
+//       inlineMath: ...
+//   desmos:                # опции Desmos.Calculator
+//     expressions: false
+//   chess:                 # атрибуты по умолчанию для всех досок
+//     lang: ru
+//     tone: off
+//   ---
+let fmState = null; // data последнего разобранного frontmatter (для chessSlot)
+
+function parseScalar(v) {
+  const s = String(v).trim();
+  if (!s) return "";
+  if (/^(yes|true|on)$/i.test(s)) return true;
+  if (/^(no|false|off)$/i.test(s)) return false;
+  // Массивы/объекты в одну строку — как JSON: inlineMath: [["$", "$"], ...].
+  if (s[0] === "[" || s[0] === "{") {
+    try {
+      return JSON.parse(s);
+    } catch (_) {
+      /* не JSON — читаем как строку */
+    }
+  }
+  const n = Number(s);
+  if (Number.isFinite(n)) return n;
+  return s.replace(/^["']|["']$/g, "");
+}
+
+// Парсер YAML-подмножества для frontmatter: ключи по отступу вкладываются
+// в объекты (включая произвольную вложенность для mathjax/desmos-конфигов),
+// комментарии # отрезаются, скаляры проходят parseScalar.
+function parseFrontmatter(md) {
+  if (!/^---\r?\n/.test(md)) return { data: {}, body: md };
+  const lines = md.split(/\r?\n/);
+  let i = 1;
+  const fm = [];
+  let closed = false;
+  while (i < lines.length) {
+    if (/^\s*---\s*$/.test(lines[i])) {
+      closed = true;
+      i += 1;
+      break;
+    }
+    fm.push(lines[i]);
+    i += 1;
+  }
+  if (!closed) return { data: {}, body: md };
+  const data = {};
+  // Стек контейнеров по отступу: первый элемент — корень документа.
+  const stack = [{ indent: -1, obj: data }];
+  for (const raw of fm) {
+    if (!raw.trim()) continue;
+    const trimmed = raw.replace(/^\s+/, "");
+    const indent = raw.length - trimmed.length;
+    const line = trimmed.replace(/\s*#.*$/, "").trimEnd();
+    if (!line) continue;
+    const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    if (!m) continue;
+    const key = m[1];
+    const val = m[2].trim();
+    while (stack.length > 1 && indent <= stack[stack.length - 1].indent) stack.pop();
+    const parent = stack[stack.length - 1].obj;
+    if (val === "") {
+      const child = {};
+      parent[key] = child;
+      stack.push({ indent, obj: child });
+    } else {
+      parent[key] = parseScalar(val);
+    }
+  }
+  return { data, body: lines.slice(i).join("\n") };
+}
+
+// Глубокий мерж вложенных настроек (массивы заменяются, объекты сливаются).
+function deepMerge(base, extra) {
+  if (!extra || typeof extra !== "object") return base;
+  const out = Array.isArray(base) ? base.slice() : Object.assign({}, base);
+  for (const k of Object.keys(extra)) {
+    const bv = out[k];
+    const ev = extra[k];
+    if (bv && ev && typeof bv === "object" && typeof ev === "object" && !Array.isArray(ev)) {
+      out[k] = deepMerge(bv, ev);
+    } else {
+      out[k] = ev;
+    }
+  }
+  return out;
+}
+
+// Значение атрибута из YAML: булевы «off/on» для tone/sound/controls и т.п.
+function yamlAttr(v) {
+  if (v === false) return "off";
+  if (v === true) return "on";
+  return String(v);
+}
+
+// Экранирование для вставки в HTML-атрибуты и текст мета-тегов.
+function escHtml(v) {
+  return String(v)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 // Fenced-блоки ```desmos ... ``` вынимаем до showdown и подставляем
 // контейнеры для интерактивных графиков Desmos.
 let desmosBlocks = [];
@@ -90,8 +209,17 @@ function extractChess(md) {
 function chessSlot(idx) {
   const attrs = chessBlocks[idx];
   if (!attrs) return "";
-  const id = attrs.id || "chessjax-" + (idx + 1);
-  const attrHtml = Object.entries({ id, ...attrs })
+  const merged = Object.assign({}, attrs);
+  // Дефолты из frontmatter (chess: { lang, tone, sound, controls, ... }) —
+  // id доске всегда свой, его не мержим.
+  if (fmState && fmState.chess && typeof fmState.chess === "object") {
+    for (const k of Object.keys(fmState.chess)) {
+      if (k === "id" || k in merged) continue;
+      merged[k] = yamlAttr(fmState.chess[k]);
+    }
+  }
+  const id = merged.id || "chessjax-" + (idx + 1);
+  const attrHtml = Object.entries({ id, ...merged })
     .map(([k, v]) => ` ${k}="${String(v).replace(/"/g, "&quot;")}"`)
     .join("");
   return `<chessjax-board${attrHtml}></chessjax-board>`;
@@ -162,8 +290,10 @@ function segmentMarkdown(md) {
   return segments;
 }
 
-function renderMarkdown(md, live) {
-  const body = extractDesmos(extractChess(md)).replace(/`([^`\n]+)`/g, (m, expr) => ASM_OPEN + expr + ASM_CLOSE);
+// Рендер тела markdown (frontmatter уже снят): вынимаем chess/desmos-блоки,
+// гоним через showdown, подставляем слоты.
+function renderMarkdownBody(body, live) {
+  body = extractDesmos(extractChess(body)).replace(/`([^`\n]+)`/g, (m, expr) => ASM_OPEN + expr + ASM_CLOSE);
   const segments = segmentMarkdown(body);
   let html = "";
   for (const seg of segments) {
@@ -180,13 +310,22 @@ function renderMarkdown(md, live) {
   return html;
 }
 
+function renderMarkdown(md, live) {
+  const parsed = parseFrontmatter(md);
+  fmState = parsed.data;
+  return renderMarkdownBody(parsed.body, live);
+}
+
 // Живой рендер (пока печатаешь) не грузит тяжёлый SDK Desmos на каждый тик —
 // вместо графика показываем подсказку; график пересоздаётся по Ctrl+Enter.
 function desmosSlot(idx, live) {
   if (live) {
     return `<div class="desmos-placeholder" data-desmos-idx="${idx}">График Desmos обновится по Ctrl+Enter.</div>`;
   }
-  return `<div class="desmos" data-desmos-idx="${idx}"></div>`;
+  // В готовом HTML массива desmosBlocks нет — тело графика кладём прямо в DOM
+  // (encodeURIComponent), его разберёт init-скрипт документа.
+  const body = desmosBlocks[idx] || "";
+  return `<div class="desmos" data-desmos-idx="${idx}" data-desmos-body="${encodeURIComponent(body)}"></div>`;
 }
 
 function initDesmosGraphs() {
@@ -197,7 +336,10 @@ function initDesmosGraphs() {
     return;
   }
   document.querySelectorAll(".desmos[data-desmos-idx]").forEach((el) => {
-    const body = desmosBlocks[parseInt(el.dataset.desmosIdx, 10)];
+    // В предпросмотре тело из массива; в готовом HTML (экспорт) — из data-атрибута.
+    const body = el.dataset.desmosBody
+      ? decodeURIComponent(el.dataset.desmosBody)
+      : desmosBlocks[parseInt(el.dataset.desmosIdx, 10)];
     if (!body) return;
     try {
       const calc = Desmos.Calculator(el, {
@@ -502,15 +644,95 @@ function download(filename, text, mime) {
 // для скачивания (exportHtml), и для показа по ?preview=html. Шахматные доски
 // остаются живыми <chessjax-board> — документ подключает компонент с CDN, а
 // CSS (включая fullscreen) встроен в <style>.
+//
+// Какие модули грузить решает frontmatter:
+//   mathjax  — по умолчанию включён (выкл: mathjax: no)
+//   chessjax — по умолчанию выключен (вкл: chessjax: yes)
+//   desmos   — по умолчанию выключен (вкл: desmos: yes)
+// Вложенные настройки (mathjax: {…}, desmos: {…}, chess: {…}) мержатся
+// глубоко в конфиг MathJax, опции Desmos.Calculator и атрибуты досок.
 function buildDocumentHtml() {
   const bodyHtml = renderMarkdown(editor.getValue());
+  const fm = fmState || {};
+
+  // Модуль включён, если флаг true ИЛИ задан объектом настроек: `desmos: yes`
+  // и `desmos:` (вложенные опции) оба включают модуль.
+  const modOn = (v) => v === true || (v && typeof v === "object" && !Array.isArray(v));
+  const mods = {
+    mathjax: fm.mathjax !== false,
+    chessjax: modOn(fm.chessjax),
+    desmos: modOn(fm.desmos),
+  };
+
+  // Если в тексте есть блоки, а модуль отключён — честная подсказка в документе.
+  const chessNote = chessBlocks.length && !mods.chessjax
+    ? '<div class="module-off">Шахматные доски не подключены — добавьте в начало файла: <code>chessjax: yes</code></div>'
+    : "";
+  const desmosNote = desmosBlocks.length && !mods.desmos
+    ? '<div class="module-off">Графики Desmos не подключены — добавьте в начало файла: <code>desmos: yes</code></div>'
+    : "";
+
+  const title = fm.title || "Математический документ";
+  const lang = fm.lang || "ru";
+  const author = fm.author ? `<meta name="author" content="${escHtml(fm.author)}">\n` : "";
+  const description = fm.description ? `<meta name="description" content="${escHtml(fm.description)}">\n` : "";
+  const extraCss = fm.css ? `<link rel="stylesheet" href="${escHtml(fm.css)}">\n` : "";
+
+  // MathJax: конфиг из frontmatter мержится поверх дефолтного.
+  let mjBlock = "";
+  if (mods.mathjax) {
+    const mjConfig = deepMerge(
+      {
+        loader: { load: ["input/tex", "input/asciimath", "output/chtml"] },
+        tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["$$", "$$"], ["\\[", "\\]"]] },
+        options: { enableMenu: false },
+      },
+      fm.mathjax && typeof fm.mathjax === "object" ? fm.mathjax : {}
+    );
+    mjBlock = `<script>
+window.MathJax = ${JSON.stringify(mjConfig)};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+`;
+  }
+
+  let chessBlock = "";
+  if (mods.chessjax) {
+    chessBlock = `<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.1/chessjax.js"></script>
+`;
+  }
+
+  // Desmos: тело каждого графика лежит в data-desmos-body (см. desmosSlot).
+  let desmosBlock = "";
+  let desmosInit = "";
+  if (mods.desmos) {
+    desmosBlock = `<script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+`;
+    const dOpts = deepMerge(
+      { expressions: true, settingsMenu: false, border: false, projectorMode: true },
+      fm.desmos && typeof fm.desmos === "object" ? fm.desmos : {}
+    );
+    desmosInit = `<script>
+document.querySelectorAll(".desmos[data-desmos-idx]").forEach(function (el) {
+  var body = el.getAttribute("data-desmos-body");
+  if (!body) return;
+  var calc = Desmos.Calculator(el, ${JSON.stringify(dOpts)});
+  decodeURIComponent(body).split("\\n").map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (expr, i) {
+    try { calc.setExpression({ id: "e" + i, latex: expr }); }
+    catch (err) { console.warn("Desmos:", expr, err); }
+  });
+});
+</script>
+`;
+  }
+
   return `<!DOCTYPE html>
-<html lang="ru">
+<html lang="${lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Математический документ</title>
-<style>
+<title>${escHtml(title)}</title>
+${author}${description}${extraCss}<style>
   body { max-width: 900px; margin: 0 auto; padding: 1rem; font-family: system-ui, sans-serif; line-height: 1.6; color: #111; }
   h1 { border-bottom: 1px solid #ddd; padding-bottom: .3rem; }
   pre { background: #f5f5f5; padding: .75rem; overflow-x: auto; }
@@ -520,6 +742,7 @@ function buildDocumentHtml() {
   th, td { border: 1px solid #ccc; padding: .3rem .6rem; }
   .desmos { width: 100%; height: 380px; margin: .5rem 0; }
   .chessjax { margin: .5rem 0; }
+  .module-off { border: 1px dashed #c57; border-radius: 6px; padding: .4rem .7rem; margin: .5rem 0; color: #844; font-size: .9rem; }
   .chessjax-board { display: grid; grid-template-columns: repeat(8, 48px); width: max-content; background: #fff; border: 1px solid #ccc; }
   .chessjax-cell { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
   .chessjax-cell.square-dark { background: #769656; }
@@ -544,26 +767,12 @@ function buildDocumentHtml() {
   chessjax-board:fullscreen .chessjax-controls { justify-content: center; }
   chessjax-board:fullscreen .chessjax-btn { min-width: 56px; min-height: 48px; font-size: 1.4rem; }
 </style>
-<script>
-window.MathJax = {
-  loader: { load: ["input/tex", "input/asciimath", "output/chtml"] },
-  tex: { inlineMath: [["$", "$"], ["\\\\(", "\\\\)"]], displayMath: [["$$", "$$"], ["\\\\[", "\\\\]"]] },
-  options: { enableMenu: false }
-};
-</script>
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
-<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.1/chessjax.js"></script>
-<script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
-</head>
+${mjBlock}${chessBlock}${desmosBlock}</head>
 <body>
+${chessNote}
 ${bodyHtml}
-<script>
-document.querySelectorAll(".desmos").forEach(function (el) {
-  var body = el.getAttribute("data-desmos-idx") ? "" : "";
-  var calc = Desmos.Calculator(el, { expressions: true, border: false });
-});
-</script>
-</body>
+${desmosNote}
+${desmosInit}</body>
 </html>`;
 }
 
@@ -704,6 +913,138 @@ async function loadFromUrl() {
   }
 }
 
+// --- Автодополнения Монако ---------------------------------------------------
+//
+// Контекстные сниппеты для markdown: внутри --- frontmatter — ключи; внутри
+// ```chess — атрибуты chessjax; внутри ```desmos — выражения Desmos; в
+// формулах — LaTeX-команды; в обычном тексте — заготовки блоков и формул.
+function registerMarkdownCompletions() {
+  const KM = monaco.languages.CompletionItemKind;
+  const RULES = monaco.languages.CompletionItemInsertTextRule;
+  const wordAt = (model, pos) => model.getWordUntilPosition(pos);
+  const one = (model, pos) => ({
+    startLineNumber: pos.lineNumber,
+    startColumn: pos.column,
+    endLineNumber: pos.lineNumber,
+    endColumn: pos.column,
+  });
+
+  // Внутри ли ```<язык> блока сидит курсор? kind = тег или null.
+  function fenceContext(model, pos) {
+    const startFence = /^\s*```(\w*)\s*$/;
+    let inside = null;
+    for (let l = 1; l < pos.lineNumber; l++) {
+      const m = startFence.exec(model.getLineContent(l));
+      if (m) inside = inside ? null : (m[1] || "fence");
+    }
+    return inside;
+  }
+
+  // Курсор в frontmatter: строка 1 = "---", закрывающего "---" ещё нет.
+  function inFrontmatter(model, pos) {
+    if (model.getLineContent(1).trim() !== "---") return false;
+    for (let l = 2; l <= pos.lineNumber; l++) {
+      if (model.getLineContent(l).trim() === "---" && l !== pos.lineNumber) return false;
+    }
+    return true;
+  }
+
+  const FRONTMATTER = [
+    { label: "title", detail: "Заголовок документа", doc: "Идёт в <title> экспортированного HTML.", insert: "title: ${1:Название}" },
+    { label: "lang", detail: "Язык документа", doc: "lang=<…> в <html>. Например ru, en.", insert: "lang: ${1|ru,en|}" },
+    { label: "mathjax", detail: "Загружать MathJax (по умолчанию да)", doc: "no — не подключать MathJax в экспорте.", insert: "mathjax: ${1|yes,no|}" },
+    { label: "chessjax", detail: "Шахматные доски (по умолчанию нет)", doc: "yes — подключить chessjax и включить блоки ```chess.", insert: "chessjax: ${1|yes,no|}" },
+    { label: "desmos", detail: "Графики Desmos (по умолчанию нет)", doc: "yes — подключить Desmos и включить блоки ```desmos.", insert: "desmos: ${1|yes,no|}" },
+    { label: "author", detail: "Автор", insert: "author: ${1:Автор}" },
+    { label: "description", detail: "Описание документа", insert: "description: ${1:Описание}" },
+    { label: "css", detail: "Дополнительный CSS", doc: "URL стиля, подключается в экспорт.", insert: "css: ${1:https://…/style.css}" },
+    { label: "mathjax …", detail: "Настройки MathJax (вложенно)", insert: "mathjax:\n  tex:\n    inlineMath: [[\"$\", \"$\"]]\n  options:\n    enableMenu: false" },
+    { label: "desmos …", detail: "Опции Desmos.Calculator (вложенно)", insert: "desmos:\n  expressions: true\n  border: false" },
+    { label: "chess …", detail: "Атрибуты досок по умолчанию", insert: "chess:\n  lang: ru\n  tone: on" },
+  ];
+
+  const FENCE = [
+    { label: "chess", detail: "Шахматная доска (блок)", doc: "```chess, атрибуты как у <chessjax-board>.", insert: "```chess\nfen=\"${1:rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1}\"\n```" },
+    { label: "desmos", detail: "График Desmos (блок)", doc: "Каждая строка — LaTeX-выражение.", insert: "```desmos\ny=${1:x^2}\n```" },
+    { label: "latex", detail: "LaTeX (блок)", insert: "```latex\n${1}\n```" },
+    { label: "asciimath", detail: "AsciiMath (блок)", insert: "```asciimath\n${1}\n```" },
+  ];
+
+  const MATH = [
+    { label: "$…$", detail: "Инлайн-формула LaTeX", insert: "$${1:формула}$" },
+    { label: "$$…$$", detail: "Формула на отдельной строке", insert: "$$${1:формула}$$" },
+    { label: "`…`", detail: "AsciiMath в строке", insert: "`${1:sqrt(x+1)}`" },
+    { label: "\\frac", detail: "Дробь", insert: "\\frac{${1:numerator}}{${2:denominator}}" },
+    { label: "\\sqrt", detail: "Корень", insert: "\\sqrt{${1:x}}" },
+    { label: "\\sum", detail: "Сумма", insert: "\\sum_{${1:i}=0}^{${2:n}} ${3:x_i}" },
+    { label: "\\int", detail: "Интеграл", insert: "\\int_{${1:a}}^{${2:b}} ${3:f(x)} dx" },
+    { label: "\\alpha", detail: "Греческая альфа", insert: "\\alpha" },
+    { label: "\\beta", detail: "Бета", insert: "\\beta" },
+    { label: "\\pi", detail: "Пи", insert: "\\pi" },
+    { label: "\\theta", detail: "Тета", insert: "\\theta" },
+    { label: "\\infty", detail: "Бесконечность", insert: "\\infty" },
+    { label: "\\cdot", detail: "Умножение точкой", insert: "\\cdot" },
+    { label: "\\times", detail: "Умножение крестиком", insert: "\\times" },
+    { label: "\\leq", detail: "Меньше или равно", insert: "\\leq" },
+    { label: "\\geq", detail: "Больше или равно", insert: "\\geq" },
+  ];
+
+  const CHESS_ATTR = [
+    { label: "fen", detail: "Начальная позиция FEN", insert: "fen=\"${1}\"" },
+    { label: "pgn", detail: "URL партии в PGN", doc: "Можно jsdelivr-CDN, как в примерах.", insert: "pgn=\"${1:https://…/part.pgn}\"" },
+    { label: "move", detail: "Ход, с которого начать", insert: "move=\"${1:1}\"" },
+    { label: "lang", detail: "Язык озвучки (ru/en/…)", insert: "lang=\"${1|ru,en|}\"" },
+    { label: "controls", detail: "Кнопки управления (по умолчанию on)", insert: "controls=\"${1|on,off|}\"" },
+    { label: "tone", detail: "Тон преимущества (по умолчанию on)", insert: "tone=\"${1|on,off|}\"" },
+    { label: "sound", detail: "Звуки ходов (по умолчанию on)", insert: "sound=\"${1|on,off|}\"" },
+    { label: "id", detail: "id доски для ссылок", insert: "id=\"${1:board}\"" },
+  ];
+
+  const DESMOS = [
+    { label: "y = x^2", insert: "y = ${1:x^2}" },
+    { label: "y = sin(x)", insert: "y = \\sin(${1:x})" },
+    { label: "y = cos(x)", insert: "y = \\cos(${1:x})" },
+    { label: "y = tan(x)", insert: "y = \\tan(${1:x})" },
+    { label: "y = sqrt(x)", insert: "y = \\sqrt{${1:x}}" },
+    { label: "y = log(x)", insert: "y = \\log_{${1:10}}(${2:x})" },
+    { label: "y = |x|", insert: "y = \\left|${1:x}\\right|" },
+  ];
+
+  const toItems = (list) =>
+    list.map((s) => ({
+      label: s.label,
+      kind: KM.Snippet,
+      detail: s.detail,
+      documentation: s.doc,
+      insertText: s.insert,
+      insertTextRules: RULES.InsertAsSnippet,
+    }));
+
+  monaco.languages.registerCompletionItemProvider("markdown", {
+    triggerCharacters: ["`", "$", "\\", ":", "-", " ", "\n"],
+    provideCompletionItems(model, position) {
+      const word = wordAt(model, position);
+      const range =
+        word && word.word.length
+          ? {
+              startLineNumber: position.lineNumber,
+              startColumn: word.startColumn,
+              endLineNumber: position.lineNumber,
+              endColumn: word.endColumn,
+            }
+          : one(model, position);
+      const withRange = (list) => toItems(list).map((s) => ({ ...s, range }));
+
+      if (inFrontmatter(model, position)) return { suggestions: withRange(FRONTMATTER) };
+      const fence = fenceContext(model, position);
+      if (fence === "chess") return { suggestions: withRange(CHESS_ATTR) };
+      if (fence === "desmos") return { suggestions: withRange(DESMOS.concat(MATH)) };
+      if (fence && fence !== "fence") return { suggestions: withRange(MATH) };
+      return { suggestions: withRange(FENCE.concat(MATH)) };
+    },
+  });
+}
+
 require.config({
   paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs" },
 });
@@ -723,6 +1064,7 @@ require(["vs/editor/editor.main"], function () {
     ariaLabel: "Редактор математики. Пишите markdown, LaTeX или AsciiMath.",
   });
 
+  registerMarkdownCompletions();
   buildToolbar();
 
   // Живой предпросмотр: формулы обновляются по мере набора (с дебаунсом).

@@ -1,3 +1,12 @@
+---
+title: The Opera Game
+lang: en
+mathjax: no
+chessjax: yes
+author: Paul Morphy
+description: Opera Game — Morphy vs Duke Karl & Count Isouard, Paris 1858
+---
+
 # The Opera Game — Paul Morphy (Paris, 1858)
 
 A masterclass in development, piece activity, and a checkmate delivered
@@ -16,7 +25,7 @@ fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 ```chess
 id=opera
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.5.1/examples/morphy.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.1/examples/morphy.pgn
 move=0
 ```
 

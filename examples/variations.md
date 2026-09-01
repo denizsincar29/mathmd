@@ -1,3 +1,11 @@
+---
+title: Комментарии и варианты в шахматных досках
+lang: ru
+mathjax: no
+chessjax: yes
+author: Дениз
+---
+
 # Комментарии и варианты в шахматных досках
 
 chessjax читает комментарии из PGN и озвучивает их после хода. Альтернативная
@@ -7,7 +15,7 @@ chessjax читает комментарии из PGN и озвучивает и
 ## Демо: итальянская партия с вариантами
 
 ```chess
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.5.1/examples/variations.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.1/examples/variations.pgn
 move=3
 ```
 
