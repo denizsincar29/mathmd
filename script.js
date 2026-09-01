@@ -4,9 +4,9 @@
 // строке курсора, помощники вставки формул, доступность для скринридера.
 
 // Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
-// Импорт с CDN (jsdelivr, GH-тег v0.3.0) по side-effect: регистрирует
+// Импорт с CDN (jsdelivr, GH-тег v0.4.0) по side-effect: регистрирует
 // кастомный элемент и document-level делегат для кнопок <button chess="id" move="N">.
-import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.3.0/chessjax.js";
+import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.4.0/chessjax.js";
 
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
@@ -297,18 +297,62 @@ function showPreviewAndFocus(line) {
 }
 
 // --- Вставка сниппетов ------------------------------------------------------
+//
+// Сниппет = { label, face, latex, ascii } — вставляется в текущем синтаксисе
+// (LaTeX или AsciiMath); либо { label, face, formula } — формула с делимитерами
+// из режима вставки (inline/multiline). {cursor} в шаблоне — позиция курсора.
+// Если курсор уже внутри формулы, делимитеры повторно не вставляются.
 
-// snippet — строка (шаблон с {cursor}) или объект { template, wrap }. Если
-// в редакторе есть выделение и задан wrap — выделенный текст оборачивается
-// (инлайн $...$, блочная $$...$$, AsciiMath `...`); иначе вставляется шаблон.
-function insertSnippet(snippet) {
+// Текущие режимы: синтаксис формул и тип формулы (строка/блок).
+let syntax = "latex";        // "latex" | "asciimath"
+let formulaMode = "inline";  // "inline" | "multiline"
+
+// Внутри формулы текущего синтаксиса? Сканируем текст от начала до курсора и
+// следим за открытыми делимитерами ($…$/$$…$$ для LaTeX, `…`/``…`` для AsciiMath).
+function isInsideFormula() {
+  const model = editor.getModel();
+  const pos = editor.getPosition();
+  const before = model.getValue().slice(0, model.getOffsetAt({ lineNumber: pos.lineNumber, column: pos.column }));
+  const d1 = syntax === "latex" ? "$" : "`";
+  const d2 = syntax === "latex" ? "$$" : "``";
+  let open = null;
+  for (let i = 0; i < before.length; i++) {
+    if (before[i] === "\\") { i += 1; continue; } // \$, \` — экранированы
+    const two = before.slice(i, i + 2);
+    if (open === null) {
+      if (two === d2) { open = d2; i += 1; }
+      else if (before[i] === d1) { open = d1; }
+    } else if (open === d1 && before[i] === d1) {
+      open = null;
+    } else if (open === d2 && two === d2) {
+      open = null;
+      i += 1;
+    }
+  }
+  return open !== null;
+}
+
+// Шаблон и wrap для сниппета в текущих режимах синтаксиса/формулы.
+function currentSnippet(item) {
+  if (item.formula) {
+    const [open, close] = item.formula[formulaMode];
+    return { template: open + "{cursor}" + close, wrap: (s) => open + s + close };
+  }
+  return { template: item[syntax], wrap: null };
+}
+
+// Вставка сниппета; возвращает вставленный текст или null, если вставки не
+// было (курсор уже внутри формулы). Если есть выделение и задан wrap — текст
+// оборачивается; иначе вставляется шаблон с {cursor}.
+function insertSnippet(item) {
   const sel = editor.getSelection();
   const model = editor.getModel();
   const selectedText = model.getValueInRange(sel);
-  const isObj = typeof snippet === "object";
-  const template = isObj ? snippet.template : snippet;
-  const wrap = isObj ? snippet.wrap : null;
-
+  if (item.formula && isInsideFormula()) {
+    speak("Вы уже внутри формулы.");
+    return null;
+  }
+  const { template, wrap } = currentSnippet(item);
   const text = selectedText && wrap ? wrap(selectedText) : template.replace(/\{cursor\}/g, "");
   const range = new monaco.Range(sel.startLineNumber, sel.startColumn, sel.endLineNumber, sel.endColumn);
   editor.executeEdits("mathmd-snippet", [{ range, text }]);
@@ -324,89 +368,116 @@ function insertSnippet(snippet) {
   }
   editor.setPosition(model.getPositionAt(target));
   editor.focus();
+  return text;
 }
 
-// Кнопки тулбара: [метка для скринридера, сниппет, текст кнопки]
+// Объявление после вставки: «Вставлено: <метка>: <что вставлено>». Для формулы
+// называем режим (строка/блок), т.к. сама вставка — только делимитеры.
+function speakInserted(item, insertedText) {
+  if (item.formula) {
+    speak("Вставлено: формула, " + (formulaMode === "inline" ? "строка" : "блок") + ".");
+    return;
+  }
+  const t = (insertedText || "").replace(/\{cursor\}/g, "").replace(/\s+/g, " ").trim();
+  speak("Вставлено: " + item.label + (t ? ": " + t : "") + ".");
+}
+
+// Кнопки тулбара. Первые 12 кнопок получают хоткеи Alt+1..Alt+= (порядок в
+// TOOLBAR_GROUPS): Digit1..Digit9, Digit0, Minus, Equal. Каждый сниппет имеет
+// формы latex и ascii — вставляется та, что соответствует текущему синтаксису.
 const TOOLBAR_GROUPS = [
   {
     title: "Математика",
     items: [
-      ["Формула LaTeX в строке", { template: "$x^2{cursor}$", wrap: (s) => `$${s}$` }, "$x^2$"],
-      ["Формула на отдельной строке", { template: "$$\n{cursor}\n$$", wrap: (s) => `$$\n${s}\n$$` }, "$$ ... $$"],
-      ["Формула AsciiMath", { template: "`sqrt(2){cursor}`", wrap: (s) => "`" + s + "`" }, "`sqrt(2)`"],
-      ["Дробь", "\\frac{a}{b}{cursor}", "Дробь"],
-      ["Степень", "x^{2}{cursor}", "Степень"],
-      ["Корень", "\\sqrt{{cursor}}", "Корень"],
-      ["Сумма", "\\sum_{i=1}^{n} {cursor}", "Сумма"],
-      ["Интеграл", "\\int_{a}^{b} {cursor}", "Интеграл"],
-      ["Предел", "\\lim_{x \\to 0} {cursor}", "Предел"],
-      ["Матрица", "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}{cursor}", "Матрица"],
+      {
+        label: "Формула",
+        face: "f(x)",
+        formula: {
+          inline: ["$", "$"],
+          multiline: ["$$\n", "\n$$"],
+        },
+      },
+      { label: "Дробь", face: "a/b", latex: "\\frac{a}{b}{cursor}", ascii: "(a)/(b){cursor}" },
+      { label: "Степень", face: "x²", latex: "x^{2}{cursor}", ascii: "x^2{cursor}" },
+      { label: "Корень", face: "√", latex: "\\sqrt{{cursor}}", ascii: "sqrt({cursor})" },
+      { label: "Сумма", face: "Σ", latex: "\\sum_{i=1}^{n} {cursor}", ascii: "sum_(i=1)^n {cursor}" },
+      { label: "Интеграл", face: "∫", latex: "\\int_{a}^{b} {cursor}", ascii: "int {cursor}" },
+      { label: "Предел", face: "lim", latex: "\\lim_{x \\to 0} {cursor}", ascii: "lim_(x->0) {cursor}" },
+      { label: "Матрица", face: "▦", latex: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}{cursor}", ascii: "[[a,b],[c,d]]{cursor}" },
+      { label: "Альфа", face: "α", latex: "\\alpha {cursor}", ascii: "alpha {cursor}" },
+      { label: "Пи", face: "π", latex: "\\pi {cursor}", ascii: "pi {cursor}" },
+      { label: "Бета", face: "β", latex: "\\beta {cursor}", ascii: "beta {cursor}" },
+      { label: "Больше или равно", face: "≥", latex: "\\ge {cursor}", ascii: ">= {cursor}" },
     ],
   },
   {
     title: "Греческие буквы",
     items: [
-      ["альфа", "\\alpha {cursor}", "α"],
-      ["бета", "\\beta {cursor}", "β"],
-      ["гамма", "\\gamma {cursor}", "γ"],
-      ["дельта", "\\Delta {cursor}", "Δ"],
-      ["пи", "\\pi {cursor}", "π"],
-      ["сигма", "\\Sigma {cursor}", "Σ"],
-      ["лямбда", "\\lambda {cursor}", "λ"],
-      ["мю", "\\mu {cursor}", "μ"],
-      ["фи", "\\phi {cursor}", "φ"],
-      ["тета", "\\theta {cursor}", "θ"],
-      ["омега", "\\omega {cursor}", "ω"],
-    ],
+      ["Гамма", "γ", "\\gamma", "gamma"],
+      ["Дельта", "δ", "\\delta", "delta"],
+      ["Сигма", "Σ", "\\Sigma", "Sigma"],
+      ["Лямбда", "λ", "\\lambda", "lambda"],
+      ["Мю", "μ", "\\mu", "mu"],
+      ["Фи", "φ", "\\phi", "phi"],
+      ["Тета", "θ", "\\theta", "theta"],
+      ["Омега", "ω", "\\omega", "omega"],
+    ].map(([label, face, latex, ascii]) => ({ label, face, latex, ascii })),
   },
   {
     title: "Символы",
     items: [
-      ["больше или равно", "\\ge {cursor}", "≥"],
-      ["меньше или равно", "\\le {cursor}", "≤"],
-      ["не равно", "\\ne {cursor}", "≠"],
-      ["приблизительно", "\\approx {cursor}", "≈"],
-      ["бесконечность", "\\infty {cursor}", "∞"],
-      ["принадлежит", "\\in {cursor}", "∈"],
-      ["подмножество", "\\subseteq {cursor}", "⊆"],
-      ["объединение", "\\cup {cursor}", "∪"],
-      ["пересечение", "\\cap {cursor}", "∩"],
-      ["стрелка вправо", "\\to {cursor}", "→"],
-      ["набла", "\\nabla {cursor}", "∇"],
-    ],
+      ["Меньше или равно", "≤", "\\le", "<="],
+      ["Не равно", "≠", "\\ne", "!="],
+      ["Приблизительно", "≈", "\\approx", "~="],
+      ["Бесконечность", "∞", "\\infty", "oo"],
+      ["Принадлежит", "∈", "\\in", "in"],
+      ["Подмножество", "⊆", "\\subseteq", "sube"],
+      ["Объединение", "∪", "\\cup", "uu"],
+      ["Пересечение", "∩", "\\cap", "nn"],
+      ["Стрелка вправо", "→", "\\to", "->"],
+      ["Набла", "∇", "\\nabla", "grad"],
+    ].map(([label, face, latex, ascii]) => ({ label, face, latex, ascii })),
   },
   {
     title: "Шахматы",
     items: [
-      [
-        "Шахматная доска (fenced-блок chess)",
-        "```chess\nfen=\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"\n```\n{cursor}",
-        "♟",
-      ],
+      {
+        label: "Шахматная доска (fenced-блок chess)",
+        face: "♟",
+        latex: "```chess\nfen=\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"\n```\n{cursor}",
+        ascii: "```chess\nfen=\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"\n```\n{cursor}",
+      },
     ],
   },
 ];
 
+// Хоткеи вставки: Alt+1..Alt+9, Alt+0, Alt+-, Alt+= (e.code не зависит от раскладки).
+const HOTKEY_CODES = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0", "Minus", "Equal"];
+const HOTKEY_FACES = ["Alt+1", "Alt+2", "Alt+3", "Alt+4", "Alt+5", "Alt+6", "Alt+7", "Alt+8", "Alt+9", "Alt+0", "Alt+-", "Alt+="];
+
 function buildToolbar() {
-  // Первые 9 кнопок получают хоткей Alt+1..9 (порядок в TOOLBAR_GROUPS).
+  // Первые 12 кнопок получают хоткеи Alt+1..Alt+= (порядок в TOOLBAR_GROUPS).
   let hotkey = 0;
   for (const group of TOOLBAR_GROUPS) {
     const span = document.createElement("span");
     span.className = "toolbar-group";
     span.textContent = group.title + ": ";
     toolbarEl.appendChild(span);
-    for (const [label, snippet, face] of group.items) {
+    for (const item of group.items) {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.textContent = face;
-      btn.setAttribute("aria-label", label);
-      btn.addEventListener("click", () => insertSnippet(snippet));
-      if (hotkey < 9) {
-        hotkey += 1;
+      btn.textContent = item.face;
+      btn.setAttribute("aria-label", item.label);
+      btn.addEventListener("click", () => {
+        const inserted = insertSnippet(item);
+        if (inserted !== null) speakInserted(item, inserted);
+      });
+      if (hotkey < HOTKEY_CODES.length) {
         const badge = document.createElement("span");
         badge.className = "hotkey";
-        badge.textContent = "Alt+" + hotkey;
+        badge.textContent = HOTKEY_FACES[hotkey];
         btn.appendChild(badge);
+        hotkey += 1;
       }
       toolbarEl.appendChild(btn);
     }
@@ -701,16 +772,33 @@ require(["vs/editor/editor.main"], function () {
         speak("Предпросмотр скрыт.");
         return;
       }
-      // Alt+1..9 — вставка шаблонов (e.code от раскладки не зависит).
-      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.code.startsWith("Digit")) {
-        const n = Number(e.code.slice(5));
-        if (n >= 1 && n <= 9) {
+      // Alt+M — режим формулы (строка/блок), Alt+L — синтаксис (LaTeX/AsciiMath),
+      // Alt+1..Alt+= — вставка сниппетов в текущем синтаксисе.
+      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        if (e.code === "KeyM") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          formulaMode = formulaMode === "inline" ? "multiline" : "inline";
+          speak("Режим вставки формулы: " + (formulaMode === "inline" ? "строка" : "блок") + ".");
+          return;
+        }
+        if (e.code === "KeyL") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          syntax = syntax === "latex" ? "asciimath" : "latex";
+          speak("Синтаксис формул: " + (syntax === "latex" ? "LaTeX" : "AsciiMath") + ".");
+          return;
+        }
+        const hi = HOTKEY_CODES.indexOf(e.code);
+        if (hi !== -1) {
           e.preventDefault();
           e.stopImmediatePropagation();
           const all = TOOLBAR_GROUPS.flatMap((g) => g.items);
-          insertSnippet(all[n - 1][1]);
-          // Скринридеру важно знать, что хоткей сработал.
-          speak("Вставлено: " + all[n - 1][0]);
+          const item = all[hi];
+          if (item) {
+            const inserted = insertSnippet(item);
+            if (inserted !== null) speakInserted(item, inserted);
+          }
         }
       }
     },
