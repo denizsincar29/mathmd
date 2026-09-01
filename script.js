@@ -933,9 +933,12 @@ async function loadFromUrl() {
 
 // --- Автодополнения Монако ---------------------------------------------------
 //
-// Контекстные сниппеты для markdown: внутри --- frontmatter — ключи; внутри
-// ```chess — атрибуты chessjax; внутри ```desmos — выражения Desmos; в
-// формулах — LaTeX-команды; в обычном тексте — заготовки блоков и формул.
+// Два режима: авто (на вводе символа) и по Ctrl+Space (Invoke).
+// Авто работает только внутри математики: `$…$`/`\(…\)`/`$$…$$`/`\[…\]` —
+// LaTeX, `` `…` `` — AsciiMath; в ```latex/```tex — LaTeX, в ```asciimath —
+// AsciiMath. Всё остальное (делимитеры, блоки, frontmatter, атрибуты досок,
+// заготовки markdown) — только по Ctrl+Space. Вне математики авто-попап не
+// выскакивает.
 function registerMarkdownCompletions() {
   const KM = monaco.languages.CompletionItemKind;
   const RULES = monaco.languages.CompletionItemInsertTextRule;
@@ -967,6 +970,58 @@ function registerMarkdownCompletions() {
     return true;
   }
 
+  // Курсор внутри математики? Возвращает "tex" | "ascii" | null.
+  // Сканирует делимитеры вне ```-блоков: `$…$`, `$$…$$`, `\(…\)`, `\[…\]`,
+  // `` `…` ``. Внутри ```latex/```tex — tex, внутри ```asciimath — ascii.
+  function mathContext(model, pos) {
+    const fenceRe = /^\s*```(\w*)\s*$/;
+    let fence = null;
+    const stack = [];
+    const cur = pos.lineNumber;
+    const scan = (text) => {
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const top = stack[stack.length - 1];
+        if (top === "tex") {
+          if (ch === "\\" && (text[i + 1] === ")" || text[i + 1] === "]")) { stack.pop(); i++; continue; }
+          if (ch === "\\" && text[i + 1] === "$") { i++; continue; }
+          if (ch === "$" && text[i + 1] === "$") { stack.pop(); i++; continue; }
+          if (ch === "$") { stack.pop(); continue; }
+          continue;
+        }
+        if (ch === "`") {
+          if (top === "ascii") stack.pop(); else stack.push("ascii");
+          continue;
+        }
+        if (top === "ascii") continue;
+        if (ch === "\\" && (text[i + 1] === "(" || text[i + 1] === "[")) { stack.push("tex"); i++; continue; }
+        if (ch === "\\" && text[i + 1] === "$") { i++; continue; }
+        if (ch === "$" && text[i + 1] === "$") { stack.push("tex"); i++; continue; }
+        if (ch === "$") { stack.push("tex"); continue; }
+      }
+    };
+    for (let l = 1; l <= cur; l++) {
+      const line = model.getLineContent(l);
+      const fm = fenceRe.exec(line);
+      if (fm) {
+        if (l === cur) return null;
+        fence = fence ? null : (fm[1] || "fence");
+        continue;
+      }
+      if (fence) {
+        if (l === cur) {
+          if (fence === "asciimath") return "ascii";
+          if (fence === "latex" || fence === "tex") return "tex";
+          return null;
+        }
+        continue;
+      }
+      scan(l === cur ? line.slice(0, pos.column - 1) : line);
+      if (l === cur) break;
+    }
+    return stack.length ? stack[stack.length - 1] : null;
+  }
+
   const FRONTMATTER = [
     { label: "title", detail: "Заголовок документа", doc: "Идёт в <title> экспортированного HTML.", insert: "title: ${1:Название}" },
     { label: "lang", detail: "Язык документа", doc: "lang=<…> в <html>. Например ru, en.", insert: "lang: ${1|ru,en|}" },
@@ -981,30 +1036,105 @@ function registerMarkdownCompletions() {
     { label: "chess …", detail: "Атрибуты досок по умолчанию", insert: "chess:\n  lang: ru\n  tone: on" },
   ];
 
+  // ```latex/```asciimath блоков в FENCE нет: showdown рендерит их как обычный
+  // код, математикой они не становятся. Делимитеры LaTeX/AsciiMath — инлайновые.
   const FENCE = [
     { label: "chess", detail: "Шахматная доска (блок)", doc: "```chess, атрибуты как у <chessjax-board>.", insert: "```chess\nfen=\"${1:rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1}\"\n```" },
     { label: "desmos", detail: "График Desmos (блок)", doc: "Каждая строка — LaTeX-выражение.", insert: "```desmos\ny=${1:x^2}\n```" },
-    { label: "latex", detail: "LaTeX (блок)", insert: "```latex\n${1}\n```" },
-    { label: "asciimath", detail: "AsciiMath (блок)", insert: "```asciimath\n${1}\n```" },
   ];
 
-  const MATH = [
+  // Заготовки, показываются только по Ctrl+Space (Invoke): делимитеры, блоки,
+  // разметка. На каждый ввод символа они не выскакивают.
+  const PROSE = [
     { label: "$…$", detail: "Инлайн-формула LaTeX", insert: "$${1:формула}$" },
     { label: "$$…$$", detail: "Формула на отдельной строке", insert: "$$${1:формула}$$" },
     { label: "`…`", detail: "AsciiMath в строке", insert: "`${1:sqrt(x+1)}`" },
-    { label: "\\frac", detail: "Дробь", insert: "\\frac{${1:numerator}}{${2:denominator}}" },
-    { label: "\\sqrt", detail: "Корень", insert: "\\sqrt{${1:x}}" },
-    { label: "\\sum", detail: "Сумма", insert: "\\sum_{${1:i}=0}^{${2:n}} ${3:x_i}" },
-    { label: "\\int", detail: "Интеграл", insert: "\\int_{${1:a}}^{${2:b}} ${3:f(x)} dx" },
-    { label: "\\alpha", detail: "Греческая альфа", insert: "\\alpha" },
+    { label: "# Заголовок", detail: "Заголовок раздела", insert: "# ${1:Заголовок}" },
+    { label: "[текст](url)", detail: "Ссылка", insert: "[${1:текст}](${2:https://…})" },
+    { label: "**жирный**", detail: "Жирное выделение", insert: "**${1:текст}**" },
+    { label: "*курсив*", detail: "Курсив", insert: "*${1:текст}*" },
+  ];
+
+  // Авто-дополнения LaTeX — только внутри математики.
+  const TEX_MATH = [
+    { label: "\\frac{}{}", detail: "Дробь", insert: "\\frac{${1:числитель}}{${2:знаменатель}}" },
+    { label: "\\sqrt{}", detail: "Квадратный корень", insert: "\\sqrt{${1:x}}" },
+    { label: "\\sqrt[]{}", detail: "Корень n-й степени", insert: "\\sqrt[${1:n}]{${2:x}}" },
+    { label: "\\sum_{}^{}", detail: "Сумма", insert: "\\sum_{${1:i}=1}^{${2:n}} ${3:x_i}" },
+    { label: "\\int_{}^{}", detail: "Интеграл", insert: "\\int_{${1:a}}^{${2:b}} ${3:f(x)}\\,dx" },
+    { label: "\\lim_{}", detail: "Предел", insert: "\\lim_{${1:x \\to ${2:\\infty}}} ${3:f(x)}" },
+    { label: "\\begin{pmatrix}", detail: "Матрица", insert: "\\begin{pmatrix}\n  ${1:a} & ${2:b} \\\\\n  ${3:c} & ${4:d}\n\\end{pmatrix}" },
+    { label: "\\begin{aligned}", detail: "Выравнивание/система", insert: "\\begin{aligned}\n  ${1:y} &= ${2:x} \\\\\n  ${3:y} &= ${4:x^2}\n\\end{aligned}" },
+    { label: "\\left( \\right)", detail: "Скобки по размеру", insert: "\\left( ${1:выражение} \\right)" },
+    { label: "\\left[ \\right]", detail: "Квадратные скобки", insert: "\\left[ ${1:выражение} \\right]" },
+    { label: "\\left\\{ \\right\\}", detail: "Фигурные скобки", insert: "\\left\\{ ${1:выражение} \\right\\}" },
+    { label: "\\left| \\right|", detail: "Модуль по размеру", insert: "\\left| ${1:выражение} \\right|" },
+    { label: "^{}", detail: "Верхний индекс", insert: "^{${1:степень}}" },
+    { label: "_{}", detail: "Нижний индекс", insert: "_{${1:индекс}}" },
+    { label: "\\text{}", detail: "Текст внутри формулы", insert: "\\text{${1:текст}}" },
+    { label: "\\alpha", detail: "Альфа", insert: "\\alpha" },
     { label: "\\beta", detail: "Бета", insert: "\\beta" },
-    { label: "\\pi", detail: "Пи", insert: "\\pi" },
+    { label: "\\gamma", detail: "Гамма", insert: "\\gamma" },
+    { label: "\\delta", detail: "Дельта", insert: "\\delta" },
+    { label: "\\Delta", detail: "Дельта большая", insert: "\\Delta" },
+    { label: "\\lambda", detail: "Лямбда", insert: "\\lambda" },
+    { label: "\\mu", detail: "Мю", insert: "\\mu" },
+    { label: "\\sigma", detail: "Сигма", insert: "\\sigma" },
     { label: "\\theta", detail: "Тета", insert: "\\theta" },
+    { label: "\\pi", detail: "Пи", insert: "\\pi" },
+    { label: "\\phi", detail: "Фи", insert: "\\phi" },
     { label: "\\infty", detail: "Бесконечность", insert: "\\infty" },
-    { label: "\\cdot", detail: "Умножение точкой", insert: "\\cdot" },
-    { label: "\\times", detail: "Умножение крестиком", insert: "\\times" },
+    { label: "\\cdot", detail: "Точка умножения", insert: "\\cdot" },
+    { label: "\\times", detail: "Крестик умножения", insert: "\\times" },
+    { label: "\\pm", detail: "Плюс-минус", insert: "\\pm" },
     { label: "\\leq", detail: "Меньше или равно", insert: "\\leq" },
     { label: "\\geq", detail: "Больше или равно", insert: "\\geq" },
+    { label: "\\neq", detail: "Не равно", insert: "\\neq" },
+    { label: "\\approx", detail: "Приблизительно", insert: "\\approx" },
+    { label: "\\rightarrow", detail: "Стрелка вправо", insert: "\\rightarrow" },
+    { label: "\\in", detail: "Принадлежит", insert: "\\in" },
+    { label: "\\sin", detail: "Синус", insert: "\\sin ${1:x}" },
+    { label: "\\cos", detail: "Косинус", insert: "\\cos ${1:x}" },
+    { label: "\\tan", detail: "Тангенс", insert: "\\tan ${1:x}" },
+    { label: "\\log", detail: "Логарифм", insert: "\\log_{${1:10}} ${2:x}" },
+    { label: "\\ln", detail: "Натуральный логарифм", insert: "\\ln ${1:x}" },
+  ];
+
+  // Авто-дополнения AsciiMath — только внутри математики (бэктик, asciimath-фенс).
+  const ASCII_MATH = [
+    { label: "frac", detail: "Дробь (a)/(b)", insert: "(${1:a})/(${2:b})" },
+    { label: "sqrt", detail: "Квадратный корень", insert: "sqrt(${1:x})" },
+    { label: "root", detail: "Корень n-й степени", insert: "root(${1:n})(${2:x})" },
+    { label: "sum", detail: "Сумма", insert: "sum_(${1:i}=1)^(${2:n}) ${3:x_i}" },
+    { label: "int", detail: "Интеграл", insert: "int_(${1:a})^(${2:b}) ${3:f(x)} dx" },
+    { label: "lim", detail: "Предел", insert: "lim_(${1:x -> oo}) ${2:f(x)}" },
+    { label: "x^2", detail: "Степень", insert: "${1:x}^(${2:2})" },
+    { label: "x_n", detail: "Индекс", insert: "${1:x}_(${2:n})" },
+    { label: "abs", detail: "Модуль |x|", insert: "abs(${1:x})" },
+    { label: "alpha", detail: "Альфа", insert: "alpha" },
+    { label: "beta", detail: "Бета", insert: "beta" },
+    { label: "gamma", detail: "Гамма", insert: "gamma" },
+    { label: "delta", detail: "Дельта", insert: "delta" },
+    { label: "Delta", detail: "Дельта большая", insert: "Delta" },
+    { label: "lambda", detail: "Лямбда", insert: "lambda" },
+    { label: "mu", detail: "Мю", insert: "mu" },
+    { label: "sigma", detail: "Сигма", insert: "sigma" },
+    { label: "theta", detail: "Тета", insert: "theta" },
+    { label: "pi", detail: "Пи", insert: "pi" },
+    { label: "phi", detail: "Фи", insert: "phi" },
+    { label: "oo", detail: "Бесконечность", insert: "oo" },
+    { label: "->", detail: "Стрелка вправо", insert: "->" },
+    { label: ">=", detail: "Больше или равно", insert: ">=" },
+    { label: "<=", detail: "Меньше или равно", insert: "<=" },
+    { label: "!=", detail: "Не равно", insert: "!=" },
+    { label: "~~", detail: "Приблизительно", insert: "~~" },
+    { label: "+-", detail: "Плюс-минус", insert: "+-" },
+    { label: "cdot", detail: "Точка умножения", insert: "cdot" },
+    { label: "sin", detail: "Синус", insert: "sin ${1:x}" },
+    { label: "cos", detail: "Косинус", insert: "cos ${1:x}" },
+    { label: "tan", detail: "Тангенс", insert: "tan ${1:x}" },
+    { label: "log", detail: "Логарифм", insert: "log_(${1:10}) ${2:x}" },
+    { label: "ln", detail: "Натуральный логарифм", insert: "ln ${1:x}" },
   ];
 
   const CHESS_ATTR = [
@@ -1039,8 +1169,9 @@ function registerMarkdownCompletions() {
     }));
 
   monaco.languages.registerCompletionItemProvider("markdown", {
-    triggerCharacters: ["`", "$", "\\", ":", "-", " ", "\n"],
-    provideCompletionItems(model, position) {
+    triggerCharacters: ["$", "`", "\\"],
+    provideCompletionItems(model, position, context) {
+      const invoke = !!context && context.triggerKind === monaco.languages.CompletionTriggerKind.Invoke;
       const word = wordAt(model, position);
       const range =
         word && word.word.length
@@ -1053,12 +1184,29 @@ function registerMarkdownCompletions() {
           : one(model, position);
       const withRange = (list) => toItems(list).map((s) => ({ ...s, range }));
 
+      // Внутри математики — команды по-любому; делимитеры/заготовки — по Ctrl+Space.
+      const math = mathContext(model, position);
+      if (math === "tex") {
+        const items = withRange(TEX_MATH);
+        if (invoke) items.push(...withRange(PROSE));
+        return { suggestions: items };
+      }
+      if (math === "ascii") {
+        const items = withRange(ASCII_MATH);
+        if (invoke) items.push(...withRange(PROSE));
+        return { suggestions: items };
+      }
+      // Вне математики авто-ввод не открывает попап.
+      if (!invoke) return { suggestions: [] };
+
       if (inFrontmatter(model, position)) return { suggestions: withRange(FRONTMATTER) };
       const fence = fenceContext(model, position);
       if (fence === "chess") return { suggestions: withRange(CHESS_ATTR) };
-      if (fence === "desmos") return { suggestions: withRange(DESMOS.concat(MATH)) };
-      if (fence && fence !== "fence") return { suggestions: withRange(MATH) };
-      return { suggestions: withRange(FENCE.concat(MATH)) };
+      if (fence === "desmos") return { suggestions: withRange(DESMOS.concat(TEX_MATH)) };
+      if (fence === "latex" || fence === "tex") return { suggestions: withRange(TEX_MATH.concat(PROSE)) };
+      if (fence === "asciimath") return { suggestions: withRange(ASCII_MATH.concat(PROSE)) };
+      if (fence) return { suggestions: [] };
+      return { suggestions: withRange(FENCE.concat(PROSE)) };
     },
   });
 }
@@ -1079,6 +1227,9 @@ require(["vs/editor/editor.main"], function () {
     lineNumbersMinChars: 3,
     scrollBeyondLastLine: false,
     wordWrap: "on",
+    // Авто-попап только на делимитерах математики; обычные буквы попап не
+    // открывают. Делимитеры и прочее — по Ctrl+Space (провайдер, не этот флаг).
+    quickSuggestions: false,
     ariaLabel: "Редактор математики. Пишите markdown, LaTeX или AsciiMath.",
   });
 
