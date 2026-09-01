@@ -767,7 +767,7 @@ ${author}${description}${extraCss}<style>
   .chessjax-error { color: #b00020; border: 1px solid #b00020; border-radius: 6px; padding: .5rem .7rem; font-size: .9rem; }
   .chessjax-help { margin: .5rem 0 0; color: #555; font-size: .9rem; border-left: 3px solid #888; padding: .25rem .6rem; }
   chessjax-board:fullscreen { background: #14181c; padding: 1rem; display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto; }
-  chessjax-board:fullscreen .chessjax-board { width: min(72vh, 92vw); margin: 0 auto; grid-template-columns: repeat(8, 1fr); border-width: 2px; border-color: #2c3640; background: #1b2127; }
+  chessjax-board:fullscreen .chessjax-board { width: min(72vh, 92vw); margin: 0 auto; grid-template-columns: repeat(8, minmax(0, 1fr)); border-width: 2px; border-color: #2c3640; background: #1b2127; }
   chessjax-board:fullscreen .chessjax-cell { width: auto; height: auto; aspect-ratio: 1/1; font-size: min(6vh, 6vw); }
   chessjax-board:fullscreen .chessjax-summary,
   chessjax-board:fullscreen .chessjax-live,
