@@ -4,9 +4,9 @@
 // строке курсора, помощники вставки формул, доступность для скринридера.
 
 // Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
-// Импорт с CDN (jsdelivr, GH-тег v0.1.1) по side-effect: регистрирует
+// Импорт с CDN (jsdelivr, GH-тег v0.1.2) по side-effect: регистрирует
 // кастомный элемент и document-level делегат для кнопок <button chess="id" move="N">.
-import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.1.1/chessjax.js";
+import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.1.2/chessjax.js";
 
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
