@@ -942,6 +942,79 @@ async function loadFromUrl() {
 //   - внутри ```chess — атрибуты доски, внутри ```desmos — выражения;
 //   - после ``` — вставить блок целиком (chess-with-fen/pgn, desmos).
 // Буквы вне этих мест авто-попап не открывают (пустой список → виджет скрыт).
+// Контексты для автодополнений. Объявлены на уровне модуля, чтобы их могли
+// использовать и completion-провайдер, и продолжение списков по Enter.
+function fenceContext(model, pos) {
+  const startFence = /^\s*```(\w*)\s*$/;
+  let inside = null;
+  for (let l = 1; l < pos.lineNumber; l++) {
+    const m = startFence.exec(model.getLineContent(l));
+    if (m) inside = inside ? null : (m[1] || "fence");
+  }
+  return inside;
+}
+
+// Курсор в frontmatter: строка 1 = "---", закрывающего "---" ещё нет.
+function inFrontmatter(model, pos) {
+  if (model.getLineContent(1).trim() !== "---") return false;
+  for (let l = 2; l <= pos.lineNumber; l++) {
+    if (model.getLineContent(l).trim() === "---" && l !== pos.lineNumber) return false;
+  }
+  return true;
+}
+
+// Курсор внутри математики? Возвращает "tex" | "ascii" | null.
+// Сканирует делимитеры вне ```-блоков: `$…$`, `$$…$$`, `\(…\)`, `\[…\]`,
+// `` `…` ``. Внутри ```latex/```tex — tex, внутри ```asciimath — ascii.
+function mathContext(model, pos) {
+  const fenceRe = /^\s*```(\w*)\s*$/;
+  let fence = null;
+  const stack = [];
+  const cur = pos.lineNumber;
+  const scan = (text) => {
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      const top = stack[stack.length - 1];
+      if (top === "tex") {
+        if (ch === "\\" && (text[i + 1] === ")" || text[i + 1] === "]")) { stack.pop(); i++; continue; }
+        if (ch === "\\" && text[i + 1] === "$") { i++; continue; }
+        if (ch === "$" && text[i + 1] === "$") { stack.pop(); i++; continue; }
+        if (ch === "$") { stack.pop(); continue; }
+        continue;
+      }
+      if (ch === "`") {
+        if (top === "ascii") stack.pop(); else stack.push("ascii");
+        continue;
+      }
+      if (top === "ascii") continue;
+      if (ch === "\\" && (text[i + 1] === "(" || text[i + 1] === "[")) { stack.push("tex"); i++; continue; }
+      if (ch === "\\" && text[i + 1] === "$") { i++; continue; }
+      if (ch === "$" && text[i + 1] === "$") { stack.push("tex"); i++; continue; }
+      if (ch === "$") { stack.push("tex"); continue; }
+    }
+  };
+  for (let l = 1; l <= cur; l++) {
+    const line = model.getLineContent(l);
+    const fm = fenceRe.exec(line);
+    if (fm) {
+      if (l === cur) return null;
+      fence = fence ? null : (fm[1] || "fence");
+      continue;
+    }
+    if (fence) {
+      if (l === cur) {
+        if (fence === "asciimath") return "ascii";
+        if (fence === "latex" || fence === "tex") return "tex";
+        return null;
+      }
+      continue;
+    }
+    scan(l === cur ? line.slice(0, pos.column - 1) : line);
+    if (l === cur) break;
+  }
+  return stack.length ? stack[stack.length - 1] : null;
+}
+
 // Делимитеры, разметка markdown — только по Ctrl+Space.
 function registerMarkdownCompletions() {
   const KM = monaco.languages.CompletionItemKind;
@@ -953,78 +1026,6 @@ function registerMarkdownCompletions() {
     endLineNumber: pos.lineNumber,
     endColumn: pos.column,
   });
-
-  // Внутри ли ```<язык> блока сидит курсор? kind = тег или null.
-  function fenceContext(model, pos) {
-    const startFence = /^\s*```(\w*)\s*$/;
-    let inside = null;
-    for (let l = 1; l < pos.lineNumber; l++) {
-      const m = startFence.exec(model.getLineContent(l));
-      if (m) inside = inside ? null : (m[1] || "fence");
-    }
-    return inside;
-  }
-
-  // Курсор в frontmatter: строка 1 = "---", закрывающего "---" ещё нет.
-  function inFrontmatter(model, pos) {
-    if (model.getLineContent(1).trim() !== "---") return false;
-    for (let l = 2; l <= pos.lineNumber; l++) {
-      if (model.getLineContent(l).trim() === "---" && l !== pos.lineNumber) return false;
-    }
-    return true;
-  }
-
-  // Курсор внутри математики? Возвращает "tex" | "ascii" | null.
-  // Сканирует делимитеры вне ```-блоков: `$…$`, `$$…$$`, `\(…\)`, `\[…\]`,
-  // `` `…` ``. Внутри ```latex/```tex — tex, внутри ```asciimath — ascii.
-  function mathContext(model, pos) {
-    const fenceRe = /^\s*```(\w*)\s*$/;
-    let fence = null;
-    const stack = [];
-    const cur = pos.lineNumber;
-    const scan = (text) => {
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        const top = stack[stack.length - 1];
-        if (top === "tex") {
-          if (ch === "\\" && (text[i + 1] === ")" || text[i + 1] === "]")) { stack.pop(); i++; continue; }
-          if (ch === "\\" && text[i + 1] === "$") { i++; continue; }
-          if (ch === "$" && text[i + 1] === "$") { stack.pop(); i++; continue; }
-          if (ch === "$") { stack.pop(); continue; }
-          continue;
-        }
-        if (ch === "`") {
-          if (top === "ascii") stack.pop(); else stack.push("ascii");
-          continue;
-        }
-        if (top === "ascii") continue;
-        if (ch === "\\" && (text[i + 1] === "(" || text[i + 1] === "[")) { stack.push("tex"); i++; continue; }
-        if (ch === "\\" && text[i + 1] === "$") { i++; continue; }
-        if (ch === "$" && text[i + 1] === "$") { stack.push("tex"); i++; continue; }
-        if (ch === "$") { stack.push("tex"); continue; }
-      }
-    };
-    for (let l = 1; l <= cur; l++) {
-      const line = model.getLineContent(l);
-      const fm = fenceRe.exec(line);
-      if (fm) {
-        if (l === cur) return null;
-        fence = fence ? null : (fm[1] || "fence");
-        continue;
-      }
-      if (fence) {
-        if (l === cur) {
-          if (fence === "asciimath") return "ascii";
-          if (fence === "latex" || fence === "tex") return "tex";
-          return null;
-        }
-        continue;
-      }
-      scan(l === cur ? line.slice(0, pos.column - 1) : line);
-      if (l === cur) break;
-    }
-    return stack.length ? stack[stack.length - 1] : null;
-  }
 
   const FRONTMATTER = [
     { label: "title", detailKey: "sugg.title", docKey: "sugg.titleDoc", insertPrefix: "title: ", insertKey: "sugg.titleInsert" },
@@ -1227,42 +1228,34 @@ function registerMarkdownCompletions() {
         // «chess with fen» не фаззи-матчится с бэктиками. Подкладываем ровно тот
         // текст, что покрывает диапазон, — точное совпадение, блоки видны всегда.
         const fenceText = lineUpTo.slice(lineUpTo.indexOf("`"));
-        const items = toItems(FENCE).map((s) => ({ ...s, range: fenceRange, filterText: fenceText }));
-        if (manual) items.push(...withRange(PROSE));
-        return { suggestions: items };
+        return { suggestions: toItems(FENCE).map((s) => ({ ...s, range: fenceRange, filterText: fenceText })) };
       }
 
-      // Внутри математики — команды по-любому; делимитеры/заготовки — по Ctrl+Space.
+      // Внутри математики — команды по-любому; markdown-заготовки (PROSE) тут
+      // не нужны: разделители/заголовок/жирный внутри формулы бессмысленны.
       const math = mathContext(model, position);
       if (math === "tex") {
-        const items = withRange(TEX_MATH);
-        if (manual) items.push(...withRange(PROSE));
-        return { suggestions: items };
+        return { suggestions: withRange(TEX_MATH) };
       }
       if (math === "ascii") {
-        const items = withRange(ASCII_MATH);
-        if (manual) items.push(...withRange(PROSE));
-        return { suggestions: items };
+        return { suggestions: withRange(ASCII_MATH) };
       }
       // Ключи frontmatter — и при наборе букв, и по Ctrl+Space.
       if (inFrontmatter(model, position)) return { suggestions: withRange(FRONTMATTER) };
 
       // Атрибуты/выражения внутри блоков — при наборе букв и по Ctrl+Space.
+      // markdown-разметка в блоках не предлагается (это не проза).
       const fence = fenceContext(model, position);
       if (fence === "chess") {
-        const items = withRange(CHESS_ATTR);
-        if (manual) items.push(...withRange(PROSE));
-        return { suggestions: items };
+        return { suggestions: withRange(CHESS_ATTR) };
       }
       if (fence === "desmos") {
         // Целые выражения, а не LaTeX-фрагменты: \sin из TEX_MATH обгонял
         // «y = sin(x)» при фильтре по «sin» и вставлял не то.
-        const items = withRange(DESMOS);
-        if (manual) items.push(...withRange(PROSE));
-        return { suggestions: items };
+        return { suggestions: withRange(DESMOS) };
       }
-      if (fence === "latex" || fence === "tex") return { suggestions: withRange(TEX_MATH.concat(PROSE)) };
-      if (fence === "asciimath") return { suggestions: withRange(ASCII_MATH.concat(PROSE)) };
+      if (fence === "latex" || fence === "tex") return { suggestions: withRange(TEX_MATH) };
+      if (fence === "asciimath") return { suggestions: withRange(ASCII_MATH) };
       if (fence) return { suggestions: [] };
 
       // Вне математики, frontmatter и блоков авто-ввод не открывает попап.
@@ -1323,6 +1316,46 @@ require(["vs/editor/editor.main"], function () {
     expandingFrontmatter = false;
     speak(I18N.t("msg.frontmatterExpanded"), fileStatusEl);
   });
+
+  // Продолжение списков markdown как в VS Code: Enter на строке «- item»,
+  // «1. item» или «> цитата» переносит на новую строку с маркером (у числовых —
+  // со следующим номером, отступ сохраняется). На пустой списочной строке Enter
+  // просто выходит из списка. Внутри математики, frontmatter и fenced-блоков
+  // не применяем. Открытый саджест: Enter принимает выбор — не трогаем.
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.key !== "Enter" || e.code !== "Enter") return;
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      if (document.querySelector(".suggest-widget.visible")) return;
+      const model = editor.getModel();
+      if (!model) return;
+      const pos = editor.getPosition();
+      if (!pos) return;
+      if (mathContext(model, pos) || inFrontmatter(model, pos) || fenceContext(model, pos)) return;
+      const line = model.getLineContent(pos.lineNumber);
+      // Только курсор в конце строки; иначе стандартный перенос.
+      if (pos.column !== line.length + 1) return;
+      const m =
+        /^(\s*)((?:[-+*]|\d+[.)]))(\s+)(.*)$/.exec(line) ||
+        /^(\s*)(>)(\s+)(.*)$/.exec(line);
+      if (!m) return;
+      const indent = m[1];
+      let marker = m[2];
+      const rest = m[4];
+      // Пустая строка после маркера («- ») — выходим из списка обычным переносом.
+      if (!rest.trim()) return;
+      if (/^\d+/.test(marker)) marker = String(parseInt(marker, 10) + 1) + marker.replace(/^\d+/, "");
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const cont = indent + marker + " ";
+      editor.executeEdits("enter-list", [
+        { range: new monaco.Range(pos.lineNumber, line.length + 1, pos.lineNumber, line.length + 1), text: "\n" + cont },
+      ]);
+      editor.setPosition({ lineNumber: pos.lineNumber + 1, column: cont.length + 1 });
+    },
+    true,
+  );
 
   // Хоткеи на уровне window в capture-фазе: это самая ранняя точка, в которую
   // доходит событие, — раньше Monaco, раньше любых обработчиков на document.

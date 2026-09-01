@@ -532,8 +532,8 @@
     },
 
     // --- Автодополнения: заготовки (Ctrl+Space) ------------------------------
-    "sugg.dollar": { ru: "Инлайн-формула LaTeX", en: "Inline LaTeX formula", de: "Inline-LaTeX-Formel", tr: "Satır içi LaTeX formülü" },
-    "sugg.dollardd": { ru: "Формула на отдельной строке", en: "Formula on its own line", de: "Formel in einer eigenen Zeile", tr: "Ayrı bir satırda formül" },
+    "sugg.dollar": { ru: "Разделитель LaTeX внутри строки", en: "Inline LaTeX delimiter", de: "Inline-LaTeX-Trennzeichen", tr: "Satır içi LaTeX ayracı" },
+    "sugg.dollardd": { ru: "Разделитель LaTeX на отдельной строке", en: "Display LaTeX delimiter (own line)", de: "LaTeX-Trennzeichen für eigene Zeile", tr: "Ayrı satırda LaTeX ayracı" },
     "sugg.backtick": { ru: "AsciiMath в строке", en: "Inline AsciiMath", de: "AsciiMath im Text", tr: "Satır içi AsciiMath" },
     "sugg.headingLabel": { ru: "# Заголовок", en: "# Heading", de: "# Überschrift", tr: "# Başlık" },
     "sugg.heading": { ru: "Заголовок раздела", en: "Section heading", de: "Abschnittsüberschrift", tr: "Bölüm başlığı" },
