@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=25">
+<link rel="stylesheet" href="style.css?v=26">
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -71,11 +71,18 @@
       <button id="btn-save" type="button">Скачать .md</button>
       <button id="btn-open" type="button">Открыть .md</button>
       <input id="open-input" type="file" accept=".md,.markdown,.txt,text/markdown" hidden>
+      <label for="example-select">Пример:</label>
+      <select id="example-select" aria-label="Открыть пример">
+        <option value="">—</option>
+        <option value="demo">Демо mathmd</option>
+        <option value="morphy">The Opera Game</option>
+        <option value="variations">Комментарии и варианты</option>
+      </select>
     </div>
     <div id="file-status" class="visually-hidden" aria-live="assertive"></div>
   </section>
 </main>
 
-<script src="script.js?v=25" type="module"></script>
+<script src="script.js?v=26" type="module"></script>
 </body>
 </html>

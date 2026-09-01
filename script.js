@@ -790,6 +790,24 @@ function openMd() {
   document.getElementById("open-input").click();
 }
 
+// Открыть пример из examples/: загрузить в редактор и сразу показать
+// предпросмотр. Имя — простой файл (латиница/цифры/_-), без путей.
+async function openExample(name) {
+  const safe = String(name).replace(/\.md$/i, "");
+  if (!/^[a-z0-9_-]+$/i.test(safe)) {
+    speak("Некорректное имя примера.", fileStatusEl);
+    return;
+  }
+  const res = await fetch("examples/" + safe + ".md");
+  if (!res.ok) {
+    speak("Пример " + safe + " не найден.", fileStatusEl);
+    return;
+  }
+  editor.setValue(await res.text());
+  showPreviewAndFocus(1);
+  speak("Пример " + safe + " открыт, предпросмотр показан.", fileStatusEl);
+}
+
 // --- Инициализация ----------------------------------------------------------
 
 const DEFAULT_MD = [
@@ -1146,13 +1164,20 @@ require(["vs/editor/editor.main"], function () {
   document.getElementById("btn-export").addEventListener("click", exportHtml);
   document.getElementById("btn-save").addEventListener("click", saveMd);
   document.getElementById("btn-open").addEventListener("click", openMd);
+  const exampleSelect = document.getElementById("example-select");
+  exampleSelect.addEventListener("change", () => {
+    const name = exampleSelect.value;
+    exampleSelect.value = "";
+    if (name) openExample(name);
+  });
   document.getElementById("open-input").addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
       editor.setValue(String(reader.result));
-      speak("Файл " + file.name + " открыт.", fileStatusEl);
+      showPreviewAndFocus(1);
+      speak("Файл " + file.name + " открыт, предпросмотр показан.", fileStatusEl);
     };
     reader.readAsText(file, "utf-8");
     event.target.value = "";
