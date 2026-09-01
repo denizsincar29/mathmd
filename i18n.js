@@ -679,6 +679,28 @@
     "cmd.syntaxToggle": { ru: "Синтаксис формулы: LaTeX ⇄ AsciiMath", en: "Formula syntax: LaTeX ⇄ AsciiMath", de: "Formelsyntax: LaTeX ⇄ AsciiMath", tr: "Formül sözdizimi: LaTeX ⇄ AsciiMath" },
     "cmd.formulaModeToggle": { ru: "Режим формулы: строка ⇄ блок", en: "Formula mode: inline ⇄ display", de: "Formelmodus: Zeile ⇄ Block", tr: "Formül modu: satır içi ⇄ blok" },
 
+    // Имена аргументов для сигнатурных подсказок (как signal help в VS Code).
+    "sig.fracNum": { ru: "числитель", en: "numerator", de: "Zähler", tr: "pay" },
+    "sig.fracDen": { ru: "знаменатель", en: "denominator", de: "Nenner", tr: "payda" },
+    "sig.sqrtArg": { ru: "подкоренное выражение", en: "radicand", de: "Radikand", tr: "kök içi" },
+    "sig.sup": { ru: "показатель степени", en: "exponent", de: "Exponent", tr: "üs" },
+    "sig.sub": { ru: "индекс", en: "index", de: "Index", tr: "alt indis" },
+    "sig.intLo": { ru: "нижний предел", en: "lower limit", de: "untere Grenze", tr: "alt sınır" },
+    "sig.intHi": { ru: "верхний предел", en: "upper limit", de: "obere Grenze", tr: "üst sınır" },
+    "sig.sumLo": { ru: "нижний индекс", en: "lower index", de: "unterer Index", tr: "alt indis" },
+    "sig.sumHi": { ru: "верхний индекс", en: "upper index", de: "oberer Index", tr: "üst indis" },
+    "sig.limUnder": { ru: "условие под пределом", en: "limit expression", de: "Ausdruck unter dem Limes", tr: "limit altı ifade" },
+    "sig.binomTop": { ru: "верхний элемент", en: "top element", de: "oberes Element", tr: "üst eleman" },
+    "sig.binomBottom": { ru: "нижний элемент", en: "bottom element", de: "unteres Element", tr: "alt eleman" },
+    "sig.text": { ru: "текст", en: "text", de: "Text", tr: "metin" },
+    "sig.vec": { ru: "вектор", en: "vector", de: "Vektor", tr: "vektör" },
+    "sig.hat": { ru: "буква с шляпкой", en: "hat letter", de: "Buchstabe mit Hut", tr: "şapkalı harf" },
+    "sig.logBase": { ru: "основание", en: "base", de: "Basis", tr: "taban" },
+    "sig.logArg": { ru: "аргумент логарифма", en: "logarithm argument", de: "Logarithmus-Argument", tr: "logaritma argümanı" },
+    "sig.rootN": { ru: "показатель корня", en: "root index", de: "Wurzelexponent", tr: "kök derecesi" },
+    "sig.rootArg": { ru: "подкоренное выражение", en: "radicand", de: "Radikand", tr: "kök içi" },
+    "sig.arg": { ru: "аргумент", en: "argument", de: "Argument", tr: "argüman" },
+
     // --- Экспорт и документ ----------------------------------------------------
     "doc.chessOff": {
       ru: "Шахматные доски не подключены — добавьте в начало файла: <code>chessjax: yes</code>",

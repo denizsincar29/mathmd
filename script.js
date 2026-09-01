@@ -1265,6 +1265,108 @@ function registerMarkdownCompletions() {
   });
 }
 
+// Сигнатурные подсказки — как signal help в VS Code: после открывающей скобки
+// показывается команда с именами аргументов (числитель, знаменатель, пределы…),
+// чтобы писать LaTeX/AsciiMath, не зная языка. Каждая часть — [префикс, скобка,
+// i18n-ключ имени]; скобка { или ( и есть автозакрывающаяся пара оператора.
+const SIG_PARTS = {
+  // LaTeX: \frac{}{}, \int_{}^{}, x^{}, …
+  "\\frac": [["", "{", "sig.fracNum"], ["", "{", "sig.fracDen"]],
+  "\\sqrt": [["", "{", "sig.sqrtArg"]],
+  "\\int": [["_", "{", "sig.intLo"], ["^", "{", "sig.intHi"]],
+  "\\sum": [["_", "{", "sig.sumLo"], ["^", "{", "sig.sumHi"]],
+  "\\prod": [["_", "{", "sig.sumLo"], ["^", "{", "sig.sumHi"]],
+  "\\lim": [["_", "{", "sig.limUnder"]],
+  "\\binom": [["", "{", "sig.binomTop"], ["", "{", "sig.binomBottom"]],
+  "\\text": [["", "{", "sig.text"]],
+  "\\vec": [["", "{", "sig.vec"]],
+  "\\hat": [["", "{", "sig.hat"]],
+  "\\log": [["_", "{", "sig.logBase"], ["", "(", "sig.logArg"]],
+  "\\sin": [["", "(", "sig.arg"]],
+  "\\cos": [["", "(", "sig.arg"]],
+  "\\tan": [["", "(", "sig.arg"]],
+  "\\ln": [["", "(", "sig.arg"]],
+  "^": [["", "{", "sig.sup"]],
+  "_": [["", "{", "sig.sub"]],
+  // AsciiMath: frac()/(), sqrt(), sum_()^(), …
+  "frac": [["", "(", "sig.fracNum"], ["/", "(", "sig.fracDen"]],
+  "sqrt": [["", "(", "sig.sqrtArg"]],
+  "root": [["", "(", "sig.rootN"], ["", "(", "sig.rootArg"]],
+  "sum": [["_", "(", "sig.sumLo"], ["^", "(", "sig.sumHi"]],
+  "int": [["_", "(", "sig.intLo"], ["^", "(", "sig.intHi"]],
+  "lim": [["_", "(", "sig.limUnder"]],
+  "abs": [["", "(", "sig.arg"]],
+  "log": [["_", "(", "sig.logBase"], ["", "(", "sig.logArg"]],
+  "sin": [["", "(", "sig.arg"]],
+  "cos": [["", "(", "sig.arg"]],
+  "tan": [["", "(", "sig.arg"]],
+  "vec": [["", "(", "sig.vec"]],
+  "hat": [["", "(", "sig.hat"]],
+};
+
+// Определить команду под курсором и уже набранный хвост аргументов.
+function findSigCommand(math, lineText) {
+  if (math === "tex") {
+    // Последняя команда \… + весь хвост без «\» (несколько {…} уже могли быть).
+    const m = /(\\[a-zA-Z]+)([^\\]*)$/.exec(lineText);
+    if (m && SIG_PARTS[m[1]]) return { command: m[1], brace: "{", rest: m[2] };
+    // Степень/индекс без команды: x^{ , x_{  (если выше нет \command — иначе
+    // \int_{a}^{ принадлежит интегралу, а не степени).
+    if (/\^\{$/.test(lineText)) return { command: "^", brace: "{", rest: "{" };
+    if (/_\{$/.test(lineText)) return { command: "_", brace: "{", rest: "{" };
+    return null;
+  }
+  // AsciiMath: последняя функция, перед последней незакрытой «(»; внутри уже
+  // закрытые аргументы (root(n)(x, sum_(i=1)^(n) — это ок).
+  const m = /([a-zA-Z]+)(?:\([^()]*\)[^(]*)*\(([^()]*)$/.exec(lineText);
+  if (m && SIG_PARTS[m[1]]) {
+    const rest = lineText.slice(m.index + m[1].length);
+    return { command: m[1], brace: "(", rest };
+  }
+  return null;
+}
+
+function registerSignatureHelp() {
+  monaco.languages.registerSignatureHelpProvider("markdown", {
+    signatureHelpTriggerCharacters: ["{", "(", ",", "^", "_"],
+    signatureHelpRetriggerCharacters: ["{", "(", ","],
+    provideSignatureHelp(model, position) {
+      const math = mathContext(model, position);
+      if (math !== "tex" && math !== "ascii") return null;
+      const lineText = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
+      const found = findSigCommand(math, lineText);
+      if (!found) return null;
+      const parts = SIG_PARTS[found.command];
+      // Сколько частей уже пройдено: число закрытых скобок в хвосте от команды.
+      const closer = found.brace === "{" ? "}" : ")";
+      const openCount = (found.rest.match(new RegExp("\\" + found.brace, "g")) || []).length;
+      const closeCount = (found.rest.match(new RegExp("\\" + closer, "g")) || []).length;
+      let label = found.command;
+      const paramLabels = [];
+      for (const [pre, brace, key] of parts) {
+        const name = I18N.t(key);
+        const close = brace === "{" ? "}" : ")";
+        label += pre + brace + name + close;
+        const start = label.length - close.length - name.length;
+        paramLabels.push([start, start + name.length]);
+      }
+      return {
+        value: {
+          signatures: [
+            {
+              label,
+              parameters: parts.map((p, i) => ({ label: paramLabels[i], documentation: I18N.t(p[2]) })),
+            },
+          ],
+          activeSignature: 0,
+          activeParameter: Math.max(0, Math.min(closeCount, parts.length - 1)),
+        },
+        dispose: () => {},
+      };
+    },
+  });
+}
+
 require.config({
   paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs" },
 });
@@ -1288,10 +1390,14 @@ require(["vs/editor/editor.main"], function () {
     // Словесные подсказки из документа глобально не нужны: в обычном тексте они
     // открыли бы попап на каждую букву, что и чиним.
     wordBasedSuggestions: "off",
+    // Автозакрытие скобок — как в VS Code: \frac{ → \frac{} с курсором внутри,
+    // чтобы сигнатурная подсказка (registerSignatureHelp) подхватила аргумент.
+    autoClosingBrackets: "always",
     ariaLabel: I18N.t("editor.ariaLabel"),
   });
 
   registerMarkdownCompletions();
+  registerSignatureHelp();
   buildToolbar();
 
   // Живой предпросмотр: формулы обновляются по мере набора (с дебаунсом).
