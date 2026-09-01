@@ -16,7 +16,7 @@ fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 ```chess
 id=opera
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.2.0/examples/morphy.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.3.0/examples/morphy.pgn
 move=0
 ```
 
