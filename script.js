@@ -686,8 +686,13 @@ function buildDocumentHtml() {
       {
         loader: { load: ["input/tex", "input/asciimath", "output/chtml"] },
         tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["$$", "$$"], ["\\[", "\\]"]] },
-        a11y: { speech: false, assistiveMml: true },
-        options: { enableMenu: false },
+        options: {
+          // Активные a11y-настройки MathJax 4 — в menuOptions.settings:
+          // скрытый MathML (assistiveMml) вместо англоязычной речи (speech:false).
+          menuOptions: { settings: { enrich: true, assistiveMml: true, speech: false, braille: false } },
+          a11y: { speech: false, assistiveMml: true },
+          enableMenu: false,
+        },
       },
       fm.mathjax && typeof fm.mathjax === "object" ? fm.mathjax : {}
     );

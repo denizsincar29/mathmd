@@ -25,14 +25,23 @@
     asciimath: {
       delimiters: [["`", "`"]]
     },
-    // Доступность: вместо встроенной англоязычной речи (SRE) каждой формуле
-    // кладём скрытый MathML (mjx-assistive-mml) — NVDA читает его на своём
-    // языке. Speech отключаем, чтобы английская озвучка не лезла вперёд.
-    a11y: {
-      speech: false,
-      assistiveMml: true
-    },
     options: {
+      // Доступность: вместо встроенной англоязычной речи (SRE) каждой формуле
+      // кладём скрытый MathML (mjx-assistive-mml) — NVDA читает его на своём
+      // языке. В MathJax 4 активные a11y-настройки живут в menuOptions.settings:
+      // assistiveMml:true даёт скрытый MathML и отключает речь/шрифт Брайля.
+      menuOptions: {
+        settings: {
+          enrich: true,
+          assistiveMml: true,
+          speech: false,
+          braille: false
+        }
+      },
+      a11y: {
+        speech: false,
+        assistiveMml: true
+      },
       enableMenu: false,
       renderActions: {}
     }
