@@ -1,64 +1,84 @@
-# Математический редактор
+# mathmd — accessible math editor
 
-Доступный веб-редактор markdown с математикой для незрячих пользователей (NVDA).
+A screen-reader-friendly web editor for math documents: Markdown with LaTeX
+and AsciiMath formulas, Desmos graphs, and chess boards. Designed for NVDA.
 
-- **MathJax 4** — математика LaTeX (`$x^2$`, `$$...$$`) и AsciiMath (обратные кавычки: `` `sqrt(2)` ``)
-- **Monaco** — редактор кода (как в VS Code)
-- **Desmos** — интерактивные графики: блок ``` ```desmos ``` в документе
-- **chessjax** — доступные шахматные доски: блок ``` ```chess ``` в документе (импортируется с CDN)
-- **showdown** — рендер markdown
+**Try it:** <https://mathmd.denizsincar.ru>
 
-## Горячие клавиши
+## What's inside
 
-| Клавиша | Действие |
+- **Monaco** editor (the engine behind VS Code)
+- **MathJax 4** — LaTeX (`$x^2$`, `$$...$$`) and AsciiMath (backticks: `` `sqrt(2)` ``)
+- **Desmos** — interactive graphs, fenced block ` ```desmos `
+- **chessjax** — accessible chess boards, fenced block ` ```chess `
+- Live preview, one-click export to standalone HTML
+
+## Writing
+
+- **Formulas:** LaTeX in `$...$` (inline) or `$$...$$` (display); AsciiMath in backticks `` `...` ``.
+- **Graph:** each line of a ` ```desmos ` block is an expression:
+
+  ````md
+  ```desmos
+  y=x^2
+  ```
+  ````
+
+- **Chess board:** ` ```chess ` block with board attributes:
+
+  ````md
+  ```chess
+  fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  ```
+  ````
+
+  Also `pgn="url"` (with `move="N"` to jump to a ply), `lang`, `controls="off"`.
+  For the full list of controls see the [chessjax](https://github.com/denizsincar29/chessjax) repo.
+
+- **Frontmatter:** document settings at the very top. Type `---` in an empty
+  document and the block fills in itself. Keys: `title`, `lang` (ru/en/de),
+  `author`, `description`, and module switches `mathjax` / `chessjax` /
+  `desmos` (`yes`/`no`). Mathjax is on by default, chessjax and desmos are off.
+
+## Autocomplete
+
+Suggestions appear automatically where the context makes the choice clear:
+
+- **In math** — LaTeX commands inside `$…$` (and friends), AsciiMath inside
+  backticks; `\` or the first letter of a command opens the list.
+- **Frontmatter** — type a key like `title` and it pops up.
+- **Inside ```` ```chess ````** — board attributes (`fen`, `pgn`, …); inside
+  ```` ```desmos ```` — expressions.
+- **After ```` ``` ````** — pick a whole block: `chess with fen`, `chess with
+  pgn`, or `desmos`.
+
+Delimiters, blocks, and Markdown scaffolding appear on **Ctrl+Space**. Plain
+text never pops the list.
+
+## Keyboard
+
+| Key | Action |
 |---|---|
-| `Ctrl+Enter` | Предпросмотр с переходом к строке курсора |
-| `Ctrl+Shift+Enter` | Скрыть предпросмотр |
-| `Alt+M` | Переключить режим вставки формулы: строка (inline) / блок (multiline) |
-| `Alt+L` | Переключить синтаксис формул: LaTeX / AsciiMath |
-| `Alt+1` … `Alt+9`, `Alt+0`, `Alt+-`, `Alt+=` | Вставка формул, структур и символов в текущем синтаксисе (12 шт) |
-| `Alt+ё` | Полный предпросмотр |
+| `Alt+ё` (or `Alt+\``) | Full preview, jump to cursor line |
+| `Ctrl+Shift+Enter` | Hide preview |
+| `Alt+M` | Formula: inline / block |
+| `Alt+L` | Formula syntax: LaTeX / AsciiMath |
+| `Alt+1` … `Alt+9` | Insert formula templates (fraction, root, sum, …) |
+| `Ctrl+Space` | Scaffolding suggestions (delimiters, blocks, keys) |
 
-## Использование
+## File & export
 
-1. Открой [denizsincar29.github.io/mathmd](https://denizsincar29.github.io/mathmd/).
-2. Пиши markdown: формулы LaTeX в `$...$`, AsciiMath в `` `...` ``, графики Desmos в ``` ```desmos ```, шахматные доски в ``` ```chess ```.
-3. Нажми `Ctrl+Enter`, чтобы увидеть предпросмотр на строке курсора.
-4. Скачай документ (`.md`) или готовый HTML через кнопки внизу.
+- Open `.md`, download `.md`, or save a standalone HTML page. Graphs are
+  embedded into the HTML; chess boards render as static semantic tables, so the
+  file works without JavaScript.
+- The **Examples** dropdown loads demo documents.
 
-## Шахматные доски
+## Run locally
 
-Доска — fenced-блок ``` ```chess ``` с атрибутами `<chessjax-board>` в теле
-(по одному `ключ=значение` на строку или через пробелы). Значения с пробелами
-(FEN целиком) — обязательно в кавычках:
-
-    ```chess
-    fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-    ```
-
-Поддерживаются `fen` (позиция), `pgn`/`pgn-src` (партия с `move="N"`),
-`lang`, `controls="none"`. По умолчанию доска получает id `chessjax-N`, на
-который можно ссылаться кнопками в тексте:
-
-    <button chess="chessjax-1" move="10">после 10-го хода</button>
-
-В экспорте доски встраиваются статичным снимком (семантическая таблица +
-резюме) — готовый HTML читается без JS и без субмодуля.
-
-## Запуск локально
-
-Это чистая статика:
+Pure static site:
 
 ```sh
 python3 -m http.server 8000
 ```
 
-Движок chessjax импортируется с CDN (jsdelivr) по тегу:
-
-    https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.1.2/chessjax.js
-
-Свои зависимости (`vendor/chess.js`) chessjax подтягивает сам относительно
-своего URL, поэтому в mathmd ничего копировать не надо. При обновлении
-библиотеки — подними номер тега в `script.js` и `?v=`-версии в index.html +
-CACHE_NAME в sw.js. Исходник — репозиторий
-[denizsincar29/chessjax](https://github.com/denizsincar29/chessjax).
+chessjax loads from CDN (jsdelivr), so nothing needs copying.

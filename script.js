@@ -933,12 +933,15 @@ async function loadFromUrl() {
 
 // --- Автодополнения Монако ---------------------------------------------------
 //
-// Два режима: авто (на вводе символа) и по Ctrl+Space (Invoke).
-// Авто работает только внутри математики: `$…$`/`\(…\)`/`$$…$$`/`\[…\]` —
-// LaTeX, `` `…` `` — AsciiMath; в ```latex/```tex — LaTeX, в ```asciimath —
-// AsciiMath. Всё остальное (делимитеры, блоки, frontmatter, атрибуты досок,
-// заготовки markdown) — только по Ctrl+Space. Вне математики авто-попап не
-// выскакивает.
+// Два режима: авто (на вводе символа, TriggerCharacter) и по Ctrl+Space
+// (Invoke). Авто работает где ясно, что нужна подсказка:
+//   - внутри математики: `$…$`/`\(…\)`/`$$…$$`/`\[…\]` — LaTeX,
+//     `` `…` `` — AsciiMath; в ```latex/```tex — LaTeX, в ```asciimath — AsciiMath;
+//   - в frontmatter — ключи (title, lang, …) при наборе букв;
+//   - внутри ```chess — атрибуты доски, внутри ```desmos — выражения;
+//   - после ``` — вставить блок целиком (chess-with-fen/pgn, desmos).
+// Буквы вне этих мест авто-попап не открывают (пустой список → виджет скрыт).
+// Делимитеры, разметка markdown — только по Ctrl+Space.
 function registerMarkdownCompletions() {
   const KM = monaco.languages.CompletionItemKind;
   const RULES = monaco.languages.CompletionItemInsertTextRule;
@@ -1039,7 +1042,8 @@ function registerMarkdownCompletions() {
   // ```latex/```asciimath блоков в FENCE нет: showdown рендерит их как обычный
   // код, математикой они не становятся. Делимитеры LaTeX/AsciiMath — инлайновые.
   const FENCE = [
-    { label: "chess", detail: "Шахматная доска (блок)", doc: "```chess, атрибуты как у <chessjax-board>.", insert: "```chess\nfen=\"${1:rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1}\"\n```" },
+    { label: "chess with fen", detail: "Доска по начальной позиции", doc: "Блок ```chess с атрибутом fen=\"…\".", insert: "```chess\nfen=\"${1:rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1}\"\n```" },
+    { label: "chess with pgn", detail: "Доска по партии", doc: "Блок ```chess с атрибутом pgn=\"url\", move — ход, с которого начать.", insert: "```chess\npgn=\"${1:https://…/partida.pgn}\"\n```" },
     { label: "desmos", detail: "График Desmos (блок)", doc: "Каждая строка — LaTeX-выражение.", insert: "```desmos\ny=${1:x^2}\n```" },
   ];
 
@@ -1098,6 +1102,9 @@ function registerMarkdownCompletions() {
     { label: "\\tan", detail: "Тангенс", insert: "\\tan ${1:x}" },
     { label: "\\log", detail: "Логарифм", insert: "\\log_{${1:10}} ${2:x}" },
     { label: "\\ln", detail: "Натуральный логарифм", insert: "\\ln ${1:x}" },
+    { label: "\\vec{}", detail: "Вектор", insert: "\\vec{${1:v}}" },
+    { label: "\\hat{}", detail: "Шляпка (единичный вектор)", insert: "\\hat{${1:x}}" },
+    { label: "\\binom{}{}", detail: "Биномиальный коэффициент", insert: "\\binom{${1:n}}{${2:k}}" },
   ];
 
   // Авто-дополнения AsciiMath — только внутри математики (бэктик, asciimath-фенс).
@@ -1135,6 +1142,8 @@ function registerMarkdownCompletions() {
     { label: "tan", detail: "Тангенс", insert: "tan ${1:x}" },
     { label: "log", detail: "Логарифм", insert: "log_(${1:10}) ${2:x}" },
     { label: "ln", detail: "Натуральный логарифм", insert: "ln ${1:x}" },
+    { label: "vec", detail: "Вектор", insert: "vec(${1:v})" },
+    { label: "hat", detail: "Шляпка (единичный вектор)", insert: "hat(${1:x})" },
   ];
 
   const CHESS_ATTR = [
@@ -1148,14 +1157,17 @@ function registerMarkdownCompletions() {
     { label: "id", detail: "id доски для ссылок", insert: "id=\"${1:board}\"" },
   ];
 
+  // Авто-вставка заменяет слово, которое только что набрали («y», «si») — поэтому
+  // вставка это правая часть выражения; Desmos понимает и голое «x^2» (y1 = x^2),
+  // и «\sin(x)». Иначе из «y = si» получилось бы «y = y = \sin(x)».
   const DESMOS = [
-    { label: "y = x^2", insert: "y = ${1:x^2}" },
-    { label: "y = sin(x)", insert: "y = \\sin(${1:x})" },
-    { label: "y = cos(x)", insert: "y = \\cos(${1:x})" },
-    { label: "y = tan(x)", insert: "y = \\tan(${1:x})" },
-    { label: "y = sqrt(x)", insert: "y = \\sqrt{${1:x}}" },
-    { label: "y = log(x)", insert: "y = \\log_{${1:10}}(${2:x})" },
-    { label: "y = |x|", insert: "y = \\left|${1:x}\\right|" },
+    { label: "y = x^2", detail: "Парабола", insert: "${1:x}^2" },
+    { label: "y = sin(x)", detail: "Синус", insert: "\\sin(${1:x})" },
+    { label: "y = cos(x)", detail: "Косинус", insert: "\\cos(${1:x})" },
+    { label: "y = tan(x)", detail: "Тангенс", insert: "\\tan(${1:x})" },
+    { label: "y = sqrt(x)", detail: "Корень", insert: "\\sqrt{${1:x}}" },
+    { label: "y = log(x)", detail: "Логарифм", insert: "\\log_{${1:10}}(${2:x})" },
+    { label: "y = |x|", detail: "Модуль", insert: "\\left|${1:x}\\right|" },
   ];
 
   const toItems = (list) =>
@@ -1168,10 +1180,20 @@ function registerMarkdownCompletions() {
       insertTextRules: RULES.InsertAsSnippet,
     }));
 
+  // Ручной Ctrl+Space от авто-подсказок quickSuggestions отличить в провайдере
+  // нельзя: оба приходят с triggerKind=Invoke. Отличаем по клавиатуре: нажатие
+  // Ctrl+Space ставит флаг, любая другая клавиша его снимает. По флагу решаем,
+  // показывать ли заготовки (делимитеры/блоки/разметку) в обычном тексте.
+  let manualSuggest = false;
+  window.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && (e.code === "Space" || e.key === " ")) manualSuggest = true;
+    else manualSuggest = false;
+  }, true);
+
   monaco.languages.registerCompletionItemProvider("markdown", {
     triggerCharacters: ["$", "`", "\\"],
     provideCompletionItems(model, position, context) {
-      const invoke = !!context && context.triggerKind === monaco.languages.CompletionTriggerKind.Invoke;
+      const manual = !!context && context.triggerKind === monaco.languages.CompletionTriggerKind.Invoke && manualSuggest;
       const word = wordAt(model, position);
       const range =
         word && word.word.length
@@ -1184,28 +1206,56 @@ function registerMarkdownCompletions() {
           : one(model, position);
       const withRange = (list) => toItems(list).map((s) => ({ ...s, range }));
 
+      // ``` или ```che — курсор на строке-открывашке блока → вставить блок
+      // целиком. Диапазон покрывает бэктики (и слово после них), чтобы вставка
+      // заменила их, а не добавилась после.
+      const lineUpTo = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
+      const fenceOpen = /^\s*`{3,}(\w*)$/.exec(lineUpTo);
+      if (fenceOpen) {
+        const fenceRange = {
+          startLineNumber: position.lineNumber,
+          startColumn: lineUpTo.indexOf("`") + 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        };
+        const items = toItems(FENCE).map((s) => ({ ...s, range: fenceRange }));
+        if (manual) items.push(...withRange(PROSE));
+        return { suggestions: items };
+      }
+
       // Внутри математики — команды по-любому; делимитеры/заготовки — по Ctrl+Space.
       const math = mathContext(model, position);
       if (math === "tex") {
         const items = withRange(TEX_MATH);
-        if (invoke) items.push(...withRange(PROSE));
+        if (manual) items.push(...withRange(PROSE));
         return { suggestions: items };
       }
       if (math === "ascii") {
         const items = withRange(ASCII_MATH);
-        if (invoke) items.push(...withRange(PROSE));
+        if (manual) items.push(...withRange(PROSE));
         return { suggestions: items };
       }
-      // Вне математики авто-ввод не открывает попап.
-      if (!invoke) return { suggestions: [] };
-
+      // Ключи frontmatter — и при наборе букв, и по Ctrl+Space.
       if (inFrontmatter(model, position)) return { suggestions: withRange(FRONTMATTER) };
+
+      // Атрибуты/выражения внутри блоков — при наборе букв и по Ctrl+Space.
       const fence = fenceContext(model, position);
-      if (fence === "chess") return { suggestions: withRange(CHESS_ATTR) };
-      if (fence === "desmos") return { suggestions: withRange(DESMOS.concat(TEX_MATH)) };
+      if (fence === "chess") {
+        const items = withRange(CHESS_ATTR);
+        if (manual) items.push(...withRange(PROSE));
+        return { suggestions: items };
+      }
+      if (fence === "desmos") {
+        const items = withRange(DESMOS.concat(TEX_MATH));
+        if (manual) items.push(...withRange(PROSE));
+        return { suggestions: items };
+      }
       if (fence === "latex" || fence === "tex") return { suggestions: withRange(TEX_MATH.concat(PROSE)) };
       if (fence === "asciimath") return { suggestions: withRange(ASCII_MATH.concat(PROSE)) };
       if (fence) return { suggestions: [] };
+
+      // Вне математики, frontmatter и блоков авто-ввод не открывает попап.
+      if (!manual) return { suggestions: [] };
       return { suggestions: withRange(FENCE.concat(PROSE)) };
     },
   });
@@ -1227,9 +1277,13 @@ require(["vs/editor/editor.main"], function () {
     lineNumbersMinChars: 3,
     scrollBeyondLastLine: false,
     wordWrap: "on",
-    // Авто-попап только на делимитерах математики; обычные буквы попап не
-    // открывают. Делимитеры и прочее — по Ctrl+Space (провайдер, не этот флаг).
-    quickSuggestions: false,
+    // Авто-попап на наборе букв: quickSuggestions запускает провайдер при вводе
+    // слова, а тот сам решает, где вернуть список (математика, frontmatter,
+    // блоки), а где пусто (обычный текст — пусто на авто = виджет не открыт).
+    quickSuggestions: true,
+    // Словесные подсказки из документа глобально не нужны: в обычном тексте они
+    // открыли бы попап на каждую букву, что и чиним.
+    wordBasedSuggestions: "off",
     ariaLabel: "Редактор математики. Пишите markdown, LaTeX или AsciiMath.",
   });
 
@@ -1238,6 +1292,26 @@ require(["vs/editor/editor.main"], function () {
 
   // Живой предпросмотр: формулы обновляются по мере набора (с дебаунсом).
   editor.onDidChangeModelContent(() => scheduleLivePreview());
+
+  // «---» в начале пустого документа → автоподстановка frontmatter: вставить
+  // блок с ключами и закрывающим «---». Только если строка 1 целиком «---» и
+  // документ пуст кроме неё — иначе «---» это горизонтальная черта в markdown.
+  let expandingFrontmatter = false;
+  editor.onDidChangeModelContent(() => {
+    if (expandingFrontmatter) return;
+    const model = editor.getModel();
+    if (!model) return;
+    if (model.getLineContent(1) !== "---") return;
+    if (model.getValue().trim() !== "---") return;
+    const pos = editor.getPosition();
+    if (!pos || pos.lineNumber !== 1 || pos.column !== 4) return;
+    expandingFrontmatter = true;
+    const fmTemplate = "---\ntitle: \nlang: ru\nmathjax: yes\nchessjax: no\ndesmos: no\n---";
+    editor.executeEdits("frontmatter", [{ range: new monaco.Range(1, 1, 1, 4), text: fmTemplate }]);
+    editor.setPosition({ lineNumber: 2, column: 8 });
+    expandingFrontmatter = false;
+    speak("Фронтматтер развёрнут. Введите заголовок.", fileStatusEl);
+  });
 
   // Хоткеи на уровне window в capture-фазе: это самая ранняя точка, в которую
   // доходит событие, — раньше Monaco, раньше любых обработчиков на document.
@@ -1332,6 +1406,21 @@ require(["vs/editor/editor.main"], function () {
     };
     reader.readAsText(file, "utf-8");
     event.target.value = "";
+  });
+
+  // Справка: модальный диалог (native <dialog>), Esc закрывает сам.
+  const helpDialog = document.getElementById("help-dialog");
+  const helpClose = document.getElementById("help-close");
+  document.getElementById("btn-help").addEventListener("click", () => {
+    if (!helpDialog.open) {
+      helpDialog.showModal();
+      speak("Справка открыта. Esc — закрыть.", fileStatusEl);
+    }
+  });
+  helpClose.addEventListener("click", () => helpDialog.close());
+  helpDialog.addEventListener("close", () => {
+    document.getElementById("btn-help").focus();
+    speak("Справка закрыта.", fileStatusEl);
   });
 
   speak("Редактор готов. Нажмите Ctrl+Enter для предпросмотра на строке курсора.");

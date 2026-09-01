@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=27">
+<link rel="stylesheet" href="style.css?v=29">
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -70,6 +70,7 @@
       <button id="btn-export" type="button">Сохранить готовый HTML</button>
       <button id="btn-save" type="button">Скачать .md</button>
       <button id="btn-open" type="button">Открыть .md</button>
+      <button id="btn-help" type="button">Справка</button>
       <input id="open-input" type="file" accept=".md,.markdown,.txt,text/markdown" hidden>
       <label for="example-select">Пример:</label>
       <select id="example-select" aria-label="Открыть пример">
@@ -83,6 +84,35 @@
   </section>
 </main>
 
-<script src="script.js?v=27" type="module"></script>
+<dialog id="help-dialog" aria-labelledby="help-heading">
+  <h2 id="help-heading">Справка: как пользоваться редактором</h2>
+
+  <h3>Формулы</h3>
+  <p>LaTeX пишется в долларах: <code>$x^2$</code> — формула в строке, <code>$$...$$</code> — на отдельной строке. Работают и скобки: <code>\(...\)</code> и <code>\[...\]</code>.</p>
+  <p>AsciiMath пишется в обратных кавычках: <code>`sqrt(2)`</code>. Это упрощённый язык: <code>`sum_(i=1)^n`</code>, греческие буквы — <code>alpha</code>, <code>pi</code>.</p>
+
+  <h3>Вставка формул кнопками</h3>
+  <p>Выделите текст и нажмите кнопку на панели — выделение обернётся в формулу. Без выделения кнопка вставит шаблон. Хоткеи: Alt+M — строка или блок, Alt+L — синтаксис LaTeX или AsciiMath, Alt+1..9 — вставить дробь, корень, сумму и другие структуры.</p>
+
+  <h3>Автодополнение</h3>
+  <p>Внутри формулы подсказки появляются сами: в LaTeX-делимитерах — латеховские команды (например, <code>\frac</code>, <code>\sqrt</code>), в AsciiMath — аскиматовские (<code>sqrt</code>, <code>sum</code>). Делимитеры, блоки, ключи настроек и разметка markdown — по Ctrl+Space.</p>
+
+  <h3>Настройки документа (frontmatter)</h3>
+  <p>Введите <code>---</code> в начале пустого документа — блок настроек развернётся сам и закроется. В нём: <code>title</code> — заголовок, <code>lang</code> — язык (ru, en, de), <code>author</code>, <code>description</code>. Модули: <code>mathjax</code> включён по умолчанию, <code>chessjax</code> и <code>desmos</code> выключены — включить: <code>chessjax: yes</code>.</p>
+
+  <h3>Графики и шахматы</h3>
+  <p>График Desmos — блок <code>```desmos</code>, каждая строка — выражение, например <code>y=x^2</code>.</p>
+  <p>Шахматная доска — блок <code>```chess</code> с атрибутами. Минимум: <code>```chess fen="начальная позиция"</code>. Можно партию <code>pgn="адрес"</code> и номер хода <code>move="10"</code>.</p>
+
+  <h3>Предпросмотр и клавиши</h3>
+  <p>Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть предпросмотр. Текст предпросмотра обновляется при наборе.</p>
+
+  <h3>Файл и вывод</h3>
+  <p>Открыть .md — файл с диска, Скачать .md — сохранить исходник, Сохранить готовый HTML — скачать страницу для раздачи. Примеры открываются из списка «Пример:».</p>
+
+  <button id="help-close" type="button">Закрыть справку (Esc)</button>
+</dialog>
+
+<script src="script.js?v=29" type="module"></script>
 </body>
 </html>
