@@ -330,3 +330,47 @@ h2 {
   border-radius: 6px;
   padding: 0.5rem 0.7rem;
 }
+
+/* Полноэкранный режим доски (клавиша F / кнопка ⛶): доска растягивается
+   на весь экран и центрируется. Специфичность выше базовых правил доски. */
+.preview chessjax-board:fullscreen {
+  background: var(--bg);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.preview chessjax-board:fullscreen .chessjax-board {
+  width: min(86vh, 92vw);
+  margin: 0 auto;
+  grid-template-columns: repeat(8, 1fr);
+  border-width: 2px;
+}
+
+.preview chessjax-board:fullscreen .chessjax-cell {
+  width: auto;
+  height: auto;
+  aspect-ratio: 1/1;
+  font-size: min(6vh, 6vw);
+}
+
+.preview chessjax-board:fullscreen .chessjax-summary,
+.preview chessjax-board:fullscreen .chessjax-live,
+.preview chessjax-board:fullscreen .chessjax-help {
+  max-width: min(86vh, 92vw);
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.preview chessjax-board:fullscreen .chessjax-controls {
+  justify-content: center;
+}
+
+.preview chessjax-board:fullscreen .chessjax-btn {
+  min-width: 56px;
+  min-height: 48px;
+  font-size: 1.4rem;
+}

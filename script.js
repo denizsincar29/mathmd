@@ -4,9 +4,9 @@
 // строке курсора, помощники вставки формул, доступность для скринридера.
 
 // Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
-// Импорт с CDN (jsdelivr, GH-тег v0.4.0) по side-effect: регистрирует
+// Импорт с CDN (jsdelivr, GH-тег v0.4.1) по side-effect: регистрирует
 // кастомный элемент и document-level делегат для кнопок <button chess="id" move="N">.
-import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.4.0/chessjax.js";
+import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.4.1/chessjax.js";
 
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
@@ -498,49 +498,12 @@ function download(filename, text, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
-// Экспорт делает документ самодостаточным: доски встают статичным снимком
-// (семантическая таблица + резюме), без JS-компонента и без субмодуля.
-function chessExportSnapshot(id) {
-  const live = document.getElementById(id);
-  if (!live) return "";
-  const table = live.querySelector(".chessjax-board-wrap .chessjax-board");
-  const summary = live.querySelector(".chessjax-summary");
-  const liveText = live.querySelector(".chessjax-live");
-  const parts = [];
-  if (table) parts.push(table.outerHTML);
-  if (summary && summary.textContent.trim()) parts.push(`<p class="chessjax-summary">${summary.textContent}</p>`);
-  if (liveText && liveText.textContent.trim()) parts.push(`<p class="chessjax-live">${liveText.textContent}</p>`);
-  if (!parts.length) return "";
-  return `<div class="chessjax-export">\n${parts.join("\n")}\n</div>`;
-}
-
-// Ждём, пока все доски предпросмотра отрисовали таблицу или ошибку
-// (рендер асинхронный — доски грузят FEN/PGN через движок).
-function waitForBoards(timeoutMs = 3000) {
-  return new Promise((resolve) => {
-    const start = Date.now();
-    const check = () => {
-      const boards = document.querySelectorAll("#preview chessjax-board");
-      const done = Array.from(boards).every((b) =>
-        b.querySelector(".chessjax-board-wrap .chessjax-board") || b.querySelector(".chessjax-board-wrap .chessjax-error"));
-      if (done || Date.now() - start > timeoutMs) resolve();
-      else setTimeout(check, 60);
-    };
-    check();
-  });
-}
-
 // Полный самодостаточный HTML-документ из текущего markdown: используется и
-// для скачивания (exportHtml), и для показа по ?preview=readyhtml. Доски
-// встают статичным снимком div-сетки (CSS скопирован из chessjax/style.css).
-async function buildDocumentHtml() {
-  const bodyHtml = renderMarkdown(editor.getValue()).replace(
-    /<chessjax-board\b([^>]*)><\/chessjax-board>/g,
-    (m, attrs) => {
-      const idMatch = /id="([^"]+)"/.exec(attrs);
-      return idMatch ? chessExportSnapshot(idMatch[1]) : "";
-    }
-  );
+// для скачивания (exportHtml), и для показа по ?preview=html. Шахматные доски
+// остаются живыми <chessjax-board> — документ подключает компонент с CDN, а
+// CSS (включая fullscreen) встроен в <style>.
+function buildDocumentHtml() {
+  const bodyHtml = renderMarkdown(editor.getValue());
   return `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -556,13 +519,29 @@ async function buildDocumentHtml() {
   table { border-collapse: collapse; }
   th, td { border: 1px solid #ccc; padding: .3rem .6rem; }
   .desmos { width: 100%; height: 380px; margin: .5rem 0; }
-  .chessjax-board { display: grid; grid-template-columns: repeat(8, 48px); width: max-content; margin: .5rem 0; background: #fff; }
+  .chessjax { margin: .5rem 0; }
+  .chessjax-board { display: grid; grid-template-columns: repeat(8, 48px); width: max-content; background: #fff; border: 1px solid #ccc; }
   .chessjax-cell { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
   .chessjax-cell.square-dark { background: #769656; }
   .chessjax-cell.square-light { background: #eeeed2; }
   .chessjax-cell.piece-w { color: #fff; text-shadow: 0 0 2px #000; }
   .chessjax-cell.piece-b { color: #000; text-shadow: 0 0 2px #fff; }
-  .chessjax-summary, .chessjax-live { color: #555; font-size: .9rem; }
+  .chessjax-cell.variant-highlight { box-shadow: inset 0 0 0 3px #f59e0b; }
+  .chessjax-summary { color: #555; font-size: .9rem; max-width: 420px; }
+  .chessjax-controls { display: flex; gap: .4rem; margin-top: .5rem; }
+  .chessjax-btn { min-width: 44px; min-height: 38px; font-size: .9rem; }
+  .chessjax-btn:disabled { opacity: .4; }
+  .chessjax-live { min-height: 1.2em; margin: .4rem 0 0; color: #555; font-size: .9rem; max-width: 420px; }
+  .chessjax-error { color: #b00020; border: 1px solid #b00020; border-radius: 6px; padding: .5rem .7rem; font-size: .9rem; }
+  .chessjax-help { margin: .5rem 0 0; color: #555; font-size: .9rem; border-left: 3px solid #888; padding: .25rem .6rem; }
+  chessjax-board:fullscreen { background: #14181c; padding: 1rem; display: flex; flex-direction: column; justify-content: center; }
+  chessjax-board:fullscreen .chessjax-board { width: min(86vh, 92vw); margin: 0 auto; grid-template-columns: repeat(8, 1fr); border-width: 2px; border-color: #2c3640; background: #1b2127; }
+  chessjax-board:fullscreen .chessjax-cell { width: auto; height: auto; aspect-ratio: 1/1; font-size: min(6vh, 6vw); }
+  chessjax-board:fullscreen .chessjax-summary,
+  chessjax-board:fullscreen .chessjax-live,
+  chessjax-board:fullscreen .chessjax-help { max-width: min(86vh, 92vw); margin-left: auto; margin-right: auto; text-align: center; font-size: 1.1rem; color: #e2e8f0; }
+  chessjax-board:fullscreen .chessjax-controls { justify-content: center; }
+  chessjax-board:fullscreen .chessjax-btn { min-width: 56px; min-height: 48px; font-size: 1.4rem; }
 </style>
 <script>
 window.MathJax = {
@@ -572,6 +551,7 @@ window.MathJax = {
 };
 </script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.4.1/chessjax.js"></script>
 <script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
 </head>
 <body>
@@ -586,12 +566,8 @@ document.querySelectorAll(".desmos").forEach(function (el) {
 </html>`;
 }
 
-async function exportHtml() {
-  // Сначала доводим предпросмотр и доски до отрисованного состояния, потом
-  // снимаем снимки с живых досок — иначе в экспорт попадут пустые теги.
-  await renderPreview();
-  await waitForBoards();
-  download("math.html", await buildDocumentHtml(), "text/html;charset=utf-8");
+function exportHtml() {
+  download("math.html", buildDocumentHtml(), "text/html;charset=utf-8");
   speak("HTML сохранён.", fileStatusEl);
 }
 
@@ -639,8 +615,8 @@ let editor = null;
 // --- URL-параметры -----------------------------------------------------------
 //
 // ?example=<имя>.md         — загрузить examples/<имя>.md в редактор.
-// ?example=<имя>.md&preview=readyhtml — вместо редактора открыть готовый HTML
-//                              (тот же самодостаточный документ, что и экспорт).
+// ?example=<имя>.md&preview=html — вместо редактора открыть готовый HTML
+//                            (тот же самодостаточный документ, что и экспорт).
 // ?example=<имя>.md&preview=on — загрузить пример и сразу показать предпросмотр.
 //
 // Имя — простой файл: латиница, цифры, подчёркивание, дефис и опционально .md.
@@ -662,12 +638,11 @@ async function loadFromUrl() {
     }
     const md = await res.text();
     editor.setValue(md);
-    if (params.get("preview") === "readyhtml") {
-      // Доводим предпросмотр и доски до отрисованного состояния, затем заменяем
-      // страницу готовым HTML — «перенаправляет» на отрендеренный документ.
-      await renderPreview();
-      await waitForBoards();
-      const doc = await buildDocumentHtml();
+    const preview = params.get("preview");
+    if (preview === "html" || preview === "readyhtml") {
+      // Заменяем страницу готовым HTML — «перенаправляет» на отрендеренный
+      // документ с живыми шахматными досками (компонент из CDN, CSS встроен).
+      const doc = buildDocumentHtml();
       document.open();
       document.write(doc);
       document.close();
@@ -708,10 +683,8 @@ async function loadFromUrl() {
     speak("Не удалось загрузить URL: " + e.message + ". Сервер должен разрешать CORS.", fileStatusEl);
     return;
   }
-  if (params.get("preview") === "readyhtml") {
-    await renderPreview();
-    await waitForBoards();
-    const doc = await buildDocumentHtml();
+  if (params.get("preview") === "html" || params.get("preview") === "readyhtml") {
+    const doc = buildDocumentHtml();
     document.open();
     document.write(doc);
     document.close();
