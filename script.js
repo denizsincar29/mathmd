@@ -572,18 +572,18 @@ let editor = null;
 //                              (тот же самодостаточный документ, что и экспорт).
 // ?example=<имя>.md&preview=on — загрузить пример и сразу показать предпросмотр.
 //
-// Имя санитизируется: разрешены только латиница, цифры, подчёркивание, дефис;
-// расширение .md добавляется автоматически, так что в URL можно писать
-// example=morphy или example=morphy.md — результат одинаковый.
+// Имя — простой файл: латиница, цифры, подчёркивание, дефис и опционально .md.
+// Всё остальное (пути, "..", пробелы) отклоняем сразу — никакого обхода
+// каталога. В URL можно писать example=morphy или example=morphy.md.
 async function loadFromUrl() {
   const params = new URLSearchParams(location.search);
   const name = params.get("example");
   if (!name) return;
-  const safe = name.replace(/\.md$/i, "").replace(/[^a-z0-9_-]/gi, "");
-  if (!safe) {
+  if (!/^[a-z0-9_-]+(\.md)?$/i.test(name)) {
     speak("Некорректное имя примера: " + name, fileStatusEl);
     return;
   }
+  const safe = name.replace(/\.md$/i, "");
   const res = await fetch("examples/" + safe + ".md");
   if (!res.ok) {
     speak("Пример " + safe + " не найден.", fileStatusEl);
