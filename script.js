@@ -1218,7 +1218,12 @@ function registerMarkdownCompletions() {
           endLineNumber: position.lineNumber,
           endColumn: position.column,
         };
-        const items = toItems(FENCE).map((s) => ({ ...s, range: fenceRange }));
+        // Monaco фильтрует саджесты по тексту, который покрывает range («```» или
+        // «```ch»), а не по набранному слову. Без filterText все блоки отсеиваются:
+        // «chess with fen» не фаззи-матчится с бэктиками. Подкладываем ровно тот
+        // текст, что покрывает диапазон, — точное совпадение, блоки видны всегда.
+        const fenceText = lineUpTo.slice(lineUpTo.indexOf("`"));
+        const items = toItems(FENCE).map((s) => ({ ...s, range: fenceRange, filterText: fenceText }));
         if (manual) items.push(...withRange(PROSE));
         return { suggestions: items };
       }
@@ -1246,7 +1251,9 @@ function registerMarkdownCompletions() {
         return { suggestions: items };
       }
       if (fence === "desmos") {
-        const items = withRange(DESMOS.concat(TEX_MATH));
+        // Целые выражения, а не LaTeX-фрагменты: \sin из TEX_MATH обгонял
+        // «y = sin(x)» при фильтре по «sin» и вставлял не то.
+        const items = withRange(DESMOS);
         if (manual) items.push(...withRange(PROSE));
         return { suggestions: items };
       }
