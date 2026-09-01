@@ -320,7 +320,7 @@ function renderMarkdown(md, live) {
 // вместо графика показываем подсказку; график пересоздаётся по Ctrl+Enter.
 function desmosSlot(idx, live) {
   if (live) {
-    return `<div class="desmos-placeholder" data-desmos-idx="${idx}">График Desmos обновится по Ctrl+Enter.</div>`;
+    return `<div class="desmos-placeholder" data-desmos-idx="${idx}">${I18N.t("msg.desmosLive")}</div>`;
   }
   // В готовом HTML массива desmosBlocks нет — тело графика кладём прямо в DOM
   // (encodeURIComponent), его разберёт init-скрипт документа.
@@ -331,7 +331,7 @@ function desmosSlot(idx, live) {
 function initDesmosGraphs() {
   if (!window.Desmos || typeof Desmos.Calculator !== "function") {
     document.querySelectorAll(".desmos[data-desmos-idx]").forEach((el) => {
-      el.innerHTML = "<span class='desmos-fallback'>График Desmos недоступен — не удалось загрузить API.</span>";
+      el.innerHTML = "<span class='desmos-fallback'>" + I18N.t("msg.desmosFallback") + "</span>";
     });
     return;
   }
@@ -425,11 +425,11 @@ function focusPreviewAtLine(line) {
     block.scrollIntoView({ block: "start", behavior: "smooth" });
     block.focus({ preventScroll: true });
     const label = cleanText(block.textContent);
-    speak(`Строка ${line}. ` + (label || "Пустой блок."));
+    speak(I18N.t("msg.line", { n: line }) + " " + (label || I18N.t("msg.emptyBlock")));
     // MathJax мог изменить высоту блоков после typeset — доводим скролл.
     setTimeout(() => block.scrollIntoView({ block: "start", behavior: "smooth" }), 250);
   } else {
-    speak("Нет предпросмотра для этой строки.");
+    speak(I18N.t("msg.noPreview"));
   }
 }
 
@@ -491,7 +491,7 @@ function insertSnippet(item) {
   const model = editor.getModel();
   const selectedText = model.getValueInRange(sel);
   if (item.formula && isInsideFormula()) {
-    speak("Вы уже внутри формулы.");
+    speak(I18N.t("msg.insideFormula"));
     return null;
   }
   const { template, wrap } = currentSnippet(item);
@@ -516,12 +516,13 @@ function insertSnippet(item) {
 // Объявление после вставки: «Вставлено: <метка>: <что вставлено>». Для формулы
 // называем режим (строка/блок), т.к. сама вставка — только делимитеры.
 function speakInserted(item, insertedText) {
+  const label = I18N.t(item.labelKey);
   if (item.formula) {
-    speak("Вставлено: формула, " + (formulaMode === "inline" ? "строка" : "блок") + ".");
+    speak(I18N.t("msg.insertedFormula", { mode: I18N.t(formulaMode === "inline" ? "msg.modeInline" : "msg.modeBlock") }));
     return;
   }
   const t = (insertedText || "").replace(/\{cursor\}/g, "").replace(/\s+/g, " ").trim();
-  speak("Вставлено: " + item.label + (t ? ": " + t : "") + ".");
+  speak(t ? I18N.t("msg.insertedWith", { label, text: t }) : I18N.t("msg.inserted", { label }));
 }
 
 // Кнопки тулбара. Первые 12 кнопок получают хоткеи Alt+1..Alt+= (порядок в
@@ -529,62 +530,62 @@ function speakInserted(item, insertedText) {
 // формы latex и asciimath — вставляется та, что соответствует текущему синтаксису.
 const TOOLBAR_GROUPS = [
   {
-    title: "Математика",
+    titleKey: "tool.groupMath",
     items: [
       {
-        label: "Формула",
+        labelKey: "tool.formula",
         face: "f(x)",
         formula: {
           inline: ["$", "$"],
           multiline: ["$$\n", "\n$$"],
         },
       },
-      { label: "Дробь", face: "a/b", latex: "\\frac{a}{b}{cursor}", asciimath: "(a)/(b){cursor}" },
-      { label: "Степень", face: "x²", latex: "x^{2}{cursor}", asciimath: "x^2{cursor}" },
-      { label: "Корень", face: "√", latex: "\\sqrt{{cursor}}", asciimath: "sqrt({cursor})" },
-      { label: "Сумма", face: "Σ", latex: "\\sum_{i=1}^{n} {cursor}", asciimath: "sum_(i=1)^n {cursor}" },
-      { label: "Интеграл", face: "∫", latex: "\\int_{a}^{b} {cursor}", asciimath: "int {cursor}" },
-      { label: "Предел", face: "lim", latex: "\\lim_{x \\to 0} {cursor}", asciimath: "lim_(x->0) {cursor}" },
-      { label: "Матрица", face: "▦", latex: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}{cursor}", asciimath: "[[a,b],[c,d]]{cursor}" },
-      { label: "Альфа", face: "α", latex: "\\alpha {cursor}", asciimath: "alpha {cursor}" },
-      { label: "Пи", face: "π", latex: "\\pi {cursor}", asciimath: "pi {cursor}" },
-      { label: "Бета", face: "β", latex: "\\beta {cursor}", asciimath: "beta {cursor}" },
-      { label: "Больше или равно", face: "≥", latex: "\\ge {cursor}", asciimath: ">= {cursor}" },
+      { labelKey: "tool.fraction", face: "a/b", latex: "\\frac{a}{b}{cursor}", asciimath: "(a)/(b){cursor}" },
+      { labelKey: "tool.power", face: "x²", latex: "x^{2}{cursor}", asciimath: "x^2{cursor}" },
+      { labelKey: "tool.root", face: "√", latex: "\\sqrt{{cursor}}", asciimath: "sqrt({cursor})" },
+      { labelKey: "tool.sum", face: "Σ", latex: "\\sum_{i=1}^{n} {cursor}", asciimath: "sum_(i=1)^n {cursor}" },
+      { labelKey: "tool.integral", face: "∫", latex: "\\int_{a}^{b} {cursor}", asciimath: "int {cursor}" },
+      { labelKey: "tool.limit", face: "lim", latex: "\\lim_{x \\to 0} {cursor}", asciimath: "lim_(x->0) {cursor}" },
+      { labelKey: "tool.matrix", face: "▦", latex: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}{cursor}", asciimath: "[[a,b],[c,d]]{cursor}" },
+      { labelKey: "tool.alpha", face: "α", latex: "\\alpha {cursor}", asciimath: "alpha {cursor}" },
+      { labelKey: "tool.pi", face: "π", latex: "\\pi {cursor}", asciimath: "pi {cursor}" },
+      { labelKey: "tool.beta", face: "β", latex: "\\beta {cursor}", asciimath: "beta {cursor}" },
+      { labelKey: "tool.ge", face: "≥", latex: "\\ge {cursor}", asciimath: ">= {cursor}" },
     ],
   },
   {
-    title: "Греческие буквы",
+    titleKey: "tool.groupGreek",
     items: [
-      ["Гамма", "γ", "\\gamma", "gamma"],
-      ["Дельта", "δ", "\\delta", "delta"],
-      ["Сигма", "Σ", "\\Sigma", "Sigma"],
-      ["Лямбда", "λ", "\\lambda", "lambda"],
-      ["Мю", "μ", "\\mu", "mu"],
-      ["Фи", "φ", "\\phi", "phi"],
-      ["Тета", "θ", "\\theta", "theta"],
-      ["Омега", "ω", "\\omega", "omega"],
-    ].map(([label, face, latex, asciimath]) => ({ label, face, latex, asciimath })),
+      ["tool.gamma", "γ", "\\gamma", "gamma"],
+      ["tool.delta", "δ", "\\delta", "delta"],
+      ["tool.sigma", "Σ", "\\Sigma", "Sigma"],
+      ["tool.lambda", "λ", "\\lambda", "lambda"],
+      ["tool.mu", "μ", "\\mu", "mu"],
+      ["tool.phi", "φ", "\\phi", "phi"],
+      ["tool.theta", "θ", "\\theta", "theta"],
+      ["tool.omega", "ω", "\\omega", "omega"],
+    ].map(([labelKey, face, latex, asciimath]) => ({ labelKey, face, latex, asciimath })),
   },
   {
-    title: "Символы",
+    titleKey: "tool.groupSymbols",
     items: [
-      ["Меньше или равно", "≤", "\\le", "<="],
-      ["Не равно", "≠", "\\ne", "!="],
-      ["Приблизительно", "≈", "\\approx", "~="],
-      ["Бесконечность", "∞", "\\infty", "oo"],
-      ["Принадлежит", "∈", "\\in", "in"],
-      ["Подмножество", "⊆", "\\subseteq", "sube"],
-      ["Объединение", "∪", "\\cup", "uu"],
-      ["Пересечение", "∩", "\\cap", "nn"],
-      ["Стрелка вправо", "→", "\\to", "->"],
-      ["Набла", "∇", "\\nabla", "grad"],
-    ].map(([label, face, latex, asciimath]) => ({ label, face, latex, asciimath })),
+      ["tool.le", "≤", "\\le", "<="],
+      ["tool.ne", "≠", "\\ne", "!="],
+      ["tool.approx", "≈", "\\approx", "~="],
+      ["tool.infty", "∞", "\\infty", "oo"],
+      ["tool.in", "∈", "\\in", "in"],
+      ["tool.subseteq", "⊆", "\\subseteq", "sube"],
+      ["tool.cup", "∪", "\\cup", "uu"],
+      ["tool.cap", "∩", "\\cap", "nn"],
+      ["tool.to", "→", "\\to", "->"],
+      ["tool.nabla", "∇", "\\nabla", "grad"],
+    ].map(([labelKey, face, latex, asciimath]) => ({ labelKey, face, latex, asciimath })),
   },
   {
-    title: "Шахматы",
+    titleKey: "tool.groupChess",
     items: [
       {
-        label: "Шахматная доска (fenced-блок chess)",
+        labelKey: "tool.chess",
         face: "♟",
         latex: "```chess\nfen=\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"\n```\n{cursor}",
         asciimath: "```chess\nfen=\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"\n```\n{cursor}",
@@ -603,13 +604,13 @@ function buildToolbar() {
   for (const group of TOOLBAR_GROUPS) {
     const span = document.createElement("span");
     span.className = "toolbar-group";
-    span.textContent = group.title + ": ";
+    span.textContent = I18N.t(group.titleKey) + ": ";
     toolbarEl.appendChild(span);
     for (const item of group.items) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.textContent = item.face;
-      btn.setAttribute("aria-label", item.label);
+      btn.setAttribute("aria-label", I18N.t(item.labelKey));
       btn.addEventListener("click", () => {
         const inserted = insertSnippet(item);
         if (inserted !== null) speakInserted(item, inserted);
@@ -666,13 +667,13 @@ function buildDocumentHtml() {
 
   // Если в тексте есть блоки, а модуль отключён — честная подсказка в документе.
   const chessNote = chessBlocks.length && !mods.chessjax
-    ? '<div class="module-off">Шахматные доски не подключены — добавьте в начало файла: <code>chessjax: yes</code></div>'
+    ? '<div class="module-off">' + I18N.t("doc.chessOff") + "</div>"
     : "";
   const desmosNote = desmosBlocks.length && !mods.desmos
-    ? '<div class="module-off">Графики Desmos не подключены — добавьте в начало файла: <code>desmos: yes</code></div>'
+    ? '<div class="module-off">' + I18N.t("doc.desmosOff") + "</div>"
     : "";
 
-  const title = fm.title || "Математический документ";
+  const title = fm.title || I18N.t("doc.exportTitle");
   const lang = fm.lang || "ru";
   const author = fm.author ? `<meta name="author" content="${escHtml(fm.author)}">\n` : "";
   const description = fm.description ? `<meta name="description" content="${escHtml(fm.description)}">\n` : "";
@@ -778,12 +779,12 @@ ${desmosInit}</body>
 
 function exportHtml() {
   download("math.html", buildDocumentHtml(), "text/html;charset=utf-8");
-  speak("HTML сохранён.", fileStatusEl);
+  speak(I18N.t("msg.htmlSaved"), fileStatusEl);
 }
 
 function saveMd() {
   download("document.md", editor.getValue());
-  speak("Файл markdown скачан.", fileStatusEl);
+  speak(I18N.t("msg.mdSaved"), fileStatusEl);
 }
 
 function openMd() {
@@ -795,46 +796,46 @@ function openMd() {
 async function openExample(name) {
   const safe = String(name).replace(/\.md$/i, "");
   if (!/^[a-z0-9_-]+$/i.test(safe)) {
-    speak("Некорректное имя примера.", fileStatusEl);
+    speak(I18N.t("msg.badExample"), fileStatusEl);
     return;
   }
   const res = await fetch("examples/" + safe + ".md");
   if (!res.ok) {
-    speak("Пример " + safe + " не найден.", fileStatusEl);
+    speak(I18N.t("msg.exampleNotFound", { name: safe }), fileStatusEl);
     return;
   }
   editor.setValue(await res.text());
   showPreviewAndFocus(1);
-  speak("Пример " + safe + " открыт, предпросмотр показан.", fileStatusEl);
+  speak(I18N.t("msg.exampleOpened", { name: safe }), fileStatusEl);
 }
 
 // --- Инициализация ----------------------------------------------------------
 
 const DEFAULT_MD = [
-  "# Пример документа",
+  "# " + I18N.t("demo.title"),
   "",
-  "## Формулы",
+  "## " + I18N.t("demo.formulas"),
   "",
-  "LaTeX в строке: $x^2 + y^2 = z^2$.",
+  I18N.t("demo.inline") + ": $x^2 + y^2 = z^2$.",
   "",
-  "Формула на отдельной строке:",
+  I18N.t("demo.display"),
   "",
   "$$",
   "\\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}",
   "$$",
   "",
-  "AsciiMath через обратные кавычки: `sqrt(2x+3) = 5`.",
+  I18N.t("demo.asciimath") + ": `sqrt(2x+3) = 5`.",
   "",
-  "## График Desmos",
+  "## " + I18N.t("demo.graph"),
   "",
   "```desmos",
   "y=x^2",
   "y=sin(x)",
   "```",
   "",
-  "## Обычный markdown",
+  "## " + I18N.t("demo.markdown"),
   "",
-  "**Жирный текст**, *курсив*, [ссылка](https://example.com).",
+  "**" + I18N.t("demo.bold") + "**, *" + I18N.t("demo.italic") + "*, [" + I18N.t("demo.link") + "](https://example.com).",
   "",
 ].join("\n");
 
@@ -869,13 +870,13 @@ async function loadFromUrl() {
   const name = params.get("example");
   if (name) {
     if (!/^[a-z0-9_-]+(\.md)?$/i.test(name)) {
-      speak("Некорректное имя примера: " + name, fileStatusEl);
+      speak(I18N.t("msg.badExample") + ": " + name, fileStatusEl);
       return;
     }
     const safe = name.replace(/\.md$/i, "");
     const res = await fetch("examples/" + safe + ".md");
     if (!res.ok) {
-      speak("Пример " + safe + " не найден.", fileStatusEl);
+      speak(I18N.t("msg.exampleNotFound", { name: safe }), fileStatusEl);
       return;
     }
     const md = await res.text();
@@ -888,7 +889,7 @@ async function loadFromUrl() {
     if (params.get("preview") === "on") {
       showPreviewAndFocus(1);
     } else {
-      speak("Пример " + safe + " загружен. Покажите предпросмотр: Alt+ё.", fileStatusEl);
+      speak(I18N.t("msg.exampleLoaded", { name: safe }), fileStatusEl);
     }
     return;
   }
@@ -905,19 +906,19 @@ async function loadFromUrl() {
     url = null;
   }
   if (!url || (url.protocol !== "http:" && url.protocol !== "https:")) {
-    speak("Некорректный URL: допустим только http/https.", fileStatusEl);
+    speak(I18N.t("msg.badUrl"), fileStatusEl);
     return;
   }
   try {
     const res = await fetch(url.href);
     if (!res.ok) {
-      speak("Не удалось загрузить URL: HTTP " + res.status + ".", fileStatusEl);
+      speak(I18N.t("msg.urlHttp", { status: res.status }), fileStatusEl);
       return;
     }
     const md = await res.text();
     editor.setValue(md);
   } catch (e) {
-    speak("Не удалось загрузить URL: " + e.message + ". Сервер должен разрешать CORS.", fileStatusEl);
+    speak(I18N.t("msg.urlError", { error: e.message }), fileStatusEl);
     return;
   }
   if (params.get("preview") === "html" || params.get("preview") === "readyhtml") {
@@ -927,7 +928,7 @@ async function loadFromUrl() {
   if (params.get("preview") === "on") {
     showPreviewAndFocus(1);
   } else {
-    speak("Markdown загружен по URL. Покажите предпросмотр: Alt+ё.", fileStatusEl);
+    speak(I18N.t("msg.urlLoaded"), fileStatusEl);
   }
 }
 
@@ -1026,159 +1027,162 @@ function registerMarkdownCompletions() {
   }
 
   const FRONTMATTER = [
-    { label: "title", detail: "Заголовок документа", doc: "Идёт в <title> экспортированного HTML.", insert: "title: ${1:Название}" },
-    { label: "lang", detail: "Язык документа", doc: "lang=<…> в <html>. Например ru, en.", insert: "lang: ${1|ru,en|}" },
-    { label: "mathjax", detail: "Загружать MathJax (по умолчанию да)", doc: "no — не подключать MathJax в экспорте.", insert: "mathjax: ${1|yes,no|}" },
-    { label: "chessjax", detail: "Шахматные доски (по умолчанию нет)", doc: "yes — подключить chessjax и включить блоки ```chess.", insert: "chessjax: ${1|yes,no|}" },
-    { label: "desmos", detail: "Графики Desmos (по умолчанию нет)", doc: "yes — подключить Desmos и включить блоки ```desmos.", insert: "desmos: ${1|yes,no|}" },
-    { label: "author", detail: "Автор", insert: "author: ${1:Автор}" },
-    { label: "description", detail: "Описание документа", insert: "description: ${1:Описание}" },
-    { label: "css", detail: "Дополнительный CSS", doc: "URL стиля, подключается в экспорт.", insert: "css: ${1:https://…/style.css}" },
-    { label: "mathjax …", detail: "Настройки MathJax (вложенно)", insert: "mathjax:\n  tex:\n    inlineMath: [[\"$\", \"$\"]]\n  options:\n    enableMenu: false" },
-    { label: "desmos …", detail: "Опции Desmos.Calculator (вложенно)", insert: "desmos:\n  expressions: true\n  border: false" },
-    { label: "chess …", detail: "Атрибуты досок по умолчанию", insert: "chess:\n  lang: ru\n  tone: on" },
+    { label: "title", detailKey: "sugg.title", docKey: "sugg.titleDoc", insertPrefix: "title: ", insertKey: "sugg.titleInsert" },
+    { label: "lang", detailKey: "sugg.lang", docKey: "sugg.langDoc", insert: "lang: ${1|ru,en,de,tr|}" },
+    { label: "mathjax", detailKey: "sugg.mathjax", docKey: "sugg.mathjaxDoc", insert: "mathjax: ${1|yes,no|}" },
+    { label: "chessjax", detailKey: "sugg.chessjax", docKey: "sugg.chessjaxDoc", insert: "chessjax: ${1|yes,no|}" },
+    { label: "desmos", detailKey: "sugg.desmos", docKey: "sugg.desmosDoc", insert: "desmos: ${1|yes,no|}" },
+    { label: "author", detailKey: "sugg.author", insertPrefix: "author: ", insertKey: "sugg.authorInsert" },
+    { label: "description", detailKey: "sugg.description", insertPrefix: "description: ", insertKey: "sugg.descriptionInsert" },
+    { label: "css", detailKey: "sugg.css", docKey: "sugg.cssDoc", insert: "css: ${1:https://…/style.css}" },
+    { label: "mathjax …", detailKey: "sugg.mathjaxNested", insert: "mathjax:\n  tex:\n    inlineMath: [[\"$\", \"$\"]]\n  options:\n    enableMenu: false" },
+    { label: "desmos …", detailKey: "sugg.desmosNested", insert: "desmos:\n  expressions: true\n  border: false" },
+    { label: "chess …", detailKey: "sugg.chessNested", insert: "chess:\n  lang: ru\n  tone: on" },
   ];
 
   // ```latex/```asciimath блоков в FENCE нет: showdown рендерит их как обычный
   // код, математикой они не становятся. Делимитеры LaTeX/AsciiMath — инлайновые.
   const FENCE = [
-    { label: "chess with fen", detail: "Доска по начальной позиции", doc: "Блок ```chess с атрибутом fen=\"…\".", insert: "```chess\nfen=\"${1:rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1}\"\n```" },
-    { label: "chess with pgn", detail: "Доска по партии", doc: "Блок ```chess с атрибутом pgn=\"url\", move — ход, с которого начать.", insert: "```chess\npgn=\"${1:https://…/partida.pgn}\"\n```" },
-    { label: "desmos", detail: "График Desmos (блок)", doc: "Каждая строка — LaTeX-выражение.", insert: "```desmos\ny=${1:x^2}\n```" },
+    { label: "chess with fen", detailKey: "sugg.fenDetail", docKey: "sugg.fenDoc", insert: "```chess\nfen=\"${1:rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1}\"\n```" },
+    { label: "chess with pgn", detailKey: "sugg.pgnDetail", docKey: "sugg.pgnDoc", insert: "```chess\npgn=\"${1:https://…/partida.pgn}\"\n```" },
+    { label: "desmos", detailKey: "sugg.desmosBlock", docKey: "sugg.desmosBlockDoc", insert: "```desmos\ny=${1:x^2}\n```" },
   ];
 
   // Заготовки, показываются только по Ctrl+Space (Invoke): делимитеры, блоки,
   // разметка. На каждый ввод символа они не выскакивают.
   const PROSE = [
-    { label: "$…$", detail: "Инлайн-формула LaTeX", insert: "$${1:формула}$" },
-    { label: "$$…$$", detail: "Формула на отдельной строке", insert: "$$${1:формула}$$" },
-    { label: "`…`", detail: "AsciiMath в строке", insert: "`${1:sqrt(x+1)}`" },
-    { label: "# Заголовок", detail: "Заголовок раздела", insert: "# ${1:Заголовок}" },
-    { label: "[текст](url)", detail: "Ссылка", insert: "[${1:текст}](${2:https://…})" },
-    { label: "**жирный**", detail: "Жирное выделение", insert: "**${1:текст}**" },
-    { label: "*курсив*", detail: "Курсив", insert: "*${1:текст}*" },
+    { label: "$…$", detailKey: "sugg.dollar", insertKey: "sugg.dollarInsert" },
+    { label: "$$…$$", detailKey: "sugg.dollardd", insertKey: "sugg.dollarddInsert" },
+    { label: "`…`", detailKey: "sugg.backtick", insert: "`${1:sqrt(x+1)}`" },
+    { labelKey: "sugg.headingLabel", detailKey: "sugg.heading", insertKey: "sugg.headingInsert" },
+    { labelKey: "sugg.linkLabel", detailKey: "sugg.link", insertKey: "sugg.linkInsert" },
+    { labelKey: "sugg.boldLabel", detailKey: "sugg.bold", insertKey: "sugg.boldInsert" },
+    { labelKey: "sugg.italicLabel", detailKey: "sugg.italic", insertKey: "sugg.italicInsert" },
   ];
 
   // Авто-дополнения LaTeX — только внутри математики.
   const TEX_MATH = [
-    { label: "\\frac{}{}", detail: "Дробь", insert: "\\frac{${1:числитель}}{${2:знаменатель}}" },
-    { label: "\\sqrt{}", detail: "Квадратный корень", insert: "\\sqrt{${1:x}}" },
-    { label: "\\sqrt[]{}", detail: "Корень n-й степени", insert: "\\sqrt[${1:n}]{${2:x}}" },
-    { label: "\\sum_{}^{}", detail: "Сумма", insert: "\\sum_{${1:i}=1}^{${2:n}} ${3:x_i}" },
-    { label: "\\int_{}^{}", detail: "Интеграл", insert: "\\int_{${1:a}}^{${2:b}} ${3:f(x)}\\,dx" },
-    { label: "\\lim_{}", detail: "Предел", insert: "\\lim_{${1:x \\to ${2:\\infty}}} ${3:f(x)}" },
-    { label: "\\begin{pmatrix}", detail: "Матрица", insert: "\\begin{pmatrix}\n  ${1:a} & ${2:b} \\\\\n  ${3:c} & ${4:d}\n\\end{pmatrix}" },
-    { label: "\\begin{aligned}", detail: "Выравнивание/система", insert: "\\begin{aligned}\n  ${1:y} &= ${2:x} \\\\\n  ${3:y} &= ${4:x^2}\n\\end{aligned}" },
-    { label: "\\left( \\right)", detail: "Скобки по размеру", insert: "\\left( ${1:выражение} \\right)" },
-    { label: "\\left[ \\right]", detail: "Квадратные скобки", insert: "\\left[ ${1:выражение} \\right]" },
-    { label: "\\left\\{ \\right\\}", detail: "Фигурные скобки", insert: "\\left\\{ ${1:выражение} \\right\\}" },
-    { label: "\\left| \\right|", detail: "Модуль по размеру", insert: "\\left| ${1:выражение} \\right|" },
-    { label: "^{}", detail: "Верхний индекс", insert: "^{${1:степень}}" },
-    { label: "_{}", detail: "Нижний индекс", insert: "_{${1:индекс}}" },
-    { label: "\\text{}", detail: "Текст внутри формулы", insert: "\\text{${1:текст}}" },
-    { label: "\\alpha", detail: "Альфа", insert: "\\alpha" },
-    { label: "\\beta", detail: "Бета", insert: "\\beta" },
-    { label: "\\gamma", detail: "Гамма", insert: "\\gamma" },
-    { label: "\\delta", detail: "Дельта", insert: "\\delta" },
-    { label: "\\Delta", detail: "Дельта большая", insert: "\\Delta" },
-    { label: "\\lambda", detail: "Лямбда", insert: "\\lambda" },
-    { label: "\\mu", detail: "Мю", insert: "\\mu" },
-    { label: "\\sigma", detail: "Сигма", insert: "\\sigma" },
-    { label: "\\theta", detail: "Тета", insert: "\\theta" },
-    { label: "\\pi", detail: "Пи", insert: "\\pi" },
-    { label: "\\phi", detail: "Фи", insert: "\\phi" },
-    { label: "\\infty", detail: "Бесконечность", insert: "\\infty" },
-    { label: "\\cdot", detail: "Точка умножения", insert: "\\cdot" },
-    { label: "\\times", detail: "Крестик умножения", insert: "\\times" },
-    { label: "\\pm", detail: "Плюс-минус", insert: "\\pm" },
-    { label: "\\leq", detail: "Меньше или равно", insert: "\\leq" },
-    { label: "\\geq", detail: "Больше или равно", insert: "\\geq" },
-    { label: "\\neq", detail: "Не равно", insert: "\\neq" },
-    { label: "\\approx", detail: "Приблизительно", insert: "\\approx" },
-    { label: "\\rightarrow", detail: "Стрелка вправо", insert: "\\rightarrow" },
-    { label: "\\in", detail: "Принадлежит", insert: "\\in" },
-    { label: "\\sin", detail: "Синус", insert: "\\sin ${1:x}" },
-    { label: "\\cos", detail: "Косинус", insert: "\\cos ${1:x}" },
-    { label: "\\tan", detail: "Тангенс", insert: "\\tan ${1:x}" },
-    { label: "\\log", detail: "Логарифм", insert: "\\log_{${1:10}} ${2:x}" },
-    { label: "\\ln", detail: "Натуральный логарифм", insert: "\\ln ${1:x}" },
-    { label: "\\vec{}", detail: "Вектор", insert: "\\vec{${1:v}}" },
-    { label: "\\hat{}", detail: "Шляпка (единичный вектор)", insert: "\\hat{${1:x}}" },
-    { label: "\\binom{}{}", detail: "Биномиальный коэффициент", insert: "\\binom{${1:n}}{${2:k}}" },
+    { label: "\\frac{}{}", detailKey: "sugg.tex.fraction", insertKey: "sugg.tex.fractionInsert" },
+    { label: "\\sqrt{}", detailKey: "sugg.tex.sqrt", insert: "\\sqrt{${1:x}}" },
+    { label: "\\sqrt[]{}", detailKey: "sugg.tex.sqrtn", insert: "\\sqrt[${1:n}]{${2:x}}" },
+    { label: "\\sum_{}^{}", detailKey: "sugg.tex.sum", insert: "\\sum_{${1:i}=1}^{${2:n}} ${3:x_i}" },
+    { label: "\\int_{}^{}", detailKey: "sugg.tex.integral", insert: "\\int_{${1:a}}^{${2:b}} ${3:f(x)}\\,dx" },
+    { label: "\\lim_{}", detailKey: "sugg.tex.limit", insert: "\\lim_{${1:x \\to ${2:\\infty}}} ${3:f(x)}" },
+    { label: "\\begin{pmatrix}", detailKey: "sugg.tex.pmatrix", insert: "\\begin{pmatrix}\n  ${1:a} & ${2:b} \\\\\n  ${3:c} & ${4:d}\n\\end{pmatrix}" },
+    { label: "\\begin{aligned}", detailKey: "sugg.tex.aligned", insert: "\\begin{aligned}\n  ${1:y} &= ${2:x} \\\\\n  ${3:y} &= ${4:x^2}\n\\end{aligned}" },
+    { label: "\\left( \\right)", detailKey: "sugg.tex.leftparen", insertKey: "sugg.tex.leftparenInsert" },
+    { label: "\\left[ \\right]", detailKey: "sugg.tex.leftbracket", insertKey: "sugg.tex.leftbracketInsert" },
+    { label: "\\left\\{ \\right\\}", detailKey: "sugg.tex.leftbrace", insertKey: "sugg.tex.leftbraceInsert" },
+    { label: "\\left| \\right|", detailKey: "sugg.tex.leftpipe", insertKey: "sugg.tex.leftpipeInsert" },
+    { label: "^{}", detailKey: "sugg.tex.sup", insertKey: "sugg.tex.supInsert" },
+    { label: "_{}", detailKey: "sugg.tex.sub", insertKey: "sugg.tex.subInsert" },
+    { label: "\\text{}", detailKey: "sugg.tex.text", insertKey: "sugg.tex.textInsert" },
+    { label: "\\alpha", detailKey: "tool.alpha", insert: "\\alpha" },
+    { label: "\\beta", detailKey: "tool.beta", insert: "\\beta" },
+    { label: "\\gamma", detailKey: "sugg.tex.gamma", insert: "\\gamma" },
+    { label: "\\delta", detailKey: "sugg.tex.delta", insert: "\\delta" },
+    { label: "\\Delta", detailKey: "sugg.tex.Delta", insert: "\\Delta" },
+    { label: "\\lambda", detailKey: "sugg.tex.lambda", insert: "\\lambda" },
+    { label: "\\mu", detailKey: "sugg.tex.mu", insert: "\\mu" },
+    { label: "\\sigma", detailKey: "sugg.tex.sigma", insert: "\\sigma" },
+    { label: "\\theta", detailKey: "sugg.tex.theta", insert: "\\theta" },
+    { label: "\\pi", detailKey: "sugg.tex.pi", insert: "\\pi" },
+    { label: "\\phi", detailKey: "sugg.tex.phi", insert: "\\phi" },
+    { label: "\\infty", detailKey: "tool.infty", insert: "\\infty" },
+    { label: "\\cdot", detailKey: "sugg.tex.cdot", insert: "\\cdot" },
+    { label: "\\times", detailKey: "sugg.tex.times", insert: "\\times" },
+    { label: "\\pm", detailKey: "sugg.tex.pm", insert: "\\pm" },
+    { label: "\\leq", detailKey: "sugg.tex.leq", insert: "\\leq" },
+    { label: "\\geq", detailKey: "sugg.tex.geq", insert: "\\geq" },
+    { label: "\\neq", detailKey: "sugg.tex.neq", insert: "\\neq" },
+    { label: "\\approx", detailKey: "sugg.tex.approx", insert: "\\approx" },
+    { label: "\\rightarrow", detailKey: "sugg.tex.rightarrow", insert: "\\rightarrow" },
+    { label: "\\in", detailKey: "sugg.tex.in", insert: "\\in" },
+    { label: "\\sin", detailKey: "sugg.tex.sin", insert: "\\sin ${1:x}" },
+    { label: "\\cos", detailKey: "sugg.tex.cos", insert: "\\cos ${1:x}" },
+    { label: "\\tan", detailKey: "sugg.tex.tan", insert: "\\tan ${1:x}" },
+    { label: "\\log", detailKey: "sugg.tex.log", insert: "\\log_{${1:10}} ${2:x}" },
+    { label: "\\ln", detailKey: "sugg.tex.ln", insert: "\\ln ${1:x}" },
+    { label: "\\vec{}", detailKey: "sugg.tex.vec", insert: "\\vec{${1:v}}" },
+    { label: "\\hat{}", detailKey: "sugg.tex.hat", insert: "\\hat{${1:x}}" },
+    { label: "\\binom{}{}", detailKey: "sugg.tex.binom", insert: "\\binom{${1:n}}{${2:k}}" },
   ];
 
   // Авто-дополнения AsciiMath — только внутри математики (бэктик, asciimath-фенс).
   const ASCII_MATH = [
-    { label: "frac", detail: "Дробь (a)/(b)", insert: "(${1:a})/(${2:b})" },
-    { label: "sqrt", detail: "Квадратный корень", insert: "sqrt(${1:x})" },
-    { label: "root", detail: "Корень n-й степени", insert: "root(${1:n})(${2:x})" },
-    { label: "sum", detail: "Сумма", insert: "sum_(${1:i}=1)^(${2:n}) ${3:x_i}" },
-    { label: "int", detail: "Интеграл", insert: "int_(${1:a})^(${2:b}) ${3:f(x)} dx" },
-    { label: "lim", detail: "Предел", insert: "lim_(${1:x -> oo}) ${2:f(x)}" },
-    { label: "x^2", detail: "Степень", insert: "${1:x}^(${2:2})" },
-    { label: "x_n", detail: "Индекс", insert: "${1:x}_(${2:n})" },
-    { label: "abs", detail: "Модуль |x|", insert: "abs(${1:x})" },
-    { label: "alpha", detail: "Альфа", insert: "alpha" },
-    { label: "beta", detail: "Бета", insert: "beta" },
-    { label: "gamma", detail: "Гамма", insert: "gamma" },
-    { label: "delta", detail: "Дельта", insert: "delta" },
-    { label: "Delta", detail: "Дельта большая", insert: "Delta" },
-    { label: "lambda", detail: "Лямбда", insert: "lambda" },
-    { label: "mu", detail: "Мю", insert: "mu" },
-    { label: "sigma", detail: "Сигма", insert: "sigma" },
-    { label: "theta", detail: "Тета", insert: "theta" },
-    { label: "pi", detail: "Пи", insert: "pi" },
-    { label: "phi", detail: "Фи", insert: "phi" },
-    { label: "oo", detail: "Бесконечность", insert: "oo" },
-    { label: "->", detail: "Стрелка вправо", insert: "->" },
-    { label: ">=", detail: "Больше или равно", insert: ">=" },
-    { label: "<=", detail: "Меньше или равно", insert: "<=" },
-    { label: "!=", detail: "Не равно", insert: "!=" },
-    { label: "~~", detail: "Приблизительно", insert: "~~" },
-    { label: "+-", detail: "Плюс-минус", insert: "+-" },
-    { label: "cdot", detail: "Точка умножения", insert: "cdot" },
-    { label: "sin", detail: "Синус", insert: "sin ${1:x}" },
-    { label: "cos", detail: "Косинус", insert: "cos ${1:x}" },
-    { label: "tan", detail: "Тангенс", insert: "tan ${1:x}" },
-    { label: "log", detail: "Логарифм", insert: "log_(${1:10}) ${2:x}" },
-    { label: "ln", detail: "Натуральный логарифм", insert: "ln ${1:x}" },
-    { label: "vec", detail: "Вектор", insert: "vec(${1:v})" },
-    { label: "hat", detail: "Шляпка (единичный вектор)", insert: "hat(${1:x})" },
+    { label: "frac", detailKey: "sugg.ascii.fraction", insert: "(${1:a})/(${2:b})" },
+    { label: "sqrt", detailKey: "sugg.ascii.sqrt", insert: "sqrt(${1:x})" },
+    { label: "root", detailKey: "sugg.ascii.root", insert: "root(${1:n})(${2:x})" },
+    { label: "sum", detailKey: "sugg.ascii.sum", insert: "sum_(${1:i}=1)^(${2:n}) ${3:x_i}" },
+    { label: "int", detailKey: "sugg.ascii.int", insert: "int_(${1:a})^(${2:b}) ${3:f(x)} dx" },
+    { label: "lim", detailKey: "sugg.ascii.lim", insert: "lim_(${1:x -> oo}) ${2:f(x)}" },
+    { label: "x^2", detailKey: "sugg.ascii.power", insert: "${1:x}^(${2:2})" },
+    { label: "x_n", detailKey: "sugg.ascii.index", insert: "${1:x}_(${2:n})" },
+    { label: "abs", detailKey: "sugg.ascii.abs", insert: "abs(${1:x})" },
+    { label: "alpha", detailKey: "sugg.ascii.alpha", insert: "alpha" },
+    { label: "beta", detailKey: "sugg.ascii.beta", insert: "beta" },
+    { label: "gamma", detailKey: "sugg.ascii.gamma", insert: "gamma" },
+    { label: "delta", detailKey: "sugg.ascii.delta", insert: "delta" },
+    { label: "Delta", detailKey: "sugg.ascii.Delta", insert: "Delta" },
+    { label: "lambda", detailKey: "sugg.ascii.lambda", insert: "lambda" },
+    { label: "mu", detailKey: "sugg.ascii.mu", insert: "mu" },
+    { label: "sigma", detailKey: "sugg.ascii.sigma", insert: "sigma" },
+    { label: "theta", detailKey: "sugg.ascii.theta", insert: "theta" },
+    { label: "pi", detailKey: "sugg.ascii.pi", insert: "pi" },
+    { label: "phi", detailKey: "sugg.ascii.phi", insert: "phi" },
+    { label: "oo", detailKey: "sugg.ascii.oo", insert: "oo" },
+    { label: "->", detailKey: "sugg.ascii.arrow", insert: "->" },
+    { label: ">=", detailKey: "sugg.ascii.ge", insert: ">=" },
+    { label: "<=", detailKey: "sugg.ascii.le", insert: "<=" },
+    { label: "!=", detailKey: "sugg.ascii.ne", insert: "!=" },
+    { label: "~~", detailKey: "sugg.ascii.approx", insert: "~~" },
+    { label: "+-", detailKey: "sugg.ascii.pm", insert: "+-" },
+    { label: "cdot", detailKey: "sugg.ascii.cdot", insert: "cdot" },
+    { label: "sin", detailKey: "sugg.ascii.sin", insert: "sin ${1:x}" },
+    { label: "cos", detailKey: "sugg.ascii.cos", insert: "cos ${1:x}" },
+    { label: "tan", detailKey: "sugg.ascii.tan", insert: "tan ${1:x}" },
+    { label: "log", detailKey: "sugg.ascii.log", insert: "log_(${1:10}) ${2:x}" },
+    { label: "ln", detailKey: "sugg.ascii.ln", insert: "ln ${1:x}" },
+    { label: "vec", detailKey: "sugg.ascii.vec", insert: "vec(${1:v})" },
+    { label: "hat", detailKey: "sugg.ascii.hat", insert: "hat(${1:x})" },
   ];
 
   const CHESS_ATTR = [
-    { label: "fen", detail: "Начальная позиция FEN", insert: "fen=\"${1}\"" },
-    { label: "pgn", detail: "URL партии в PGN", doc: "Можно jsdelivr-CDN, как в примерах.", insert: "pgn=\"${1:https://…/part.pgn}\"" },
-    { label: "move", detail: "Ход, с которого начать", insert: "move=\"${1:1}\"" },
-    { label: "lang", detail: "Язык озвучки (ru/en/…)", insert: "lang=\"${1|ru,en|}\"" },
-    { label: "controls", detail: "Кнопки управления (по умолчанию on)", insert: "controls=\"${1|on,off|}\"" },
-    { label: "tone", detail: "Тон преимущества (по умолчанию on)", insert: "tone=\"${1|on,off|}\"" },
-    { label: "sound", detail: "Звуки ходов (по умолчанию on)", insert: "sound=\"${1|on,off|}\"" },
-    { label: "id", detail: "id доски для ссылок", insert: "id=\"${1:board}\"" },
+    { label: "fen", detailKey: "sugg.attr.fen", insert: "fen=\"${1}\"" },
+    { label: "pgn", detailKey: "sugg.attr.pgn", docKey: "sugg.attr.pgnDoc", insert: "pgn=\"${1:https://…/part.pgn}\"" },
+    { label: "move", detailKey: "sugg.attr.move", insert: "move=\"${1:1}\"" },
+    { label: "lang", detailKey: "sugg.attr.lang", insert: "lang=\"${1|ru,en,de,tr|}\"" },
+    { label: "controls", detailKey: "sugg.attr.controls", insert: "controls=\"${1|on,off|}\"" },
+    { label: "tone", detailKey: "sugg.attr.tone", insert: "tone=\"${1|on,off|}\"" },
+    { label: "sound", detailKey: "sugg.attr.sound", insert: "sound=\"${1|on,off|}\"" },
+    { label: "id", detailKey: "sugg.attr.id", insert: "id=\"${1:board}\"" },
   ];
 
   // Авто-вставка заменяет слово, которое только что набрали («y», «si») — поэтому
   // вставка это правая часть выражения; Desmos понимает и голое «x^2» (y1 = x^2),
   // и «\sin(x)». Иначе из «y = si» получилось бы «y = y = \sin(x)».
   const DESMOS = [
-    { label: "y = x^2", detail: "Парабола", insert: "${1:x}^2" },
-    { label: "y = sin(x)", detail: "Синус", insert: "\\sin(${1:x})" },
-    { label: "y = cos(x)", detail: "Косинус", insert: "\\cos(${1:x})" },
-    { label: "y = tan(x)", detail: "Тангенс", insert: "\\tan(${1:x})" },
-    { label: "y = sqrt(x)", detail: "Корень", insert: "\\sqrt{${1:x}}" },
-    { label: "y = log(x)", detail: "Логарифм", insert: "\\log_{${1:10}}(${2:x})" },
-    { label: "y = |x|", detail: "Модуль", insert: "\\left|${1:x}\\right|" },
+    { label: "y = x^2", detailKey: "sugg.desmosExpr.parabola", insert: "${1:x}^2" },
+    { label: "y = sin(x)", detailKey: "sugg.desmosExpr.sin", insert: "\\sin(${1:x})" },
+    { label: "y = cos(x)", detailKey: "sugg.desmosExpr.cos", insert: "\\cos(${1:x})" },
+    { label: "y = tan(x)", detailKey: "sugg.desmosExpr.tan", insert: "\\tan(${1:x})" },
+    { label: "y = sqrt(x)", detailKey: "sugg.desmosExpr.sqrt", insert: "\\sqrt{${1:x}}" },
+    { label: "y = log(x)", detailKey: "sugg.desmosExpr.log", insert: "\\log_{${1:10}}(${2:x})" },
+    { label: "y = |x|", detailKey: "sugg.desmosExpr.abs", insert: "\\left|${1:x}\\right|" },
   ];
 
   const toItems = (list) =>
-    list.map((s) => ({
-      label: s.label,
-      kind: KM.Snippet,
-      detail: s.detail,
-      documentation: s.doc,
-      insertText: s.insert,
-      insertTextRules: RULES.InsertAsSnippet,
-    }));
+    list.map((s) => {
+      const insert = s.insert != null ? s.insert : (s.insertPrefix || "") + I18N.t(s.insertKey);
+      return {
+        label: s.labelKey ? I18N.t(s.labelKey) : s.label,
+        kind: KM.Snippet,
+        detail: I18N.t(s.detailKey),
+        documentation: s.docKey ? I18N.t(s.docKey) : undefined,
+        insertText: insert,
+        insertTextRules: RULES.InsertAsSnippet,
+      };
+    });
 
   // Ручной Ctrl+Space от авто-подсказок quickSuggestions отличить в провайдере
   // нельзя: оба приходят с triggerKind=Invoke. Отличаем по клавиатуре: нажатие
@@ -1291,7 +1295,7 @@ require(["vs/editor/editor.main"], function () {
     // Словесные подсказки из документа глобально не нужны: в обычном тексте они
     // открыли бы попап на каждую букву, что и чиним.
     wordBasedSuggestions: "off",
-    ariaLabel: "Редактор математики. Пишите markdown, LaTeX или AsciiMath.",
+    ariaLabel: I18N.t("editor.ariaLabel"),
   });
 
   registerMarkdownCompletions();
@@ -1313,11 +1317,11 @@ require(["vs/editor/editor.main"], function () {
     const pos = editor.getPosition();
     if (!pos || pos.lineNumber !== 1 || pos.column !== 4) return;
     expandingFrontmatter = true;
-    const fmTemplate = "---\ntitle: \nlang: ru\nmathjax: yes\nchessjax: no\ndesmos: no\n---";
+    const fmTemplate = "---\ntitle: \nlang: " + I18N.getLang() + "\nmathjax: yes\nchessjax: no\ndesmos: no\n---";
     editor.executeEdits("frontmatter", [{ range: new monaco.Range(1, 1, 1, 4), text: fmTemplate }]);
     editor.setPosition({ lineNumber: 2, column: 8 });
     expandingFrontmatter = false;
-    speak("Фронтматтер развёрнут. Введите заголовок.", fileStatusEl);
+    speak(I18N.t("msg.frontmatterExpanded"), fileStatusEl);
   });
 
   // Хоткеи на уровне window в capture-фазе: это самая ранняя точка, в которую
@@ -1341,7 +1345,7 @@ require(["vs/editor/editor.main"], function () {
         e.preventDefault();
         e.stopImmediatePropagation();
         previewSection.hidden = true;
-        speak("Предпросмотр скрыт.");
+        speak(I18N.t("msg.previewHidden"));
         return;
       }
       // Alt+M — режим формулы (строка/блок), Alt+L — синтаксис (LaTeX/AsciiMath),
@@ -1351,14 +1355,14 @@ require(["vs/editor/editor.main"], function () {
           e.preventDefault();
           e.stopImmediatePropagation();
           formulaMode = formulaMode === "inline" ? "multiline" : "inline";
-          speak("Режим вставки формулы: " + (formulaMode === "inline" ? "строка" : "блок") + ".");
+          speak(I18N.t("msg.formulaMode", { mode: I18N.t(formulaMode === "inline" ? "msg.modeInline" : "msg.modeBlock") }));
           return;
         }
         if (e.code === "KeyL") {
           e.preventDefault();
           e.stopImmediatePropagation();
           syntax = syntax === "latex" ? "asciimath" : "latex";
-          speak("Синтаксис формул: " + (syntax === "latex" ? "LaTeX" : "AsciiMath") + ".");
+          speak(I18N.t("msg.syntaxMode", { syntax: I18N.t(syntax === "latex" ? "msg.syntaxLatex" : "msg.syntaxAscii") }));
           return;
         }
         const hi = HOTKEY_CODES.indexOf(e.code);
@@ -1402,6 +1406,18 @@ require(["vs/editor/editor.main"], function () {
     exampleSelect.value = "";
     if (name) openExample(name);
   });
+  // Смена языка интерфейса: пересобрать тулбар и aria-метку редактора на новом
+  // языке. Тексты предпросмотра и демо остаются на языке документа — это md.
+  const langSelect = document.getElementById("lang-select");
+  langSelect.addEventListener("change", () => {
+    const lang = langSelect.value;
+    I18N.setLang(lang);
+    toolbarEl.replaceChildren();
+    buildToolbar();
+    editor.updateOptions({ ariaLabel: I18N.t("editor.ariaLabel") });
+    speak(I18N.t("msg.langChanged", { lang: I18N.langName(lang) }), fileStatusEl);
+    editor.focus();
+  });
   document.getElementById("open-input").addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -1409,7 +1425,7 @@ require(["vs/editor/editor.main"], function () {
     reader.onload = () => {
       editor.setValue(String(reader.result));
       showPreviewAndFocus(1);
-      speak("Файл " + file.name + " открыт, предпросмотр показан.", fileStatusEl);
+      speak(I18N.t("msg.fileOpened", { name: file.name }), fileStatusEl);
     };
     reader.readAsText(file, "utf-8");
     event.target.value = "";
@@ -1421,16 +1437,16 @@ require(["vs/editor/editor.main"], function () {
   document.getElementById("btn-help").addEventListener("click", () => {
     if (!helpDialog.open) {
       helpDialog.showModal();
-      speak("Справка открыта. Esc — закрыть.", fileStatusEl);
+      speak(I18N.t("msg.helpOpen"), fileStatusEl);
     }
   });
   helpClose.addEventListener("click", () => helpDialog.close());
   helpDialog.addEventListener("close", () => {
     document.getElementById("btn-help").focus();
-    speak("Справка закрыта.", fileStatusEl);
+    speak(I18N.t("msg.helpClosed"), fileStatusEl);
   });
 
-  speak("Редактор готов. Нажмите Ctrl+Enter для предпросмотра на строке курсора.");
+  speak(I18N.t("msg.editorReady"));
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch((err) => {

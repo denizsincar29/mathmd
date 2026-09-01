@@ -4,12 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#14181c">
-<title>Математический редактор — Markdown, LaTeX, AsciiMath, Desmos, шахматы</title>
-<meta name="description" content="Доступный веб-редактор markdown с математикой MathJax 4, поддержкой LaTeX и AsciiMath, графиками Desmos и шахматными досками chessjax. Для незрячих пользователей.">
+<title id="doc-title">Математический редактор — Markdown, LaTeX, AsciiMath, Desmos, шахматы</title>
+<meta name="description" id="doc-desc" content="Доступный веб-редактор markdown с математикой MathJax 4, поддержкой LaTeX и AsciiMath, графиками Desmos и шахматными досками chessjax. Для незрячих пользователей.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=30">
+<link rel="stylesheet" href="style.css?v=31">
+<script src="i18n.js?v=31"></script>
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -37,25 +38,25 @@
 </head>
 <body>
 <header>
-  <h1>Математический редактор</h1>
-  <p>Markdown + LaTeX, AsciiMath, графики Desmos и шахматные доски. Предпросмотр — <strong>Alt+ё</strong>, вставка формул — кнопки (хоткеи Alt+1..9).</p>
+  <h1 data-i18n="h1.title">Математический редактор</h1>
+  <p data-i18n="h1.subtitle">Markdown + LaTeX, AsciiMath, графики Desmos и шахматные доски. Предпросмотр — <strong>Alt+ё</strong>, вставка формул — кнопки (хоткеи Alt+1..9).</p>
 </header>
 
 <main>
   <section aria-labelledby="toolbar-heading">
-    <h2 id="toolbar-heading" class="visually-hidden">Панель вставки формул</h2>
-    <div class="toolbar" role="toolbar" aria-label="Вставка формул и уравнений" id="toolbar"></div>
-    <p class="hint">Выделите текст и нажмите кнопку — выделение обернётся в <code>$…$</code>, <code>$$…$$</code> или <code>`…`</code>. Без выделения кнопка вставит шаблон. Хоткеи вставки — на кнопках (Alt+1..9).</p>
+    <h2 id="toolbar-heading" class="visually-hidden" data-i18n="ui.toolbarHeading">Панель вставки формул</h2>
+    <div class="toolbar" role="toolbar" aria-label="Вставка формул и уравнений" data-i18n-aria="ui.toolbarLabel" id="toolbar"></div>
+    <p class="hint" data-i18n="ui.toolbarHint">Выделите текст и нажмите кнопку — выделение обернётся в <code>$…$</code>, <code>$$…$$</code> или <code>`…`</code>. Без выделения кнопка вставит шаблон. Хоткеи вставки — на кнопках (Alt+1..9).</p>
   </section>
 
   <section aria-labelledby="editor-heading">
-    <h2 id="editor-heading" class="visually-hidden">Редактор</h2>
-    <div id="editor" class="editor" role="textbox" aria-label="Редактор математики: пишите markdown, LaTeX или AsciiMath"></div>
+    <h2 id="editor-heading" class="visually-hidden" data-i18n="ui.editorLabel">Редактор</h2>
+    <div id="editor" class="editor" role="textbox" aria-label="Редактор математики: пишите markdown, LaTeX или AsciiMath" data-i18n-aria="ui.editorLabel"></div>
   </section>
 
   <section aria-labelledby="preview-heading" id="preview-section">
-    <h2 id="preview-heading">Предпросмотр</h2>
-    <p class="hint">Текст обновляется при наборе. Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть. Шахматная доска — fenced-блок <code>```chess</code> с атрибутами (например <code>```chess fen="…"```</code>).</p>
+    <h2 id="preview-heading" data-i18n="ui.previewHeading">Предпросмотр</h2>
+    <p class="hint" data-i18n="ui.previewHint">Текст обновляется при наборе. Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть. Шахматная доска — fenced-блок <code>```chess</code> с атрибутами (например <code>```chess fen="…"```</code>).</p>
     <div id="preview" class="preview"></div>
   </section>
 
@@ -64,20 +65,27 @@
   <div id="preview-status" class="visually-hidden" aria-live="assertive"></div>
 
   <section aria-labelledby="file-heading">
-    <h2 id="file-heading">Файл и вывод</h2>
+    <h2 id="file-heading" data-i18n="ui.fileHeading">Файл и вывод</h2>
     <div class="file-row">
-      <button id="btn-preview" type="button">Показать предпросмотр (Alt+ё)</button>
-      <button id="btn-export" type="button">Сохранить готовый HTML</button>
-      <button id="btn-save" type="button">Скачать .md</button>
-      <button id="btn-open" type="button">Открыть .md</button>
-      <button id="btn-help" type="button">Справка</button>
+      <button id="btn-preview" type="button" data-i18n="ui.btnPreview">Показать предпросмотр (Alt+ё)</button>
+      <button id="btn-export" type="button" data-i18n="ui.btnExport">Сохранить готовый HTML</button>
+      <button id="btn-save" type="button" data-i18n="ui.btnSave">Скачать .md</button>
+      <button id="btn-open" type="button" data-i18n="ui.btnOpen">Открыть .md</button>
+      <button id="btn-help" type="button" data-i18n="ui.btnHelp">Справка</button>
       <input id="open-input" type="file" accept=".md,.markdown,.txt,text/markdown" hidden>
-      <label for="example-select">Пример:</label>
-      <select id="example-select" aria-label="Открыть пример">
+      <label for="example-select" data-i18n="ui.exampleLabel">Пример:</label>
+      <select id="example-select" aria-label="Открыть пример" data-i18n-aria="ui.exampleSelectAria">
         <option value="">—</option>
-        <option value="demo">Демо mathmd</option>
+        <option value="demo" data-i18n="ui.exampleDemo">Демо mathmd</option>
         <option value="morphy">The Opera Game</option>
-        <option value="variations">Комментарии и варианты</option>
+        <option value="variations" data-i18n="ui.exampleVariations">Комментарии и варианты</option>
+      </select>
+      <label for="lang-select" data-i18n="ui.lang">Язык:</label>
+      <select id="lang-select" aria-label="Язык интерфейса" data-i18n-aria="ui.langSelectAria">
+        <option value="ru">Русский</option>
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+        <option value="tr">Türkçe</option>
       </select>
     </div>
     <div id="file-status" class="visually-hidden" aria-live="assertive"></div>
@@ -85,34 +93,34 @@
 </main>
 
 <dialog id="help-dialog" aria-labelledby="help-heading">
-  <h2 id="help-heading">Справка: как пользоваться редактором</h2>
+  <h2 id="help-heading" data-i18n="help.title">Справка: как пользоваться редактором</h2>
 
-  <h3>Формулы</h3>
-  <p>LaTeX пишется в долларах: <code>$x^2$</code> — формула в строке, <code>$$...$$</code> — на отдельной строке. Работают и скобки: <code>\(...\)</code> и <code>\[...\]</code>.</p>
-  <p>AsciiMath пишется в обратных кавычках: <code>`sqrt(2)`</code>. Это упрощённый язык: <code>`sum_(i=1)^n`</code>, греческие буквы — <code>alpha</code>, <code>pi</code>.</p>
+  <h3 data-i18n="help.formulasTitle">Формулы</h3>
+  <p data-i18n="help.formulasText">LaTeX пишется в долларах: <code>$x^2$</code> — формула в строке, <code>$$...$$</code> — на отдельной строке. Работают и скобки: <code>\(...\)</code> и <code>\[...\]</code>.</p>
+  <p data-i18n="help.asciimathText">AsciiMath пишется в обратных кавычках: <code>`sqrt(2)`</code>. Это упрощённый язык: <code>`sum_(i=1)^n`</code>, греческие буквы — <code>alpha</code>, <code>pi</code>.</p>
 
-  <h3>Вставка формул кнопками</h3>
-  <p>Выделите текст и нажмите кнопку на панели — выделение обернётся в формулу. Без выделения кнопка вставит шаблон. Хоткеи: Alt+M — строка или блок, Alt+L — синтаксис LaTeX или AsciiMath, Alt+1..9 — вставить дробь, корень, сумму и другие структуры.</p>
+  <h3 data-i18n="help.insertTitle">Вставка формул кнопками</h3>
+  <p data-i18n="help.insertText">Выделите текст и нажмите кнопку на панели — выделение обернётся в формулу. Без выделения кнопка вставит шаблон. Хоткеи: Alt+M — строка или блок, Alt+L — синтаксис LaTeX или AsciiMath, Alt+1..9 — вставить дробь, корень, сумму и другие структуры.</p>
 
-  <h3>Автодополнение</h3>
-  <p>Внутри формулы подсказки появляются сами: в LaTeX-делимитерах — латеховские команды (например, <code>\frac</code>, <code>\sqrt</code>), в AsciiMath — аскиматовские (<code>sqrt</code>, <code>sum</code>). Делимитеры, блоки, ключи настроек и разметка markdown — по Ctrl+Space.</p>
+  <h3 data-i18n="help.completeTitle">Автодополнение</h3>
+  <p data-i18n="help.completeText">Внутри формулы подсказки появляются сами: в LaTeX-делимитерах — латеховские команды (например, <code>\frac</code>, <code>\sqrt</code>), в AsciiMath — аскиматовские (<code>sqrt</code>, <code>sum</code>). Делимитеры, блоки, ключи настроек и разметка markdown — по Ctrl+Space.</p>
 
-  <h3>Настройки документа (frontmatter)</h3>
-  <p>Введите <code>---</code> в начале пустого документа — блок настроек развернётся сам и закроется. В нём: <code>title</code> — заголовок, <code>lang</code> — язык (ru, en, de), <code>author</code>, <code>description</code>. Модули: <code>mathjax</code> включён по умолчанию, <code>chessjax</code> и <code>desmos</code> выключены — включить: <code>chessjax: yes</code>.</p>
+  <h3 data-i18n="help.frontmatterTitle">Настройки документа (frontmatter)</h3>
+  <p data-i18n="help.frontmatterText">Введите <code>---</code> в начале пустого документа — блок настроек развернётся сам и закроется. В нём: <code>title</code> — заголовок, <code>lang</code> — язык (ru, en, de, tr), <code>author</code>, <code>description</code>. Модули: <code>mathjax</code> включён по умолчанию, <code>chessjax</code> и <code>desmos</code> выключены — включить: <code>chessjax: yes</code>.</p>
 
-  <h3>Графики и шахматы</h3>
-  <p>График Desmos — блок <code>```desmos</code>, каждая строка — выражение, например <code>y=x^2</code>.</p>
-  <p>Шахматная доска — блок <code>```chess</code> с атрибутами. Минимум: <code>```chess fen="начальная позиция"</code>. Можно партию <code>pgn="адрес"</code> и номер хода <code>move="10"</code>.</p>
+  <h3 data-i18n="help.chessTitle">Графики и шахматы</h3>
+  <p data-i18n="help.chessDesmosText">График Desmos — блок <code>```desmos</code>, каждая строка — выражение, например <code>y=x^2</code>.</p>
+  <p data-i18n="help.chessBoardText">Шахматная доска — блок <code>```chess</code> с атрибутами. Минимум: <code>```chess fen="начальная позиция"</code>. Можно партию <code>pgn="адрес"</code> и номер хода <code>move="10"</code>.</p>
 
-  <h3>Предпросмотр и клавиши</h3>
-  <p>Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть предпросмотр. Текст предпросмотра обновляется при наборе.</p>
+  <h3 data-i18n="help.previewTitle">Предпросмотр и клавиши</h3>
+  <p data-i18n="help.previewText">Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть предпросмотр. Текст предпросмотра обновляется при наборе.</p>
 
-  <h3>Файл и вывод</h3>
-  <p>Открыть .md — файл с диска, Скачать .md — сохранить исходник, Сохранить готовый HTML — скачать страницу для раздачи. Примеры открываются из списка «Пример:».</p>
+  <h3 data-i18n="help.fileTitle">Файл и вывод</h3>
+  <p data-i18n="help.fileText">Открыть .md — файл с диска, Скачать .md — сохранить исходник, Сохранить готовый HTML — скачать страницу для раздачи. Примеры открываются из списка «Пример:».</p>
 
-  <button id="help-close" type="button">Закрыть справку (Esc)</button>
+  <button id="help-close" type="button" data-i18n="help.close">Закрыть справку (Esc)</button>
 </dialog>
 
-<script src="script.js?v=30" type="module"></script>
+<script src="script.js?v=31" type="module"></script>
 </body>
 </html>
