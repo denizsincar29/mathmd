@@ -459,11 +459,10 @@ function waitForBoards(timeoutMs = 3000) {
   });
 }
 
-async function exportHtml() {
-  // Сначала доводим предпросмотр и доски до отрисованного состояния, потом
-  // снимаем снимки с живых досок — иначе в экспорт попадут пустые теги.
-  await renderPreview();
-  await waitForBoards();
+// Полный самодостаточный HTML-документ из текущего markdown: используется и
+// для скачивания (exportHtml), и для показа по ?preview=readyhtml. Доски
+// встают статичным снимком div-сетки (CSS скопирован из chessjax/style.css).
+async function buildDocumentHtml() {
   const bodyHtml = renderMarkdown(editor.getValue()).replace(
     /<chessjax-board\b([^>]*)><\/chessjax-board>/g,
     (m, attrs) => {
@@ -471,7 +470,7 @@ async function exportHtml() {
       return idMatch ? chessExportSnapshot(idMatch[1]) : "";
     }
   );
-  const doc = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -486,13 +485,12 @@ async function exportHtml() {
   table { border-collapse: collapse; }
   th, td { border: 1px solid #ccc; padding: .3rem .6rem; }
   .desmos { width: 100%; height: 380px; margin: .5rem 0; }
-  .chessjax-board { border-collapse: collapse; margin: .5rem 0; background: #fff; }
-  .chessjax-board th { font-size: .8rem; padding: .2rem .4rem; }
-  .chessjax-board td { width: 48px; height: 48px; text-align: center; font-size: 1.5rem; }
-  .chessjax-board td.square-dark { background: #769656; }
-  .chessjax-board td.square-light { background: #eeeed2; }
-  .chessjax-board td.piece-w { color: #fff; text-shadow: 0 0 2px #000; }
-  .chessjax-board td.piece-b { color: #000; text-shadow: 0 0 2px #fff; }
+  .chessjax-board { display: grid; grid-template-columns: repeat(8, 48px); width: max-content; margin: .5rem 0; background: #fff; }
+  .chessjax-cell { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+  .chessjax-cell.square-dark { background: #769656; }
+  .chessjax-cell.square-light { background: #eeeed2; }
+  .chessjax-cell.piece-w { color: #fff; text-shadow: 0 0 2px #000; }
+  .chessjax-cell.piece-b { color: #000; text-shadow: 0 0 2px #fff; }
   .chessjax-summary, .chessjax-live { color: #555; font-size: .9rem; }
 </style>
 <script>
@@ -515,7 +513,14 @@ document.querySelectorAll(".desmos").forEach(function (el) {
 </script>
 </body>
 </html>`;
-  download("math.html", doc, "text/html;charset=utf-8");
+}
+
+async function exportHtml() {
+  // Сначала доводим предпросмотр и доски до отрисованного состояния, потом
+  // снимаем снимки с живых досок — иначе в экспорт попадут пустые теги.
+  await renderPreview();
+  await waitForBoards();
+  download("math.html", await buildDocumentHtml(), "text/html;charset=utf-8");
   speak("HTML сохранён.", fileStatusEl);
 }
 
@@ -559,6 +564,50 @@ const DEFAULT_MD = [
 ].join("\n");
 
 let editor = null;
+
+// --- URL-параметры -----------------------------------------------------------
+//
+// ?example=<имя>.md         — загрузить examples/<имя>.md в редактор.
+// ?example=<имя>.md&preview=readyhtml — вместо редактора открыть готовый HTML
+//                              (тот же самодостаточный документ, что и экспорт).
+// ?example=<имя>.md&preview=on — загрузить пример и сразу показать предпросмотр.
+//
+// Имя санитизируется: разрешены только латиница, цифры, подчёркивание, дефис;
+// расширение .md добавляется автоматически, так что в URL можно писать
+// example=morphy или example=morphy.md — результат одинаковый.
+async function loadFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const name = params.get("example");
+  if (!name) return;
+  const safe = name.replace(/\.md$/i, "").replace(/[^a-z0-9_-]/gi, "");
+  if (!safe) {
+    speak("Некорректное имя примера: " + name, fileStatusEl);
+    return;
+  }
+  const res = await fetch("examples/" + safe + ".md");
+  if (!res.ok) {
+    speak("Пример " + safe + " не найден.", fileStatusEl);
+    return;
+  }
+  const md = await res.text();
+  editor.setValue(md);
+  if (params.get("preview") === "readyhtml") {
+    // Доводим предпросмотр и доски до отрисованного состояния, затем заменяем
+    // страницу готовым HTML — «перенаправляет» на отрендеренный документ.
+    await renderPreview();
+    await waitForBoards();
+    const doc = await buildDocumentHtml();
+    document.open();
+    document.write(doc);
+    document.close();
+    return;
+  }
+  if (params.get("preview") === "on") {
+    showPreviewAndFocus(1);
+  } else {
+    speak("Пример " + safe + " загружен. Покажите предпросмотр: Alt+ё.", fileStatusEl);
+  }
+}
 
 require.config({
   paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs" },
@@ -662,4 +711,7 @@ require(["vs/editor/editor.main"], function () {
       console.warn("[mathmd] service worker:", err);
     });
   }
+
+  // URL-параметры должны сработать уже после инициализации редактора.
+  loadFromUrl();
 });
