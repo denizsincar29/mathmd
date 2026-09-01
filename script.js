@@ -4,9 +4,9 @@
 // строке курсора, помощники вставки формул, доступность для скринридера.
 
 // Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
-// Импорт с CDN (jsdelivr, GH-тег v0.4.1) по side-effect: регистрирует
+// Импорт с CDN (jsdelivr, GH-тег v0.5.0) по side-effect: регистрирует
 // кастомный элемент и document-level делегат для кнопок <button chess="id" move="N">.
-import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.4.1/chessjax.js";
+import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.5.0/chessjax.js";
 
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
@@ -527,6 +527,7 @@ function buildDocumentHtml() {
   .chessjax-cell.piece-w { color: #fff; text-shadow: 0 0 2px #000; }
   .chessjax-cell.piece-b { color: #000; text-shadow: 0 0 2px #fff; }
   .chessjax-cell.variant-highlight { box-shadow: inset 0 0 0 3px #f59e0b; }
+  .chessjax-cell.analysis-move { box-shadow: inset 0 0 0 3px #3b82f6; }
   .chessjax-summary { color: #555; font-size: .9rem; max-width: 420px; }
   .chessjax-controls { display: flex; gap: .4rem; margin-top: .5rem; }
   .chessjax-btn { min-width: 44px; min-height: 38px; font-size: .9rem; }
@@ -551,7 +552,7 @@ window.MathJax = {
 };
 </script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
-<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.4.1/chessjax.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.5.0/chessjax.js"></script>
 <script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
 </head>
 <body>
