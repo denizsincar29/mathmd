@@ -700,6 +700,14 @@
     "sig.rootN": { ru: "показатель корня", en: "root index", de: "Wurzelexponent", tr: "kök derecesi" },
     "sig.rootArg": { ru: "подкоренное выражение", en: "radicand", de: "Radikand", tr: "kök içi" },
     "sig.arg": { ru: "аргумент", en: "argument", de: "Argument", tr: "argüman" },
+    // Имена значений для сигнатур блоков, атрибутов chess и ключей frontmatter.
+    "sig.value": { ru: "значение", en: "value", de: "Wert", tr: "değer" },
+    "sig.expr": { ru: "выражение", en: "expression", de: "Ausdruck", tr: "ifade" },
+    "sig.formula": { ru: "формула", en: "formula", de: "Formel", tr: "formül" },
+    "sig.blockChess": { ru: "Шахматная доска", en: "Chess board", de: "Schachbrett", tr: "Satranç tahtası" },
+    "sig.blockDesmos": { ru: "График Desmos", en: "Desmos graph", de: "Desmos-Diagramm", tr: "Desmos grafiği" },
+    "sig.blockLatex": { ru: "Формула LaTeX", en: "LaTeX formula", de: "LaTeX-Formel", tr: "LaTeX formülü" },
+    "sig.blockAscii": { ru: "Формула AsciiMath", en: "AsciiMath formula", de: "AsciiMath-Formel", tr: "AsciiMath formülü" },
 
     // --- Экспорт и документ ----------------------------------------------------
     "doc.chessOff": {

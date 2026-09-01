@@ -686,6 +686,7 @@ function buildDocumentHtml() {
       {
         loader: { load: ["input/tex", "input/asciimath", "output/chtml"] },
         tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["$$", "$$"], ["\\[", "\\]"]] },
+        a11y: { speech: false, assistiveMml: true },
         options: { enableMenu: false },
       },
       fm.mathjax && typeof fm.mathjax === "object" ? fm.mathjax : {}
@@ -1304,6 +1305,73 @@ const SIG_PARTS = {
   "hat": [["", "(", "sig.hat"]],
 };
 
+// Сигнатуры для fenced-блоков, атрибутов chess и ключей frontmatter. Параметр —
+// [префикс, i18n-ключ имени, i18n-ключ описания]; имя в label (диапазон) — то,
+// что пользователь должен заполнить.
+const SIG_ATTR = {
+  fen: { doc: "sugg.attr.fen" },
+  pgn: { doc: "sugg.attr.pgnDoc" },
+  move: { doc: "sugg.attr.move" },
+  lang: { doc: "sugg.attr.lang" },
+  controls: { doc: "sugg.attr.controls" },
+  tone: { doc: "sugg.attr.tone" },
+  sound: { doc: "sugg.attr.sound" },
+  id: { doc: "sugg.attr.id" },
+};
+
+const SIG_BLOCK = {
+  chess: {
+    label: "```chess ",
+    doc: "sig.blockChess",
+    parts: [
+      ['fen="', "sig.value", "sugg.attr.fen"],
+      [' pgn="', "sig.value", "sugg.attr.pgnDoc"],
+      [' move="', "sig.value", "sugg.attr.move"],
+      [' lang="', "sig.value", "sugg.attr.lang"],
+      [' controls="', "sig.value", "sugg.attr.controls"],
+      [' tone="', "sig.value", "sugg.attr.tone"],
+      [' sound="', "sig.value", "sugg.attr.sound"],
+      [' id="', "sig.value", "sugg.attr.id"],
+    ],
+  },
+  desmos: { label: "```desmos ", doc: "sig.blockDesmos", parts: [["y=", "sig.expr", "sugg.desmosBlockDoc"]] },
+  latex: { label: "```latex ", doc: "sig.blockLatex", parts: [["", "sig.formula", "sig.blockLatex"]] },
+  tex: { label: "```tex ", doc: "sig.blockLatex", parts: [["", "sig.formula", "sig.blockLatex"]] },
+  asciimath: { label: "```asciimath ", doc: "sig.blockAscii", parts: [["", "sig.formula", "sig.blockAscii"]] },
+};
+
+const SIG_FM = {
+  title: { doc: "sugg.titleDoc" },
+  lang: { doc: "sugg.langDoc" },
+  mathjax: { doc: "sugg.mathjaxDoc" },
+  chessjax: { doc: "sugg.chessjaxDoc" },
+  desmos: { doc: "sugg.desmosDoc" },
+  author: { doc: "sugg.author" },
+  description: { doc: "sugg.description" },
+  css: { doc: "sugg.css" },
+};
+
+// Собрать сигнатуру из частей: label склеивается из префиксов и имён, диапазон
+// каждого параметра — позиция имени в label.
+function buildSig(label, parts) {
+  let l = label;
+  const pl = [];
+  for (const [pre, nameKey, docKey] of parts) {
+    const name = I18N.t(nameKey);
+    l += pre + name;
+    const start = l.length - name.length;
+    pl.push([start, start + name.length]);
+  }
+  return {
+    label: l,
+    parameters: parts.map((p, i) => ({ label: pl[i], documentation: I18N.t(p[2]) })),
+  };
+}
+
+function sigResult(sig, activeParam) {
+  return { value: { signatures: [sig], activeSignature: 0, activeParameter: activeParam }, dispose: () => {} };
+}
+
 // Определить команду под курсором и уже набранный хвост аргументов.
 function findSigCommand(math, lineText) {
   if (math === "tex") {
@@ -1328,41 +1396,75 @@ function findSigCommand(math, lineText) {
 
 function registerSignatureHelp() {
   monaco.languages.registerSignatureHelpProvider("markdown", {
-    signatureHelpTriggerCharacters: ["{", "(", ",", "^", "_"],
-    signatureHelpRetriggerCharacters: ["{", "(", ","],
+    signatureHelpTriggerCharacters: ["{", "(", ",", "^", "_", '"', "`", ":", " ", "="],
+    signatureHelpRetriggerCharacters: ["{", "(", ",", '"', "="],
     provideSignatureHelp(model, position) {
       const math = mathContext(model, position);
-      if (math !== "tex" && math !== "ascii") return null;
       const lineText = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
-      const found = findSigCommand(math, lineText);
-      if (!found) return null;
-      const parts = SIG_PARTS[found.command];
-      // Сколько частей уже пройдено: число закрытых скобок в хвосте от команды.
-      const closer = found.brace === "{" ? "}" : ")";
-      const openCount = (found.rest.match(new RegExp("\\" + found.brace, "g")) || []).length;
-      const closeCount = (found.rest.match(new RegExp("\\" + closer, "g")) || []).length;
-      let label = found.command;
-      const paramLabels = [];
-      for (const [pre, brace, key] of parts) {
-        const name = I18N.t(key);
-        const close = brace === "{" ? "}" : ")";
-        label += pre + brace + name + close;
-        const start = label.length - close.length - name.length;
-        paramLabels.push([start, start + name.length]);
+      // LaTeX/AsciiMath: команды с именами аргументов (v34).
+      if (math === "tex" || math === "ascii") {
+        const found = findSigCommand(math, lineText);
+        if (!found) return null;
+        const parts = SIG_PARTS[found.command];
+        // Сколько частей уже пройдено: число закрытых скобок в хвосте от команды.
+        const closer = found.brace === "{" ? "}" : ")";
+        const closeCount = (found.rest.match(new RegExp("\\" + closer, "g")) || []).length;
+        let label = found.command;
+        const paramLabels = [];
+        for (const [pre, brace, key] of parts) {
+          const name = I18N.t(key);
+          const close = brace === "{" ? "}" : ")";
+          label += pre + brace + name + close;
+          const start = label.length - close.length - name.length;
+          paramLabels.push([start, start + name.length]);
+        }
+        return {
+          value: {
+            signatures: [
+              {
+                label,
+                parameters: parts.map((p, i) => ({ label: paramLabels[i], documentation: I18N.t(p[2]) })),
+              },
+            ],
+            activeSignature: 0,
+            activeParameter: Math.max(0, Math.min(closeCount, parts.length - 1)),
+          },
+          dispose: () => {},
+        };
       }
-      return {
-        value: {
-          signatures: [
-            {
-              label,
-              parameters: parts.map((p, i) => ({ label: paramLabels[i], documentation: I18N.t(p[2]) })),
-            },
-          ],
-          activeSignature: 0,
-          activeParameter: Math.max(0, Math.min(closeCount, parts.length - 1)),
-        },
-        dispose: () => {},
-      };
+      if (math !== null) return null;
+
+      // 1. Строка-открывашка fenced-блока: ```chess , ```desmos , ```latex …
+      const bm = /^\s*`{3,}(\w*)\s*$/.exec(lineText);
+      if (bm) {
+        const lang = bm[1].toLowerCase();
+        if (!lang) return null;
+        const block = Object.keys(SIG_BLOCK).find((k) => k === lang || k.startsWith(lang) || lang.startsWith(k));
+        if (!block) return null;
+        const sig = buildSig(SIG_BLOCK[block].label, SIG_BLOCK[block].parts);
+        sig.documentation = I18N.t(SIG_BLOCK[block].doc);
+        return sigResult(sig, 0);
+      }
+
+      // 2. Ключ frontmatter: title: , lang: …
+      if (inFrontmatter(model, position)) {
+        const km = /([A-Za-z0-9_-]+):\s*$/.exec(lineText);
+        if (km && SIG_FM[km[1]]) {
+          return sigResult(buildSig(km[1] + ": ", [["", "sig.value", SIG_FM[km[1]].doc]]), 0);
+        }
+        return null;
+      }
+
+      // 3. Атрибут chess внутри блока: fen=" , move=" …
+      const fence = fenceContext(model, position);
+      if (fence === "chess") {
+        const am = /([\w-]+)\s*=\s*"?$/.exec(lineText);
+        if (am && SIG_ATTR[am[1]]) {
+          return sigResult(buildSig(am[1] + '="', [["", "sig.value", SIG_ATTR[am[1]].doc]]), 0);
+        }
+        return null;
+      }
+      return null;
     },
   });
 }
