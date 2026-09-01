@@ -1,6 +1,6 @@
 // Service worker: PWA + offline. Bump CACHE_NAME whenever static assets
 // change so old clients drop the stale cache on their next visit.
-const CACHE_NAME = "mathmd-v21";
+const CACHE_NAME = "mathmd-v22";
 
 const ASSETS = [
   "./",
@@ -34,19 +34,30 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET") return;
-  // Cross-origin CDN (MathJax, Monaco, showdown, Desmos): try cache,
-  // then network; never block.
+  // Cross-origin CDN (MathJax, Monaco, showdown, Desmos, chessjax).
+  // Скрипты/модули НЕ перехватываем: если такой запрос однажды закешировался
+  // как opaque (статус 0, без CORS-заголовков — так фечатся обычные <script>),
+  // модульный import() по тому же URL падает («Failed to fetch dynamically
+  // imported module» / «ServiceWorker перехватил запрос…»). Браузер грузит их
+  // нативно через свой HTTP-кэш. Остальное (шрифты, картинки, CSS, fetch)
+  // кешируем, но respondWith не может упасть — есть запасной fetch.
   if (url.origin !== self.location.origin) {
+    if (event.request.destination === "script") return;
     event.respondWith(
-      caches.match(event.request).then(
-        (hit) =>
-          hit ||
-          fetch(event.request).then((response) => {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
-            return response;
-          })
-      )
+      caches
+        .match(event.request)
+        .then((hit) => {
+          if (hit && hit.status === 0) return fetch(event.request);
+          return (
+            hit ||
+            fetch(event.request).then((response) => {
+              const copy = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
+              return response;
+            })
+          );
+        })
+        .catch(() => fetch(event.request))
     );
     return;
   }
