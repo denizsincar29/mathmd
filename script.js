@@ -623,6 +623,20 @@ let editor = null;
 // Имя — простой файл: латиница, цифры, подчёркивание, дефис и опционально .md.
 // Всё остальное (пути, "..", пробелы) отклоняем сразу — никакого обхода
 // каталога. В URL можно писать example=morphy или example=morphy.md.
+// ?preview=html: заменить страницу готовым HTML. Monaco обязан быть уничтожен
+// ДО document.open() — иначе его ResizeObserver и фоновый токенайзер продолжают
+// работать в перезаписанном документе и падают о пустой body (g.document.body
+// is null, modelLineProjections undefined).
+function openStandaloneHtml() {
+  const doc = buildDocumentHtml();
+  const model = editor.getModel();
+  editor.dispose();
+  if (model) model.dispose();
+  document.open();
+  document.write(doc);
+  document.close();
+}
+
 async function loadFromUrl() {
   const params = new URLSearchParams(location.search);
   const name = params.get("example");
@@ -641,12 +655,7 @@ async function loadFromUrl() {
     editor.setValue(md);
     const preview = params.get("preview");
     if (preview === "html" || preview === "readyhtml") {
-      // Заменяем страницу готовым HTML — «перенаправляет» на отрендеренный
-      // документ с живыми шахматными досками (компонент из CDN, CSS встроен).
-      const doc = buildDocumentHtml();
-      document.open();
-      document.write(doc);
-      document.close();
+      openStandaloneHtml();
       return;
     }
     if (params.get("preview") === "on") {
@@ -685,10 +694,7 @@ async function loadFromUrl() {
     return;
   }
   if (params.get("preview") === "html" || params.get("preview") === "readyhtml") {
-    const doc = buildDocumentHtml();
-    document.open();
-    document.write(doc);
-    document.close();
+    openStandaloneHtml();
     return;
   }
   if (params.get("preview") === "on") {
