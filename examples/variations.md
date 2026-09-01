@@ -7,7 +7,7 @@ chessjax читает комментарии из PGN и озвучивает и
 ## Демо: итальянская партия с вариантами
 
 ```chess
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.5.0/examples/variations.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.5.1/examples/variations.pgn
 move=3
 ```
 
