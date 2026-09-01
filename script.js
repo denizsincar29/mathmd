@@ -6,7 +6,7 @@
 // Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
 // Импорт с CDN (jsdelivr, GH-тег v0.1.2) по side-effect: регистрирует
 // кастомный элемент и document-level делегат для кнопок <button chess="id" move="N">.
-import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.1.2/chessjax.js";
+import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.2.0/chessjax.js";
 
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
@@ -578,22 +578,66 @@ let editor = null;
 async function loadFromUrl() {
   const params = new URLSearchParams(location.search);
   const name = params.get("example");
-  if (!name) return;
-  if (!/^[a-z0-9_-]+(\.md)?$/i.test(name)) {
-    speak("Некорректное имя примера: " + name, fileStatusEl);
+  if (name) {
+    if (!/^[a-z0-9_-]+(\.md)?$/i.test(name)) {
+      speak("Некорректное имя примера: " + name, fileStatusEl);
+      return;
+    }
+    const safe = name.replace(/\.md$/i, "");
+    const res = await fetch("examples/" + safe + ".md");
+    if (!res.ok) {
+      speak("Пример " + safe + " не найден.", fileStatusEl);
+      return;
+    }
+    const md = await res.text();
+    editor.setValue(md);
+    if (params.get("preview") === "readyhtml") {
+      // Доводим предпросмотр и доски до отрисованного состояния, затем заменяем
+      // страницу готовым HTML — «перенаправляет» на отрендеренный документ.
+      await renderPreview();
+      await waitForBoards();
+      const doc = await buildDocumentHtml();
+      document.open();
+      document.write(doc);
+      document.close();
+      return;
+    }
+    if (params.get("preview") === "on") {
+      showPreviewAndFocus(1);
+    } else {
+      speak("Пример " + safe + " загружен. Покажите предпросмотр: Alt+ё.", fileStatusEl);
+    }
     return;
   }
-  const safe = name.replace(/\.md$/i, "");
-  const res = await fetch("examples/" + safe + ".md");
-  if (!res.ok) {
-    speak("Пример " + safe + " не найден.", fileStatusEl);
+
+  // ?url=https://... — загрузить markdown по произвольному адресу. Браузер
+  // применяет CORS: сервер обязан разрешать кросс-доменный запрос
+  // (raw.githubusercontent.com и gist-сырцы это позволяют).
+  const raw = params.get("url");
+  if (!raw) return;
+  let url;
+  try {
+    url = new URL(raw);
+  } catch (_) {
+    url = null;
+  }
+  if (!url || (url.protocol !== "http:" && url.protocol !== "https:")) {
+    speak("Некорректный URL: допустим только http/https.", fileStatusEl);
     return;
   }
-  const md = await res.text();
-  editor.setValue(md);
+  try {
+    const res = await fetch(url.href);
+    if (!res.ok) {
+      speak("Не удалось загрузить URL: HTTP " + res.status + ".", fileStatusEl);
+      return;
+    }
+    const md = await res.text();
+    editor.setValue(md);
+  } catch (e) {
+    speak("Не удалось загрузить URL: " + e.message + ". Сервер должен разрешать CORS.", fileStatusEl);
+    return;
+  }
   if (params.get("preview") === "readyhtml") {
-    // Доводим предпросмотр и доски до отрисованного состояния, затем заменяем
-    // страницу готовым HTML — «перенаправляет» на отрендеренный документ.
     await renderPreview();
     await waitForBoards();
     const doc = await buildDocumentHtml();
@@ -605,7 +649,7 @@ async function loadFromUrl() {
   if (params.get("preview") === "on") {
     showPreviewAndFocus(1);
   } else {
-    speak("Пример " + safe + " загружен. Покажите предпросмотр: Alt+ё.", fileStatusEl);
+    speak("Markdown загружен по URL. Покажите предпросмотр: Alt+ё.", fileStatusEl);
   }
 }
 
