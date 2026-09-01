@@ -52,7 +52,7 @@ python3 -m http.server 8000
 
 Движок chessjax импортируется с CDN (jsdelivr) по тегу:
 
-    https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.1.0/chessjax.js
+    https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.1.1/chessjax.js
 
 Свои зависимости (`vendor/chess.js`) chessjax подтягивает сам относительно
 своего URL, поэтому в mathmd ничего копировать не надо. При обновлении
