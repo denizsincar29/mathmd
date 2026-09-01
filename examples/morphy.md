@@ -12,12 +12,12 @@ rook mate on the back rank.
 fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 ```
 
-## The game — final position
+## The game
 
 ```chess
 id=opera
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.1.2/examples/morphy.pgn
-move=17
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.2.0/examples/morphy.pgn
+move=0
 ```
 
 Jump to any key moment with the buttons below:

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14181c">
+<title>Математический редактор — Markdown, LaTeX, AsciiMath, Desmos, шахматы</title>
+<meta name="description" content="Доступный веб-редактор markdown с математикой MathJax 4, поддержкой LaTeX и AsciiMath, графиками Desmos и шахматными досками chessjax. Для незрячих пользователей.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css?v=13">
+
+<script>
+  // MathJax must be configured before the MathJax script loads.
+  window.MathJax = {
+    loader: { load: ["input/tex", "input/asciimath", "output/chtml"] },
+    tex: {
+      inlineMath: [["$", "$"], ["\\(", "\\)"]],
+      displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+      packages: { "[+]": ["ams"] }
+    },
+    // AsciiMath uses backtick as its delimiter by default (`sqrt(2)`).
+    asciimath: {
+      delimiters: [["`", "`"]]
+    },
+    options: {
+      enableMenu: false,
+      renderActions: {}
+    }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+<script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+</head>
+<body>
+<header>
+  <h1>Математический редактор</h1>
+  <p>Markdown + LaTeX, AsciiMath, графики Desmos и шахматные доски. Предпросмотр — <strong>Alt+ё</strong>, вставка формул — кнопки (хоткеи Alt+1..9).</p>
+</header>
+
+<main>
+  <section aria-labelledby="toolbar-heading">
+    <h2 id="toolbar-heading" class="visually-hidden">Панель вставки формул</h2>
+    <div class="toolbar" role="toolbar" aria-label="Вставка формул и уравнений" id="toolbar"></div>
+    <p class="hint">Выделите текст и нажмите кнопку — выделение обернётся в <code>$…$</code>, <code>$$…$$</code> или <code>`…`</code>. Без выделения кнопка вставит шаблон. Хоткеи вставки — на кнопках (Alt+1..9).</p>
+  </section>
+
+  <section aria-labelledby="editor-heading">
+    <h2 id="editor-heading" class="visually-hidden">Редактор</h2>
+    <div id="editor" class="editor" role="textbox" aria-label="Редактор математики: пишите markdown, LaTeX или AsciiMath"></div>
+  </section>
+
+  <section aria-labelledby="preview-heading" id="preview-section">
+    <h2 id="preview-heading">Предпросмотр</h2>
+    <p class="hint">Текст обновляется при наборе. Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть. Шахматная доска — fenced-блок <code>```chess</code> с атрибутами (например <code>```chess fen="…"```</code>).</p>
+    <div id="preview" class="preview"></div>
+  </section>
+
+  <!-- Live-регион вне #preview-section: NVDA обязан читать объявления и когда
+       предпросмотр скрыт (Ctrl+Shift+Enter), и когда показан. -->
+  <div id="preview-status" class="visually-hidden" aria-live="assertive"></div>
+
+  <section aria-labelledby="file-heading">
+    <h2 id="file-heading">Файл и вывод</h2>
+    <div class="file-row">
+      <button id="btn-preview" type="button">Показать предпросмотр (Alt+ё)</button>
+      <button id="btn-export" type="button">Сохранить готовый HTML</button>
+      <button id="btn-save" type="button">Скачать .md</button>
+      <button id="btn-open" type="button">Открыть .md</button>
+      <input id="open-input" type="file" accept=".md,.markdown,.txt,text/markdown" hidden>
+    </div>
+    <div id="file-status" class="visually-hidden" aria-live="assertive"></div>
+  </section>
+</main>
+
+<script src="script.js?v=13" type="module"></script>
+</body>
+</html>
