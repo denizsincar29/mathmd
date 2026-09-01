@@ -611,6 +611,7 @@ function buildToolbar() {
       btn.type = "button";
       btn.textContent = item.face;
       btn.setAttribute("aria-label", I18N.t(item.labelKey));
+      btn.title = I18N.t(item.labelKey);
       btn.addEventListener("click", () => {
         const inserted = insertSnippet(item);
         if (inserted !== null) speakInserted(item, inserted);
@@ -765,12 +766,12 @@ ${author}${description}${extraCss}<style>
   .chessjax-live { min-height: 1.2em; margin: .4rem 0 0; color: #555; font-size: .9rem; max-width: 420px; }
   .chessjax-error { color: #b00020; border: 1px solid #b00020; border-radius: 6px; padding: .5rem .7rem; font-size: .9rem; }
   .chessjax-help { margin: .5rem 0 0; color: #555; font-size: .9rem; border-left: 3px solid #888; padding: .25rem .6rem; }
-  chessjax-board:fullscreen { background: #14181c; padding: 1rem; display: flex; flex-direction: column; justify-content: center; }
-  chessjax-board:fullscreen .chessjax-board { width: min(86vh, 92vw); margin: 0 auto; grid-template-columns: repeat(8, 1fr); border-width: 2px; border-color: #2c3640; background: #1b2127; }
+  chessjax-board:fullscreen { background: #14181c; padding: 1rem; display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto; }
+  chessjax-board:fullscreen .chessjax-board { width: min(72vh, 92vw); margin: 0 auto; grid-template-columns: repeat(8, 1fr); border-width: 2px; border-color: #2c3640; background: #1b2127; }
   chessjax-board:fullscreen .chessjax-cell { width: auto; height: auto; aspect-ratio: 1/1; font-size: min(6vh, 6vw); }
   chessjax-board:fullscreen .chessjax-summary,
   chessjax-board:fullscreen .chessjax-live,
-  chessjax-board:fullscreen .chessjax-help { max-width: min(86vh, 92vw); margin-left: auto; margin-right: auto; text-align: center; font-size: 1.1rem; color: #e2e8f0; }
+  chessjax-board:fullscreen .chessjax-help { max-width: min(72vh, 92vw); margin-left: auto; margin-right: auto; text-align: center; font-size: 1.1rem; color: #e2e8f0; }
   chessjax-board:fullscreen .chessjax-controls { justify-content: center; }
   chessjax-board:fullscreen .chessjax-btn { min-width: 56px; min-height: 48px; font-size: 1.4rem; }
 </style>
