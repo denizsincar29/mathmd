@@ -298,7 +298,7 @@ function showPreviewAndFocus(line) {
 
 // --- Вставка сниппетов ------------------------------------------------------
 //
-// Сниппет = { label, face, latex, ascii } — вставляется в текущем синтаксисе
+// Сниппет = { label, face, latex, asciimath } — вставляется в текущем синтаксисе
 // (LaTeX или AsciiMath); либо { label, face, formula } — формула с делимитерами
 // из режима вставки (inline/multiline). {cursor} в шаблоне — позиция курсора.
 // Если курсор уже внутри формулы, делимитеры повторно не вставляются.
@@ -384,7 +384,7 @@ function speakInserted(item, insertedText) {
 
 // Кнопки тулбара. Первые 12 кнопок получают хоткеи Alt+1..Alt+= (порядок в
 // TOOLBAR_GROUPS): Digit1..Digit9, Digit0, Minus, Equal. Каждый сниппет имеет
-// формы latex и ascii — вставляется та, что соответствует текущему синтаксису.
+// формы latex и asciimath — вставляется та, что соответствует текущему синтаксису.
 const TOOLBAR_GROUPS = [
   {
     title: "Математика",
@@ -397,17 +397,17 @@ const TOOLBAR_GROUPS = [
           multiline: ["$$\n", "\n$$"],
         },
       },
-      { label: "Дробь", face: "a/b", latex: "\\frac{a}{b}{cursor}", ascii: "(a)/(b){cursor}" },
-      { label: "Степень", face: "x²", latex: "x^{2}{cursor}", ascii: "x^2{cursor}" },
-      { label: "Корень", face: "√", latex: "\\sqrt{{cursor}}", ascii: "sqrt({cursor})" },
-      { label: "Сумма", face: "Σ", latex: "\\sum_{i=1}^{n} {cursor}", ascii: "sum_(i=1)^n {cursor}" },
-      { label: "Интеграл", face: "∫", latex: "\\int_{a}^{b} {cursor}", ascii: "int {cursor}" },
-      { label: "Предел", face: "lim", latex: "\\lim_{x \\to 0} {cursor}", ascii: "lim_(x->0) {cursor}" },
-      { label: "Матрица", face: "▦", latex: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}{cursor}", ascii: "[[a,b],[c,d]]{cursor}" },
-      { label: "Альфа", face: "α", latex: "\\alpha {cursor}", ascii: "alpha {cursor}" },
-      { label: "Пи", face: "π", latex: "\\pi {cursor}", ascii: "pi {cursor}" },
-      { label: "Бета", face: "β", latex: "\\beta {cursor}", ascii: "beta {cursor}" },
-      { label: "Больше или равно", face: "≥", latex: "\\ge {cursor}", ascii: ">= {cursor}" },
+      { label: "Дробь", face: "a/b", latex: "\\frac{a}{b}{cursor}", asciimath: "(a)/(b){cursor}" },
+      { label: "Степень", face: "x²", latex: "x^{2}{cursor}", asciimath: "x^2{cursor}" },
+      { label: "Корень", face: "√", latex: "\\sqrt{{cursor}}", asciimath: "sqrt({cursor})" },
+      { label: "Сумма", face: "Σ", latex: "\\sum_{i=1}^{n} {cursor}", asciimath: "sum_(i=1)^n {cursor}" },
+      { label: "Интеграл", face: "∫", latex: "\\int_{a}^{b} {cursor}", asciimath: "int {cursor}" },
+      { label: "Предел", face: "lim", latex: "\\lim_{x \\to 0} {cursor}", asciimath: "lim_(x->0) {cursor}" },
+      { label: "Матрица", face: "▦", latex: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}{cursor}", asciimath: "[[a,b],[c,d]]{cursor}" },
+      { label: "Альфа", face: "α", latex: "\\alpha {cursor}", asciimath: "alpha {cursor}" },
+      { label: "Пи", face: "π", latex: "\\pi {cursor}", asciimath: "pi {cursor}" },
+      { label: "Бета", face: "β", latex: "\\beta {cursor}", asciimath: "beta {cursor}" },
+      { label: "Больше или равно", face: "≥", latex: "\\ge {cursor}", asciimath: ">= {cursor}" },
     ],
   },
   {
@@ -421,7 +421,7 @@ const TOOLBAR_GROUPS = [
       ["Фи", "φ", "\\phi", "phi"],
       ["Тета", "θ", "\\theta", "theta"],
       ["Омега", "ω", "\\omega", "omega"],
-    ].map(([label, face, latex, ascii]) => ({ label, face, latex, ascii })),
+    ].map(([label, face, latex, asciimath]) => ({ label, face, latex, asciimath })),
   },
   {
     title: "Символы",
@@ -436,7 +436,7 @@ const TOOLBAR_GROUPS = [
       ["Пересечение", "∩", "\\cap", "nn"],
       ["Стрелка вправо", "→", "\\to", "->"],
       ["Набла", "∇", "\\nabla", "grad"],
-    ].map(([label, face, latex, ascii]) => ({ label, face, latex, ascii })),
+    ].map(([label, face, latex, asciimath]) => ({ label, face, latex, asciimath })),
   },
   {
     title: "Шахматы",
@@ -445,7 +445,7 @@ const TOOLBAR_GROUPS = [
         label: "Шахматная доска (fenced-блок chess)",
         face: "♟",
         latex: "```chess\nfen=\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"\n```\n{cursor}",
-        ascii: "```chess\nfen=\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"\n```\n{cursor}",
+        asciimath: "```chess\nfen=\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"\n```\n{cursor}",
       },
     ],
   },
