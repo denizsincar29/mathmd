@@ -1442,15 +1442,7 @@ require(["vs/editor/editor.main"], function () {
   // Смена языка интерфейса: пересобрать тулбар и aria-метку редактора на новом
   // языке. Тексты предпросмотра и демо остаются на языке документа — это md.
   const langSelect = document.getElementById("lang-select");
-  langSelect.addEventListener("change", () => {
-    const lang = langSelect.value;
-    I18N.setLang(lang);
-    toolbarEl.replaceChildren();
-    buildToolbar();
-    editor.updateOptions({ ariaLabel: I18N.t("editor.ariaLabel") });
-    speak(I18N.t("msg.langChanged", { lang: I18N.langName(lang) }), fileStatusEl);
-    editor.focus();
-  });
+  langSelect.addEventListener("change", () => changeUiLang(langSelect.value));
   document.getElementById("open-input").addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -1478,6 +1470,72 @@ require(["vs/editor/editor.main"], function () {
     document.getElementById("btn-help").focus();
     speak(I18N.t("msg.helpClosed"), fileStatusEl);
   });
+
+  // Команды в command palette (Ctrl+Shift+P) и контекстное меню. Повседневные
+  // действия — только в палитру; вставка формул и структур — в контекстное меню.
+  const FORMULA_ITEM = TOOLBAR_GROUPS.flatMap((g) => g.items).find((i) => i.labelKey === "tool.formula");
+  let actionDisposables = [];
+  function registerEditorActions() {
+    actionDisposables.forEach((d) => d.dispose());
+    actionDisposables = [];
+    const insertItem = (item) => {
+      const inserted = insertSnippet(item);
+      if (inserted !== null) speakInserted(item, inserted);
+    };
+    const add = (desc) => actionDisposables.push(editor.addAction(desc));
+    add({ id: "mathmd.preview", label: I18N.t("cmd.preview"), run: () => showPreviewAndFocus(editor.getPosition().lineNumber) });
+    add({ id: "mathmd.previewHide", label: I18N.t("cmd.previewHide"), run: () => { previewSection.hidden = true; speak(I18N.t("msg.previewHidden"), fileStatusEl); } });
+    add({ id: "mathmd.desmosRerender", label: I18N.t("cmd.desmosRerender"), run: () => { previewSection.hidden = false; renderPreview(); } });
+    add({ id: "mathmd.frontmatter", label: I18N.t("cmd.frontmatter"), run: insertFrontmatterCmd });
+    add({ id: "mathmd.saveMd", label: I18N.t("cmd.saveMd"), run: saveMd });
+    add({ id: "mathmd.exportHtml", label: I18N.t("cmd.exportHtml"), run: exportHtml });
+    add({ id: "mathmd.help", label: I18N.t("cmd.help"), run: openHelpCmd });
+    add({ id: "mathmd.langNext", label: I18N.t("cmd.langNext"), run: () => {
+      const langs = ["ru", "en", "de", "tr"];
+      const cur = I18N.getLang();
+      changeUiLang(langs[(langs.indexOf(cur) + 1) % langs.length]);
+    } });
+    add({ id: "mathmd.formulaInline", label: I18N.t("cmd.formulaInline"), contextMenuGroupId: "mathmd/formula", contextMenuOrder: 1, run: () => { formulaMode = "inline"; insertItem(FORMULA_ITEM); } });
+    add({ id: "mathmd.formulaBlock", label: I18N.t("cmd.formulaBlock"), contextMenuGroupId: "mathmd/formula", contextMenuOrder: 2, run: () => { formulaMode = "multiline"; insertItem(FORMULA_ITEM); } });
+    add({ id: "mathmd.syntaxToggle", label: I18N.t("cmd.syntaxToggle"), contextMenuGroupId: "mathmd/formula", contextMenuOrder: 3, run: () => { syntax = syntax === "latex" ? "asciimath" : "latex"; speak(I18N.t("msg.syntaxMode", { syntax: I18N.t(syntax === "latex" ? "msg.syntaxLatex" : "msg.syntaxAscii") }), fileStatusEl); } });
+    add({ id: "mathmd.formulaModeToggle", label: I18N.t("cmd.formulaModeToggle"), contextMenuGroupId: "mathmd/formula", contextMenuOrder: 4, run: () => { formulaMode = formulaMode === "inline" ? "multiline" : "inline"; speak(I18N.t("msg.formulaMode", { mode: I18N.t(formulaMode === "inline" ? "msg.modeInline" : "msg.modeBlock") }), fileStatusEl); } });
+    TOOLBAR_GROUPS.flatMap((g) => g.items).filter((i) => i !== FORMULA_ITEM).forEach((item, i) => {
+      add({ id: "mathmd.insert." + item.labelKey, label: I18N.t(item.labelKey), contextMenuGroupId: "mathmd/insert", contextMenuOrder: i, run: () => insertItem(item) });
+    });
+  }
+  function changeUiLang(lang) {
+    I18N.setLang(lang);
+    toolbarEl.replaceChildren();
+    buildToolbar();
+    editor.updateOptions({ ariaLabel: I18N.t("editor.ariaLabel") });
+    registerEditorActions();
+    speak(I18N.t("msg.langChanged", { lang: I18N.langName(lang) }), fileStatusEl);
+    editor.focus();
+  }
+  function insertFrontmatterCmd() {
+    const model = editor.getModel();
+    if (!model) return;
+    if (model.getLineContent(1).trim() === "---") {
+      editor.setPosition({ lineNumber: 2, column: 1 });
+      editor.revealLine(2);
+      speak(I18N.t("msg.frontmatterExpanded"), fileStatusEl);
+      editor.focus();
+      return;
+    }
+    const fm = "---\ntitle: \nlang: " + I18N.getLang() + "\nmathjax: yes\nchessjax: no\ndesmos: no\n---\n\n";
+    editor.executeEdits("mathmd-frontmatter", [{ range: new monaco.Range(1, 1, 1, 1), text: fm }]);
+    editor.setPosition({ lineNumber: 2, column: 8 });
+    speak(I18N.t("msg.frontmatterExpanded"), fileStatusEl);
+    editor.focus();
+  }
+  function openHelpCmd() {
+    const dlg = document.getElementById("help-dialog");
+    if (dlg && !dlg.open) {
+      dlg.showModal();
+      speak(I18N.t("msg.helpOpen"), fileStatusEl);
+    }
+  }
+  registerEditorActions();
 
   speak(I18N.t("msg.editorReady"));
 
