@@ -229,14 +229,14 @@
         "<li><strong>Alt+M</strong> — следующая формула будет в строке или отдельным блоком. <strong>Alt+L</strong> — синтаксис: LaTeX или AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — вставить дробь, корень, сумму и другие заготовки. Те же номера написаны на кнопках.</li>" +
         "<li><strong>Ctrl+Space</strong> — подсказки: делимитеры, блоки, ключи настроек, разметка markdown. Внутри формулы подсказки появляются сами.</li>" +
-        "<li><strong>Ctrl+Shift+P</strong> — палитра команд: там собраны все действия редактора, включая предпросмотр, экспорт и смену языка.</li>" +
+        "<li><strong>F1</strong> — палитра команд: там собраны все действия редактора, включая предпросмотр, экспорт и смену языка. Если браузер перехватывает F1 (некоторые сборки открывают по ней свою справку) — есть Ctrl+Alt+P, его не занимает никто. А Ctrl+Shift+P лучше не привыкать: в Firefox это приватное окно.</li>" +
         "</ul>",
       en: "<ul>" +
         "<li><strong>Alt+`</strong> — full preview: rebuild the graphs and jump to the cursor line. <strong>Ctrl+Shift+Enter</strong> — hide the preview.</li>" +
         "<li><strong>Alt+M</strong> — the next formula goes inline or as a separate block. <strong>Alt+L</strong> — the syntax: LaTeX or AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — insert a fraction, a root, a sum and other templates. The same numbers are printed on the buttons.</li>" +
         "<li><strong>Ctrl+Space</strong> — suggestions: delimiters, blocks, settings keys, markdown markup. Inside a formula they appear by themselves.</li>" +
-        "<li><strong>Ctrl+Shift+P</strong> — the command palette: every editor action lives there, including preview, export and language switching.</li>" +
+        "<li><strong>F1</strong> — the command palette: every editor action lives there, including preview, export and language switching. If your browser takes F1 for its own help, use Ctrl+Alt+P — no browser claims it. And do not get used to Ctrl+Shift+P: in Firefox it opens a private window.</li>" +
         "</ul>",
     },
     "manual.keysButtons": {
@@ -268,8 +268,8 @@
         "</ul>",
     },
     "manual.fmHow": {
-      ru: "Быстрее всего не печатать блок руками, а вставить его командой из палитры (<strong>Ctrl+Shift+P</strong>, «Вставить frontmatter») — заготовка появится сама и курсор встанет на нужное место. Если начать документ с трёх дефисов, блок развернётся и закроется автоматически.",
-      en: "The quickest way is not to type the block by hand but to insert it from the palette (<strong>Ctrl+Shift+P</strong>, “Insert frontmatter”) — the template appears with the cursor in the right place. If you start a document with three dashes, the block unfolds and closes by itself.",
+      ru: "Быстрее всего не печатать блок руками, а вставить его командой из палитры (<strong>F1</strong>, «Вставить frontmatter») — заготовка появится сама и курсор встанет на нужное место. Если начать документ с трёх дефисов, блок развернётся и закроется автоматически.",
+      en: "The quickest way is not to type the block by hand but to insert it from the palette (<strong>F1</strong>, “Insert frontmatter”) — the template appears with the cursor in the right place. If you start a document with three dashes, the block unfolds and closes by itself.",
     },
 
     // --- Файлы --------------------------------------------------------------
@@ -288,6 +288,52 @@
         "<li><strong>Open .md</strong> — open a file from disk.</li>" +
         "<li><strong>Example:</strong> — ready-made documents: the editor demo, Morphy's game, and a sample with comments and variations.</li>" +
         "</ul>",
+    },
+
+    // --- Документы и история ------------------------------------------------
+    "manual.toc.docs": {
+      ru: "Документы, автосохранение и история",
+      en: "Documents, autosave and history",
+    },
+    "manual.docsIntro": {
+      ru: "Документы живут в самом браузере и никуда не отправляются. Список " +
+        "<strong>Документ:</strong> в панели «Файл и вывод» открывает сохранённое, " +
+        "последний его пункт — <strong>Новый документ</strong>. Пока документ не " +
+        "сохранён под своим именем, он называется untitled1.md, untitled2.md и так " +
+        "далее. Когда вы первый раз скачиваете безымянный документ, редактор " +
+        "спрашивает имя — дальше файл и документ называются одинаково.",
+      en: "Documents live in your own browser and are never sent anywhere. The " +
+        "<strong>Document:</strong> list in the “File and output” panel opens a " +
+        "saved document; its last item is <strong>New document</strong>. Until you " +
+        "save a document under your own name it is called untitled1.md, untitled2.md " +
+        "and so on. The first time you download an unnamed document the editor asks " +
+        "for a name — from then on the file and the document share it.",
+    },
+    "manual.docsAutosave": {
+      ru: "Текст сохраняется сам: через пять секунд тишины после правки и сразу при " +
+        "закрытии вкладки. Возвращаетесь на сайт — документ открывается на том же " +
+        "месте. Если страницу открыли по ссылке с примером (<code>?example=…</code>), " +
+        "пример загрузится только тогда, когда документ пуст: иначе он не станет " +
+        "затирать написанное.",
+      en: "The text saves itself: five seconds after you stop typing, and " +
+        "immediately when the tab closes. Come back to the site and the document opens " +
+        "where you left it. If the page was opened through an example link " +
+        "(<code>?example=…</code>), the example loads only when the document is empty — " +
+        "it will not overwrite what you have written.",
+    },
+    "manual.docsHistory": {
+      ru: "История правок хранится снимками: примерно один на каждые две минуты " +
+        "работы, не больше тридцати на документ. <strong>Ctrl+Alt+Z</strong> — шаг " +
+        "назад по этим снимкам, <strong>Ctrl+Alt+Y</strong> — шаг вперёд. В отличие " +
+        "от обычного Ctrl+Z, который действует только внутри текущего сеанса, снимки " +
+        "переживают перезагрузку страницы. Переименовать документ, удалить его или " +
+        "стереть всё хранилище можно из палитры команд (F1).",
+      en: "The edit history is kept as snapshots: roughly one per two minutes of " +
+        "work, at most thirty per document. <strong>Ctrl+Alt+Z</strong> steps back " +
+        "through them, <strong>Ctrl+Alt+Y</strong> steps forward. Unlike plain Ctrl+Z, " +
+        "which only works inside the current session, these snapshots survive a page " +
+        "reload. You can rename a document, delete it, or wipe the whole store from the " +
+        "command palette (F1).",
     },
   });
 })();

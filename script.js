@@ -785,13 +785,215 @@ ${desmosInit}</body>
 }
 
 function exportHtml() {
-  download("math.html", buildDocumentHtml(), "text/html;charset=utf-8");
+  const base = store && store.current() ? store.current().name.replace(/\.md$/i, "") : "math";
+  download(base + ".html", buildDocumentHtml(), "text/html;charset=utf-8");
   speak(I18N.t("msg.htmlSaved"), fileStatusEl);
 }
 
+// --- Документы в localStorage ------------------------------------------------
+//
+// Само хранение — в docstore.js (подключён обычным <script> до этого файла):
+// документы, автосохранение по тишине, история снимками. Здесь — интерфейс:
+// список документов, восстановление при заходе, шаги по истории.
+//
+// Черновик не создаётся, пока человек ничего не набрал: иначе демо-текст,
+// который лежит в редакторе при первом заходе, навсегда перекрывал бы примеры
+// по ссылке (?example=… грузится, только если черновик пуст).
+
+let storage = null;
+try {
+  storage = window.localStorage;
+} catch (e) {
+  storage = null; // приватный режим/запрет хранилища: работаем без него
+}
+const store = window.MathmdStore ? window.MathmdStore.create(storage) : null;
+const docSelectEl = document.getElementById("doc-select");
+
+const SAVE_IDLE_MS = 5000;  // тишина после правки, через которую пишем в хранилище
+let saveTimer = null;
+let docTouched = false;     // человек правил текст — есть что сохранять
+let docSwitching = false;   // программная подстановка: не считаем её правкой
+let docSelectSig = "";      // подпись списка документов, чтобы не дёргать DOM зря
+
+// Подставить текст в редактор не как правку, а как переход к другому
+// документу: автосохранение не должно принять это за набор.
+function setEditorValue(text) {
+  docSwitching = true;
+  editor.setValue(text);
+  docSwitching = false;
+  editor.focus();
+}
+
+// Список документов в <select>: сверху «Новый документ», дальше — по свежести.
+// Перебираем DOM только когда список правда изменился (иначе на каждом
+// автосохранении перестраивалось бы дерево доступности).
+function refreshDocSelect() {
+  if (!docSelectEl) return;
+  const docs = store ? store.list() : [];
+  const curId = store ? store.currentId() : "";
+  const sig = docs.map((d) => d.id + ":" + d.name).join("|") + "#" + curId;
+  if (sig === docSelectSig) return;
+  docSelectSig = sig;
+  const options = docs.map((d) => {
+    const o = document.createElement("option");
+    o.value = d.id;
+    o.textContent = d.name;
+    if (d.id === curId) o.selected = true;
+    return o;
+  });
+  const fresh = document.createElement("option");
+  fresh.value = "__new";
+  fresh.textContent = I18N.t("ui.docNewOption");
+  docSelectEl.replaceChildren(...options, fresh);
+}
+
+// Текущее состояние экрана — в хранилище, минуя дебаунс: перед сменой
+// документа или подстановкой примера, чтобы ничего не потерялось.
+function persistNow() {
+  if (!store || !docTouched) return;
+  store.setValue(editor.getValue());
+  store.snapshot();
+  store.flush();
+  refreshDocSelect();
+  if (store.wasDegraded()) {
+    store.clearDegraded();
+    speak(I18N.t("msg.historyTrimmed"), fileStatusEl);
+  }
+}
+
+function scheduleAutosave() {
+  docTouched = true;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persistNow, SAVE_IDLE_MS);
+}
+
+// Зафиксировать текст в истории принудительно (снимок не чаще двух минут —
+// эта функция нужна там, где текст вот-вот заменят целиком).
+function commitCurrent() {
+  if (!store || !store.current()) return;
+  store.setValue(editor.getValue());
+  store.mark();
+}
+
+function openDocById(id) {
+  if (!store) return;
+  clearTimeout(saveTimer);
+  if (store.current()) store.setValue(editor.getValue());
+  const opened = store.openDoc(id);
+  if (!opened) return;
+  setEditorValue(opened.value);
+  docTouched = true;
+  refreshDocSelect();
+  speak(I18N.t("msg.docOpened", { name: opened.name }), fileStatusEl);
+}
+
+function newDoc() {
+  if (!store) return;
+  clearTimeout(saveTimer);
+  if (store.current()) store.setValue(editor.getValue());
+  const created = store.newDoc("");
+  setEditorValue("");
+  docTouched = true;
+  refreshDocSelect();
+  speak(I18N.t("msg.docNew", { name: created.name }), fileStatusEl);
+}
+
+function renameDoc() {
+  if (!store) return;
+  const cur = store.current();
+  if (!cur) return;
+  const name = window.prompt(I18N.t("msg.namePrompt"), cur.name);
+  if (name === null) return; // отказ — оставляем как было
+  const renamed = store.rename(name);
+  if (!renamed) return;
+  refreshDocSelect();
+  speak(I18N.t("msg.docRenamed", { name: renamed.name }), fileStatusEl);
+}
+
+function deleteDoc() {
+  if (!store) return;
+  const cur = store.current();
+  if (!cur) return;
+  if (!window.confirm(I18N.t("msg.docDeleteConfirm", { name: cur.name }))) return;
+  clearTimeout(saveTimer);
+  const removed = store.remove(cur.id);
+  const next = store.current();
+  setEditorValue(next ? next.value : DEFAULT_MD);
+  docTouched = !!next && next.value.trim().length > 0;
+  refreshDocSelect();
+  if (removed) speak(I18N.t("msg.docDeleted", { name: removed.name }), fileStatusEl);
+}
+
+function forgetAll() {
+  if (!store) return;
+  if (!window.confirm(I18N.t("msg.forgetConfirm"))) return;
+  clearTimeout(saveTimer);
+  store.clearAll();
+  docTouched = false;
+  setEditorValue(DEFAULT_MD);
+  refreshDocSelect();
+  speak(I18N.t("msg.forgotten"), fileStatusEl);
+}
+
+// Шаг по истории правок: снимки живут в localStorage, поэтому переживают
+// перезагрузку — в отличие от родного undo Monaco (он только внутри сессии).
+function historyStep(dir) {
+  if (!store || !store.current()) return;
+  clearTimeout(saveTimer);
+  store.setValue(editor.getValue());
+  const res = dir === "back" ? store.back() : store.forward();
+  if (!res) {
+    speak(I18N.t("msg.histEdge"), fileStatusEl);
+    return;
+  }
+  setEditorValue(res.value);
+  docTouched = true;
+  speak(
+    I18N.t(dir === "back" ? "msg.histBack" : "msg.histForward", {
+      index: res.index + 1,
+      total: res.total,
+    }),
+    fileStatusEl
+  );
+}
+
+// Вернуть документ прошлого визита. Пустой черновик не трогаем: в редакторе
+// остаётся демо-текст, и он не считается документом, пока в нём не наберут.
+function restoreDraft(quiet) {
+  if (!store) return;
+  const d = store.current();
+  if (!d) return;
+  setEditorValue(d.value);
+  docTouched = d.value.trim().length > 0;
+  refreshDocSelect();
+  if (quiet) return; // дальше страница сама объявит, что загрузила
+  if (docTouched) {
+    speak(I18N.t("msg.draftRestored", { name: d.name }), fileStatusEl);
+  } else {
+    speak(I18N.t("msg.docOpened", { name: d.name }), fileStatusEl);
+  }
+}
+
 function saveMd() {
+  if (store && store.current()) {
+    const d = store.current();
+    // Безымянный документ при первом сохранении спрашивает имя: дальше файл
+    // и документ называются одинаково.
+    if (/^untitled\d+\.md$/i.test(d.name)) {
+      const name = window.prompt(I18N.t("msg.namePrompt"), d.name);
+      if (name !== null && store.rename(name)) refreshDocSelect();
+    }
+    if (docTouched) {
+      store.setValue(editor.getValue());
+      store.flush();
+    }
+    const file = (store.current() || d).name;
+    download(file, editor.getValue());
+    speak(I18N.t("msg.mdSaved", { name: file }), fileStatusEl);
+    return;
+  }
   download("document.md", editor.getValue());
-  speak(I18N.t("msg.mdSaved"), fileStatusEl);
+  speak(I18N.t("msg.mdSaved", { name: "document.md" }), fileStatusEl);
 }
 
 function openMd() {
@@ -811,6 +1013,7 @@ async function openExample(name) {
     speak(I18N.t("msg.exampleNotFound", { name: safe }), fileStatusEl);
     return;
   }
+  commitCurrent(); // пример затрёт текст — прежний уходит в историю
   editor.setValue(await res.text());
   showPreviewAndFocus(1);
   speak(I18N.t("msg.exampleOpened", { name: safe }), fileStatusEl);
@@ -887,13 +1090,21 @@ async function loadFromUrl() {
       return;
     }
     const md = await res.text();
-    editor.setValue(md);
     const preview = params.get("preview");
-    if (preview === "html" || preview === "readyhtml") {
+    const standalone = preview === "html" || preview === "readyhtml";
+    // Готовый HTML (раздача материала) отдаём всегда: это не редактирование.
+    // А в редактор пример грузим, только если черновик пуст, — иначе ссылка
+    // молча затирала бы то, что человек писал.
+    if (!standalone && store && !store.isEmpty()) {
+      speak(I18N.t("msg.exampleSkipped"), fileStatusEl);
+      return;
+    }
+    editor.setValue(md);
+    if (standalone) {
       openStandaloneHtml();
       return;
     }
-    if (params.get("preview") === "on") {
+    if (preview === "on") {
       showPreviewAndFocus(1);
     } else {
       speak(I18N.t("msg.exampleLoaded", { name: safe }), fileStatusEl);
@@ -916,6 +1127,11 @@ async function loadFromUrl() {
     speak(I18N.t("msg.badUrl"), fileStatusEl);
     return;
   }
+  const urlStandalone = params.get("preview") === "html" || params.get("preview") === "readyhtml";
+  if (!urlStandalone && store && !store.isEmpty()) {
+    speak(I18N.t("msg.exampleSkipped"), fileStatusEl);
+    return;
+  }
   try {
     const res = await fetch(url.href);
     if (!res.ok) {
@@ -923,6 +1139,7 @@ async function loadFromUrl() {
       return;
     }
     const md = await res.text();
+    commitCurrent();
     editor.setValue(md);
   } catch (e) {
     speak(I18N.t("msg.urlError", { error: e.message }), fileStatusEl);
@@ -1513,8 +1730,45 @@ require(["vs/editor/editor.main"], function () {
   // «редактор готов» прозвучит уже поверх Monaco.
   editor.focus();
 
+  // Палитра команд. F1 Monaco вешает сам, но браузеры любят забирать эту
+  // клавишу себе (справка браузера), а Ctrl+Shift+P в Firefox открывает
+  // приватное окно и до страницы вообще не доходит. Поэтому даём свою
+  // комбинацию, которую не трогает ни один браузер.
+  editor.addCommand(
+    monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyP,
+    () => editor.trigger("keyboard", "editor.action.quickCommand", null)
+  );
+
   // Живой предпросмотр: формулы обновляются по мере набора (с дебаунсом).
   editor.onDidChangeModelContent(() => scheduleLivePreview());
+
+  // Автосохранение: пишем в хранилище через SAVE_IDLE_MS тишины после правки.
+  // Программные подстановки (смена документа, пример, шаг по истории) за
+  // правку не считаем — иначе они бы сами себя записывали в черновик.
+  editor.onDidChangeModelContent(() => {
+    if (docSwitching) return;
+    scheduleAutosave();
+  });
+
+  // Уход со страницы: дописываем немедленно — дебаунс может не успеть.
+  window.addEventListener("pagehide", () => {
+    clearTimeout(saveTimer);
+    if (store && docTouched) {
+      store.setValue(editor.getValue());
+      store.flush();
+    }
+  });
+
+  // История правок: Ctrl+Alt+Z / Ctrl+Alt+Y. Родной undo Monaco (Ctrl+Z)
+  // живёт только внутри сессии — эти снимки переживают перезагрузку.
+  editor.addCommand(
+    monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
+    () => historyStep("back")
+  );
+  editor.addCommand(
+    monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyY,
+    () => historyStep("forward")
+  );
 
   // «---» в начале пустого документа → автоподстановка frontmatter: вставить
   // блок с ключами и закрывающим «---». Только если строка 1 целиком «---» и
@@ -1667,13 +1921,32 @@ require(["vs/editor/editor.main"], function () {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      editor.setValue(String(reader.result));
+      const text = String(reader.result);
+      clearTimeout(saveTimer);
+      if (store) {
+        // Файл с диска становится документом с тем же именем: повторное
+        // открытие того же файла продолжает его, а не заводит копию.
+        if (store.current()) store.setValue(editor.getValue());
+        store.openNamed(file.name, text);
+        docTouched = true;
+        refreshDocSelect();
+      }
+      setEditorValue(text);
       showPreviewAndFocus(1);
       speak(I18N.t("msg.fileOpened", { name: file.name }), fileStatusEl);
     };
     reader.readAsText(file, "utf-8");
     event.target.value = "";
   });
+
+  // Список документов: выбор открывает сохранённый, последний пункт — новый.
+  if (docSelectEl) {
+    docSelectEl.addEventListener("change", () => {
+      const id = docSelectEl.value;
+      if (id === "__new") newDoc();
+      else if (id) openDocById(id);
+    });
+  }
 
   // Справка: модальный диалог (native <dialog>), Esc закрывает сам.
   const helpDialog = document.getElementById("help-dialog");
@@ -1709,7 +1982,7 @@ require(["vs/editor/editor.main"], function () {
   document.getElementById("btn-manual").addEventListener("click", openManual);
   syncManualLinks();
 
-  // Команды в command palette (Ctrl+Shift+P) и контекстное меню. Повседневные
+  // Команды в command palette (F1) и контекстное меню. Повседневные
   // действия — только в палитру; вставка формул и структур — в контекстное меню.
   const FORMULA_ITEM = TOOLBAR_GROUPS.flatMap((g) => g.items).find((i) => i.labelKey === "tool.formula");
   let actionDisposables = [];
@@ -1729,6 +2002,12 @@ require(["vs/editor/editor.main"], function () {
     add({ id: "mathmd.exportHtml", label: I18N.t("cmd.exportHtml"), run: exportHtml });
     add({ id: "mathmd.help", label: I18N.t("cmd.help"), run: openHelpCmd });
     add({ id: "mathmd.manual", label: I18N.t("cmd.manual"), run: openManual });
+    add({ id: "mathmd.docNew", label: I18N.t("cmd.docNew"), run: newDoc });
+    add({ id: "mathmd.docRename", label: I18N.t("cmd.docRename"), run: renameDoc });
+    add({ id: "mathmd.docDelete", label: I18N.t("cmd.docDelete"), run: deleteDoc });
+    add({ id: "mathmd.forget", label: I18N.t("cmd.forget"), run: forgetAll });
+    add({ id: "mathmd.historyBack", label: I18N.t("cmd.historyBack"), run: () => historyStep("back") });
+    add({ id: "mathmd.historyForward", label: I18N.t("cmd.historyForward"), run: () => historyStep("forward") });
     add({ id: "mathmd.langNext", label: I18N.t("cmd.langNext"), run: () => {
       const langs = ["ru", "en", "de", "tr"];
       const cur = I18N.getLang();
@@ -1749,6 +2028,8 @@ require(["vs/editor/editor.main"], function () {
     editor.updateOptions({ ariaLabel: I18N.t("editor.ariaLabel") });
     registerEditorActions();
     syncManualLinks();
+    docSelectSig = ""; // пункт «Новый документ» переводится — пересобрать список
+    refreshDocSelect();
     speak(I18N.t("msg.langChanged", { lang: I18N.langName(lang) }), fileStatusEl);
     editor.focus();
   }
@@ -1785,6 +2066,16 @@ require(["vs/editor/editor.main"], function () {
     });
   }
 
+  // Документ прошлого визита — раньше URL-параметров: пример по ссылке
+  // грузится, только если черновик пуст (иначе он затёр бы работу).
+  const urlParams = new URLSearchParams(location.search);
+  const quietRestore = urlParams.has("example") || urlParams.has("url");
+  restoreDraft(quietRestore);
+
   // URL-параметры должны сработать уже после инициализации редактора.
   loadFromUrl();
+
+  if (store && !store.isPersistent()) {
+    speak(I18N.t("msg.storageOff"), fileStatusEl);
+  }
 });

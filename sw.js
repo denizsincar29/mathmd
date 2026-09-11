@@ -1,6 +1,6 @@
 // Service worker: PWA + offline. Bump CACHE_NAME whenever static assets
 // change so old clients drop the stale cache on their next visit.
-const CACHE_NAME = "mathmd-v37";
+const CACHE_NAME = "mathmd-v38";
 
 const ASSETS = [
   "./",
@@ -8,6 +8,7 @@ const ASSETS = [
   "./style.css",
   "./i18n.js",
   "./manual-i18n.js",
+  "./docstore.js",
   "./script.js",
   "./manual.html",
   "./manifest.webmanifest",

@@ -164,6 +164,24 @@
       de: "Beispiel öffnen",
       tr: "Örnek aç",
     },
+    "ui.docLabel": {
+      ru: "Документ:",
+      en: "Document:",
+      de: "Dokument:",
+      tr: "Belge:",
+    },
+    "ui.docSelectAria": {
+      ru: "Открыть сохранённый документ",
+      en: "Open a saved document",
+      de: "Gespeichertes Dokument öffnen",
+      tr: "Kayıtlı belgeyi aç",
+    },
+    "ui.docNewOption": {
+      ru: "Новый документ",
+      en: "New document",
+      de: "Neues Dokument",
+      tr: "Yeni belge",
+    },
 
     // --- Справка ------------------------------------------------------------
     "help.title": {
@@ -312,10 +330,10 @@
     },
     "msg.htmlSaved": { ru: "HTML сохранён.", en: "HTML saved.", de: "HTML gespeichert.", tr: "HTML kaydedildi." },
     "msg.mdSaved": {
-      ru: "Файл markdown скачан.",
-      en: "Markdown file downloaded.",
-      de: "Markdown-Datei heruntergeladen.",
-      tr: "Markdown dosyası indirildi.",
+      ru: "Файл {name} скачан.",
+      en: "File {name} downloaded.",
+      de: "Datei {name} heruntergeladen.",
+      tr: "{name} dosyası indirildi.",
     },
     "msg.badExample": {
       ru: "Некорректное имя примера.",
@@ -346,6 +364,98 @@
       en: "File {name} opened, preview shown.",
       de: "Datei {name} geöffnet, Vorschau angezeigt.",
       tr: "{name} dosyası açıldı, önizleme gösterildi.",
+    },
+
+    // --- Документы, автосохранение и история ---------------------------------
+    "msg.draftRestored": {
+      ru: "Черновик восстановлен: {name}.",
+      en: "Draft restored: {name}.",
+      de: "Entwurf wiederhergestellt: {name}.",
+      tr: "Taslak geri yüklendi: {name}.",
+    },
+    "msg.docOpened": {
+      ru: "Открыт документ {name}.",
+      en: "Document {name} opened.",
+      de: "Dokument {name} geöffnet.",
+      tr: "{name} belgesi açıldı.",
+    },
+    "msg.docNew": {
+      ru: "Новый документ {name}.",
+      en: "New document {name}.",
+      de: "Neues Dokument {name}.",
+      tr: "Yeni belge {name}.",
+    },
+    "msg.docRenamed": {
+      ru: "Документ переименован в {name}.",
+      en: "Document renamed to {name}.",
+      de: "Dokument umbenannt in {name}.",
+      tr: "Belge {name} olarak yeniden adlandırıldı.",
+    },
+    "msg.docDeleted": {
+      ru: "Документ {name} удалён.",
+      en: "Document {name} deleted.",
+      de: "Dokument {name} gelöscht.",
+      tr: "{name} belgesi silindi.",
+    },
+    "msg.docDeleteConfirm": {
+      ru: "Удалить документ {name} вместе с его историей?",
+      en: "Delete document {name} together with its history?",
+      de: "Dokument {name} samt Verlauf löschen?",
+      tr: "{name} belgesi geçmişiyle birlikte silinsin mi?",
+    },
+    "msg.forgetConfirm": {
+      ru: "Удалить все документы и всю историю правок? Отменить это нельзя.",
+      en: "Delete all documents and the whole edit history? This cannot be undone.",
+      de: "Alle Dokumente und den gesamten Verlauf löschen? Das ist nicht rückgängig zu machen.",
+      tr: "Tüm belgeler ve düzenleme geçmişi silinsin mi? Bu geri alınamaz.",
+    },
+    "msg.forgotten": {
+      ru: "Все документы удалены.",
+      en: "All documents deleted.",
+      de: "Alle Dokumente gelöscht.",
+      tr: "Tüm belgeler silindi.",
+    },
+    "msg.histBack": {
+      ru: "Шаг назад: версия {index} из {total}.",
+      en: "Step back: version {index} of {total}.",
+      de: "Schritt zurück: Version {index} von {total}.",
+      tr: "Geri adım: {total} sürümden {index}.",
+    },
+    "msg.histForward": {
+      ru: "Шаг вперёд: версия {index} из {total}.",
+      en: "Step forward: version {index} of {total}.",
+      de: "Schritt vor: Version {index} von {total}.",
+      tr: "İleri adım: {total} sürümden {index}.",
+    },
+    "msg.histEdge": {
+      ru: "Дальше правок нет.",
+      en: "No further edits.",
+      de: "Keine weiteren Änderungen.",
+      tr: "Başka düzenleme yok.",
+    },
+    "msg.exampleSkipped": {
+      ru: "Пример не открыт: в текущем документе есть текст. Очистите его или создайте новый.",
+      en: "Example not opened: the current document has text. Clear it or create a new document.",
+      de: "Beispiel nicht geöffnet: das aktuelle Dokument enthält Text. Leeren Sie es oder erstellen Sie ein neues.",
+      tr: "Örnek açılmadı: geçerli belgede metin var. Belgeyi temizleyin veya yeni bir belge oluşturun.",
+    },
+    "msg.storageOff": {
+      ru: "Хранилище браузера недоступно: документы не сохранятся между визитами.",
+      en: "Browser storage is unavailable: documents will not persist between visits.",
+      de: "Browser-Speicher nicht verfügbar: Dokumente bleiben nicht erhalten.",
+      tr: "Tarayıcı depolaması kullanılamıyor: belgeler sonraki ziyaretlerde kalmaz.",
+    },
+    "msg.historyTrimmed": {
+      ru: "Мало места в хранилище: старая история правок сокращена.",
+      en: "Little storage space: old edit history was shortened.",
+      de: "Wenig Speicherplatz: alter Verlauf wurde gekürzt.",
+      tr: "Depolama alanı az: eski düzenleme geçmişi kısaltıldı.",
+    },
+    "msg.namePrompt": {
+      ru: "Имя документа",
+      en: "Document name",
+      de: "Name des Dokuments",
+      tr: "Belge adı",
     },
     "msg.frontmatterExpanded": {
       ru: "Фронтматтер развёрнут. Введите заголовок.",
@@ -692,7 +802,7 @@
     "sugg.desmosExpr.log": { ru: "Логарифм", en: "Logarithm", de: "Logarithmus", tr: "Logaritma" },
     "sugg.desmosExpr.abs": { ru: "Модуль", en: "Absolute value", de: "Betrag", tr: "Mutlak değer" },
 
-    // --- Команды палитры (Ctrl+Shift+P) и контекстного меню --------------------
+    // --- Команды палитры (F1) и контекстного меню ------------------------------
     "cmd.preview": { ru: "Показать предпросмотр", en: "Show preview", de: "Vorschau zeigen", tr: "Önizlemeyi göster" },
     "cmd.previewHide": { ru: "Скрыть предпросмотр", en: "Hide preview", de: "Vorschau ausblenden", tr: "Önizlemeyi gizle" },
     "cmd.desmosRerender": { ru: "Пересоздать графики Desmos", en: "Rerender Desmos graphs", de: "Desmos-Grafiken neu zeichnen", tr: "Desmos grafiklerini yeniden çiz" },
@@ -701,6 +811,12 @@
     "cmd.exportHtml": { ru: "Сохранить готовый HTML", en: "Export HTML", de: "HTML exportieren", tr: "HTML dışa aktar" },
     "cmd.help": { ru: "Справка", en: "Help", de: "Hilfe", tr: "Yardım" },
     "cmd.manual": { ru: "Полное руководство", en: "Complete manual", de: "Vollständiges Handbuch", tr: "Tam kılavuz" },
+    "cmd.docNew": { ru: "Документ: новый", en: "Document: new", de: "Dokument: neu", tr: "Belge: yeni" },
+    "cmd.docRename": { ru: "Документ: переименовать", en: "Document: rename", de: "Dokument: umbenennen", tr: "Belge: yeniden adlandır" },
+    "cmd.docDelete": { ru: "Документ: удалить", en: "Document: delete", de: "Dokument: löschen", tr: "Belge: sil" },
+    "cmd.forget": { ru: "Забыть все документы и историю", en: "Forget all documents and history", de: "Alle Dokumente und den Verlauf vergessen", tr: "Tüm belgeleri ve geçmişi unut" },
+    "cmd.historyBack": { ru: "История: шаг назад", en: "History: step back", de: "Verlauf: Schritt zurück", tr: "Geçmiş: geri adım" },
+    "cmd.historyForward": { ru: "История: шаг вперёд", en: "History: step forward", de: "Verlauf: Schritt vor", tr: "Geçmiş: ileri adım" },
     "cmd.langNext": { ru: "Переключить язык интерфейса", en: "Switch UI language", de: "Sprache wechseln", tr: "Arayüz dilini değiştir" },
     "cmd.formulaInline": { ru: "Вставить формулу в строке", en: "Insert inline formula", de: "Inline-Formel einfügen", tr: "Satır içi formül ekle" },
     "cmd.formulaBlock": { ru: "Вставить формулу на отдельной строке", en: "Insert display formula", de: "Formel in eigener Zeile einfügen", tr: "Ayrı satırda formül ekle" },
