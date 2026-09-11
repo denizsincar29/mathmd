@@ -56,24 +56,24 @@
 
     // --- Введение -----------------------------------------------------------
     "manual.introText1": {
-      ru: "mathmd существует ради одной задачи: чтобы незрячий автор мог самостоятельно написать и опубликовать документ с математикой. Всё делается в браузере, только с клавиатуры и с опорой на программу экранного доступа. Формулы, графики и шахматные доски доступны на слух, а не только на глаз.",
-      en: "mathmd exists for one purpose: to let a blind author write and publish a document with mathematics independently. Everything happens in the browser, from the keyboard alone, with a screen reader as the main instrument. Formulas, graphs and chessboards are available by ear, not only by eye.",
+      ru: "mathmd — доступный математический редактор в браузере. Он нужен, чтобы писать и публиковать математические тексты: статьи и конспекты, задачи с решениями, разборы партий. Текст, формулы, графики и шахматные доски собираются в одном документе, а готовую работу можно отдать читателю ссылкой или файлом.",
+      en: "mathmd is an accessible mathematical editor in the browser. It is made for writing and publishing mathematical texts: articles and notes, problems with solutions, game analyses. Text, formulas, graphs and chessboards come together in one document, and the finished work can be handed to a reader as a link or a file.",
     },
     "manual.introText2": {
-      ru: "Вторая задача — оформление. Написанное здесь превращается в аккуратно свёрстанную страницу: заголовки, списки, формулы, графики и шахматные доски выглядят так, как их принято видеть в публикации. Программа вёрстки для этого не нужна.",
-      en: "The second purpose is presentation. What you write here becomes a properly typeset page: headings, lists, formulas, graphs and chessboards look the way they are expected to look in a publication. No typesetting program is required.",
+      ru: "Главное в нём — доступность. Редактор рассчитан на автора, который работает с программой экранного доступа: всё делается с клавиатуры, формулы читаются на слух, график можно прослушать, а шахматная доска называет клетки голосом. Зрячему автору он тоже подходит: на выходе получается аккуратно свёрстанная страница.",
+      en: "Accessibility is its main point. The editor is designed for an author who works with a screen reader: everything is done from the keyboard, formulas are read aloud, a graph can be listened to, and the chessboard names its squares by voice. It suits a sighted author as well: the result is a neatly typeset page.",
     },
     "manual.introText3": {
-      ru: "Устроен редактор просто: сверху панель кнопок для вставки формул, под ней поле редактора, ниже предпросмотр. Изменения видны сразу. Устанавливать ничего не нужно — это обычная страница сайта.",
-      en: "The editor itself is simple: a formula button panel at the top, the editor field below it, the preview under that. Changes are visible at once. Nothing has to be installed — it is an ordinary web page.",
+      ru: "Вторая задача — оформление. Написанное здесь превращается в аккуратно свёрстанную страницу: заголовки, списки, формулы, графики и шахматные доски выглядят так, как их принято видеть в публикации. Программа вёрстки для этого не нужна.",
+      en: "Its second purpose is presentation. What you write here becomes a properly typeset page: headings, lists, formulas, graphs and chessboards look the way they are expected to look in a publication. No typesetting program is required.",
     },
     "manual.introText4": {
-      ru: "Документ — обычный текстовый файл <code>.md</code> с разметкой markdown. Внутри него могут быть формулы, графики и шахматные доски. Файл можно скачать, открыть заново, править в любом текстовом редакторе и передать другому человеку. Кнопка «Сохранить готовый HTML» делает из него отдельную страницу для чтения: она открывается в любом браузере, а исходный код читателю не нужен.",
-      en: "A document is a plain text <code>.md</code> file with markdown markup. It can hold formulas, graphs and chessboards. You can download it, open it again, edit it in any text editor and hand it to someone else. The “Export HTML” button turns it into a standalone page for reading: it opens in any browser, and the reader needs no source code.",
+      ru: "Устроен редактор просто: сверху панель кнопок для вставки формул, под ней поле редактора, ниже предпросмотр. Изменения видны сразу. Клавиша <strong>Alt+ё</strong> открывает предпросмотр и возвращает обратно в редактор. Устанавливать ничего не нужно — это обычная страница сайта.",
+      en: "The editor itself is simple: a formula button panel at the top, the editor field below it, the preview under that. Changes are visible at once. <strong>Alt+`</strong> opens the preview and returns you to the editor. Nothing has to be installed — it is an ordinary web page.",
     },
     "manual.introText5": {
-      ru: "Кнопка «Справка» в редакторе — краткая справка на восемь пунктов. Эта страница — полное руководство.",
-      en: "The “Help” button in the editor is a short eight-point reference. This page is the complete manual.",
+      ru: "Документ — обычный текстовый файл <code>.md</code> с разметкой markdown. Внутри него могут быть формулы, графики и шахматные доски. Файл можно скачать, открыть заново, править в любом текстовом редакторе и передать другому человеку. Кнопка «Сохранить готовый HTML» делает из него отдельную страницу для чтения: она открывается в любом браузере, а исходный код читателю не нужен. Кнопка «Справка» в редакторе — краткая справка, эта страница — полное руководство.",
+      en: "A document is a plain text <code>.md</code> file with markdown markup. It can hold formulas, graphs and chessboards. You can download it, open it again, edit it in any text editor and hand it to someone else. The “Export HTML” button turns it into a standalone page for reading: it opens in any browser, and the reader needs no source code. The “Help” button in the editor is a short reference; this page is the complete manual.",
     },
 
     // --- markdown -----------------------------------------------------------
@@ -87,23 +87,23 @@
         "<li><strong>Абзац.</strong> Абзацы разделяются пустой строкой. Если пустой строки нет, следующие строки продолжают тот же абзац.</li>" +
         "<li><strong>Выделение.</strong> <code>**жирный**</code> — два знака <code>*</code> с обеих сторон слова, <code>*курсив*</code> — один знак.</li>" +
         "<li><strong>Список.</strong> Каждый пункт начинается с дефиса и пробела. Нумерованный список — с числа и точки: <code>1.</code>, <code>2.</code>, <code>3.</code></li>" +
-        "<li><strong>Ссылка.</strong> <code>[текст](адрес)</code>. Адрес, написанный в тексте без разметки, тоже становится ссылкой.</li>" +
-        "<li><strong>Цитата.</strong> Знак <code>&gt;</code> в начале строки. Так же работают таблицы, зачёркнутый текст и списки задач.</li>" +
-        "<li><strong>Код.</strong> Обратные кавычки вокруг слова, три обратные кавычки — вокруг целого блока.</li>" +
+        "<li><strong>Ссылка.</strong> Чтобы сделать ссылку, в квадратных скобках напишите текст ссылки, а затем без пробела в круглых скобках — сам адрес ссылки или заголовок через решётку: <code>[текст](адрес)</code>, <code>[текст](#заголовок)</code>.</li>" +
+        "<li><strong>Цитата.</strong> Знак <code>&gt;</code> в начале строки. Так же набирается зачёркнутый текст и списки задач.</li>" +
+        "<li><strong>Код.</strong> Код пишется только тройными обратными кавычками — вокруг целого блока. Одиночная кавычка занята AsciiMath: <code>`x^2`</code> — это формула, а не код.</li>" +
         "</ul>",
       en: "<ul>" +
         "<li><strong>A heading.</strong> To write a heading, put the character <code>#</code> before the line. One character is a first-level heading, two a second-level, five a fifth-level.</li>" +
         "<li><strong>A paragraph.</strong> Paragraphs are separated by a blank line. Without a blank line the following lines continue the same paragraph.</li>" +
         "<li><strong>Emphasis.</strong> <code>**bold**</code> — two <code>*</code> characters on either side of the word, <code>*italic*</code> — one character.</li>" +
         "<li><strong>A list.</strong> Each item starts with a dash and a space. A numbered list starts with a figure and a dot: <code>1.</code>, <code>2.</code>, <code>3.</code></li>" +
-        "<li><strong>A link.</strong> <code>[text](address)</code>. An address written plainly in the text also becomes a link.</li>" +
-        "<li><strong>A quote.</strong> The character <code>&gt;</code> at the start of a line. Tables, strikethrough and task lists work the same way.</li>" +
-        "<li><strong>Code.</strong> Backticks around a word, three backticks around a whole block.</li>" +
+        "<li><strong>A link.</strong> To make a link, write the link text in square brackets and then, without a space, the address in round brackets — either a web address or a heading reference after a hash sign: <code>[text](address)</code>, <code>[text](#heading)</code>.</li>" +
+        "<li><strong>A quote.</strong> The character <code>&gt;</code> at the start of a line. Strikethrough and task lists are written the same way.</li>" +
+        "<li><strong>Code.</strong> Code is written with triple backticks only — around a whole block. A single backtick belongs to AsciiMath: <code>`x^2`</code> is a formula, not code.</li>" +
         "</ul>",
     },
     "manual.markdownNote": {
-      ru: "Внутри формул и блоков кода markdown не действует: там символы означают сами себя. В обычном тексте знак <code>*</code> может случайно начать курсив — в этом случае перед ним ставят обратный слэш.",
-      en: "Inside formulas and code blocks markdown does not apply: there the characters mean themselves. In ordinary text the character <code>*</code> may accidentally start italics; in that case a backslash is placed before it.",
+      ru: "Внутри формул и блоков кода markdown не действует: там символы означают сами себя. В обычном тексте знак <code>*</code> может случайно начать курсив — в этом случае перед ним ставят обратный слэш. Одиночная обратная кавычка тоже не код, а формула AsciiMath: <code>`x^2`</code>.",
+      en: "Inside formulas and code blocks markdown does not apply: there the characters mean themselves. In ordinary text the character <code>*</code> may accidentally start italics; in that case a backslash is placed before it. A single backtick is not code either, but an AsciiMath formula: <code>`x^2`</code>.",
     },
 
     // --- Два языка формул ---------------------------------------------------
@@ -134,7 +134,7 @@
         "<li><strong>Дробь</strong> — скобками: <code>`(a+b)/(c+d)`</code>. Скобки говорят, что стоит в числителе и знаменателе.</li>" +
         "<li><strong>Степень</strong> — знаком <code>^</code>: <code>`x^2`</code>, а для длинного показателя — <code>`x^(n+1)`</code>.</li>" +
         "<li><strong>Корень</strong> — <code>`sqrt(x)`</code>; корень третьей степени — <code>`root(3)(x)`</code>.</li>" +
-        "<li><strong>Сумма, интеграл, предел</strong> — <code>`sum_(i=1)^n i`</code>, <code>`int_(0)^(1) x dx`</code>, <code>`lim_(x-&gt;0)`</code>. Нижний и верхний пределы — в скобках.</li>" +
+        "<li><strong>Сумма, интеграл, предел</strong> — <code>`sum_(i=1)^n`</code>, <code>`int_(0)^(1) x dx`</code>, <code>`lim_(x-&gt;0)`</code>. Нижний и верхний пределы — в скобках.</li>" +
         "<li><strong>Матрица</strong> — двойные квадратные скобки: <code>`[[a,b],[c,d]]`</code>. Строки разделяются запятыми внутри внешних скобок.</li>" +
         "<li><strong>Греческие буквы</strong> — словом: <code>alpha</code>, <code>beta</code>, <code>pi</code>, <code>theta</code>, <code>omega</code>, большая сигма — <code>Sigma</code>.</li>" +
         "<li><strong>Знаки</strong> — обычными символами: <code>&gt;=</code>, <code>&lt;=</code>, <code>!=</code>, <code>~=</code>, бесконечность <code>oo</code>, стрелка <code>-&gt;</code>, принадлежность <code>in</code>.</li>" +
@@ -144,7 +144,7 @@
         "<li><strong>A fraction</strong> uses brackets: <code>`(a+b)/(c+d)`</code>. The brackets say what is on top and what is below.</li>" +
         "<li><strong>A power</strong> uses a caret: <code>`x^2`</code>, and for a long exponent <code>`x^(n+1)`</code>.</li>" +
         "<li><strong>A root</strong> — <code>`sqrt(x)`</code>; a cube root — <code>`root(3)(x)`</code>.</li>" +
-        "<li><strong>A sum, integral or limit</strong> — <code>`sum_(i=1)^n i`</code>, <code>`int_(0)^(1) x dx`</code>, <code>`lim_(x-&gt;0)`</code>. Lower and upper bounds go in brackets.</li>" +
+        "<li><strong>A sum, integral or limit</strong> — <code>`sum_(i=1)^n`</code>, <code>`int_(0)^(1) x dx`</code>, <code>`lim_(x-&gt;0)`</code>. Lower and upper bounds go in brackets.</li>" +
         "<li><strong>A matrix</strong> — double square brackets: <code>`[[a,b],[c,d]]`</code>. Rows are separated by commas inside the outer brackets.</li>" +
         "<li><strong>Greek letters</strong> — by name: <code>alpha</code>, <code>beta</code>, <code>pi</code>, <code>theta</code>, <code>omega</code>, capital sigma is <code>Sigma</code>.</li>" +
         "<li><strong>Signs</strong> — as ordinary characters: <code>&gt;=</code>, <code>&lt;=</code>, <code>!=</code>, <code>~=</code>, infinity <code>oo</code>, arrow <code>-&gt;</code>, member of <code>in</code>.</li>" +

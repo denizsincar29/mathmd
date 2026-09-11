@@ -7,9 +7,9 @@
 <title>Руководство — mathmd</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=40">
-<script src="i18n.js?v=40"></script>
-<script src="manual-i18n.js?v=40"></script>
+<link rel="stylesheet" href="style.css?v=41">
+<script src="i18n.js?v=41"></script>
+<script src="manual-i18n.js?v=41"></script>
 
 <script>
   // MathJax обязан быть настроен до загрузки самого MathJax. Конфигурация — та
@@ -183,8 +183,8 @@
 
 ## Заголовок второго уровня
 
-Обычный абзац: **жирный текст**, *курсив*, ~~зачёркнутый~~, `код в строке`
-и [ссылка на сайт](https://example.com).
+Обычный абзац: **жирный текст**, *курсив*, ~~зачёркнутый~~ и
+[ссылка на сайт](https://example.com).
 
 - первый пункт списка
 - второй пункт
@@ -198,12 +198,13 @@
 
 &gt; Цитата: мысль, которую хочется выделить.
 
-| Формула | Значение |
-| --- | --- |
-| $x^2$ | квадрат |
-| `sqrt(2)` | корень из двух |
+Блок кода — тройные обратные кавычки:
 
-Формула LaTeX в строке: $E = mc^2$, формула AsciiMath в обратных кавычках: `sum_(i=1)^n i`.
+```js
+let x = 2;
+```
+
+Формула LaTeX в строке: $E = mc^2$, формула AsciiMath в обратных кавычках: `lim_(x-&gt;0) (sin x)/x = 1`.
 
 $$
 \int_0^1 x^2\,dx = \frac{1}{3}
@@ -228,9 +229,13 @@ $$
     <p data-i18n="manual.asciiIntro"></p>
     <div data-i18n="manual.asciiList"></div>
     <p data-i18n="manual.example">Пример:</p>
-<pre data-example="markdown"><code>Корни квадратного уравнения: `x = (-b +- sqrt(b^2-4ac))/(2a)`.
+<pre data-example="markdown"><code>Предел: `lim_(x-&gt;0) (sin x)/x = 1`.
 
-Сумма ряда: `sum_(i=1)^n i = (n(n+1))/2`.</code></pre>
+Интеграл: `int_0^1 x^2 dx = 1/3`.
+
+Дифференциальное уравнение: `(dy)/(dx) + y = 0`.
+
+Векторы и геометрия: `vec a + vec b = vec c`, площадь круга `S = pi r^2`.</code></pre>
     <p data-i18n="manual.asciiButtons"></p>
   </section>
 
@@ -335,6 +340,6 @@ chess:
   document.getElementById("back-link").href = back;
   document.getElementById("back-link-2").href = back;
 </script>
-<script src="manual-examples.js?v=40"></script>
+<script src="manual-examples.js?v=41"></script>
 </body>
 </html>
