@@ -113,6 +113,21 @@
       de: "Hilfe",
       tr: "Yardım",
     },
+    // Полное руководство — отдельная страница manual.html; эти строки только
+    // про переход на неё. Сами тексты руководства — в manual-i18n.js (ru и en).
+    "ui.btnManual": {
+      ru: "Руководство",
+      en: "Manual",
+      de: "Handbuch",
+      tr: "Kılavuz",
+    },
+    // Это текст ссылки в справке, отсюда и форма «открыть …».
+    "help.manualLink": {
+      ru: "Открыть полное руководство: markdown, AsciiMath, LaTeX, Desmos и шахматы",
+      en: "Open the complete manual: markdown, AsciiMath, LaTeX, Desmos and chess",
+      de: "Vollständiges Handbuch öffnen: Markdown, AsciiMath, LaTeX, Desmos und Schach",
+      tr: "Tam kılavuzu aç: markdown, AsciiMath, LaTeX, Desmos ve satranç",
+    },
     "ui.exampleLabel": {
       ru: "Пример:",
       en: "Example:",
@@ -363,6 +378,18 @@
       tr: "Yardım açıldı. Esc — kapat.",
     },
     "msg.helpClosed": { ru: "Справка закрыта.", en: "Help closed.", de: "Hilfe geschlossen.", tr: "Yardım kapatıldı." },
+    "msg.manualOpen": {
+      ru: "Руководство откроется в новой вкладке. Документ останется на месте.",
+      en: "The manual opens in a new tab. Your document stays where it is.",
+      de: "Das Handbuch öffnet sich in einem neuen Tab. Ihr Dokument bleibt erhalten.",
+      tr: "Kılavuz yeni sekmede açılır. Belgeniz yerinde kalır.",
+    },
+    "msg.manualBlocked": {
+      ru: "Браузер не дал открыть новую вкладку — разрешите всплывающие окна и повторите.",
+      en: "The browser blocked the new tab — allow pop-ups and try again.",
+      de: "Der Browser hat den neuen Tab blockiert — erlauben Sie Pop-ups und versuchen Sie es erneut.",
+      tr: "Tarayıcı yeni sekmeyi engelledi — açılır pencerelere izin verip tekrar deneyin.",
+    },
     "msg.editorReady": {
       ru: "Редактор готов. Нажмите Ctrl+Enter для предпросмотра на строке курсора.",
       en: "Editor ready. Press Ctrl+Enter for preview at the cursor line.",
@@ -673,6 +700,7 @@
     "cmd.saveMd": { ru: "Скачать .md", en: "Download .md", de: ".md herunterladen", tr: ".md indir" },
     "cmd.exportHtml": { ru: "Сохранить готовый HTML", en: "Export HTML", de: "HTML exportieren", tr: "HTML dışa aktar" },
     "cmd.help": { ru: "Справка", en: "Help", de: "Hilfe", tr: "Yardım" },
+    "cmd.manual": { ru: "Полное руководство", en: "Complete manual", de: "Vollständiges Handbuch", tr: "Tam kılavuz" },
     "cmd.langNext": { ru: "Переключить язык интерфейса", en: "Switch UI language", de: "Sprache wechseln", tr: "Arayüz dilini değiştir" },
     "cmd.formulaInline": { ru: "Вставить формулу в строке", en: "Insert inline formula", de: "Inline-Formel einfügen", tr: "Satır içi formül ekle" },
     "cmd.formulaBlock": { ru: "Вставить формулу на отдельной строке", en: "Insert display formula", de: "Formel in eigener Zeile einfügen", tr: "Ayrı satırda formül ekle" },
@@ -764,10 +792,26 @@
 
   var current = detectLang();
 
+  // Долить словарь снаружи. Нужно для manual.html: руководство длинное, а
+  // i18n.js грузится на каждой странице, поэтому его тексты живут в
+  // manual-i18n.js. Ключи добавляются до DOMContentLoaded, так что
+  // applyStatic() видит их с самого начала.
+  function add(dict) {
+    if (!dict) return;
+    for (var k in dict) {
+      if (Object.prototype.hasOwnProperty.call(dict, k)) DICT[k] = dict[k];
+    }
+  }
+
   function t(key, vars) {
     var entry = DICT[key];
     if (!entry) return key;
-    var s = entry[current] != null ? entry[current] : entry.ru != null ? entry.ru : key;
+    // Запасной язык — английский, а не русский: руководство переведено на ru и
+    // en, и на de/tr пользователь лучше поймёт английский текст, чем русский.
+    var s = entry[current] != null ? entry[current]
+          : entry.en != null ? entry.en
+          : entry.ru != null ? entry.ru
+          : key;
     if (vars) {
       for (var k in vars) {
         if (Object.prototype.hasOwnProperty.call(vars, k)) {
@@ -810,6 +854,7 @@
 
   window.I18N = {
     t: t,
+    add: add,
     setLang: setLang,
     getLang: function () { return current; },
     langName: function (lang) { return LANG_NAMES[lang] || lang; },

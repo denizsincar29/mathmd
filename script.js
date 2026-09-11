@@ -1508,6 +1508,11 @@ require(["vs/editor/editor.main"], function () {
   registerSignatureHelp();
   buildToolbar();
 
+  // Фокус на редакторе при открытии страницы: пользователь попадает на сайт
+  // сразу в поле ввода, первая же буква идёт в документ. Строка объявления
+  // «редактор готов» прозвучит уже поверх Monaco.
+  editor.focus();
+
   // Живой предпросмотр: формулы обновляются по мере набора (с дебаунсом).
   editor.onDidChangeModelContent(() => scheduleLivePreview());
 
@@ -1685,6 +1690,25 @@ require(["vs/editor/editor.main"], function () {
     speak(I18N.t("msg.helpClosed"), fileStatusEl);
   });
 
+  // Полное руководство (manual.html) — отдельная страница, чтобы не потерять
+  // документ: открываем в новой вкладке. Ссылки в интерфейсе ведут на неё с
+  // текущим языком, чтобы не переспрашивать выбор заново.
+  function manualUrl() {
+    return "manual.html?lang=" + I18N.getLang();
+  }
+  function syncManualLinks() {
+    document.querySelectorAll("[data-manual-link]").forEach((a) => { a.href = manualUrl(); });
+  }
+  function openManual() {
+    if (window.open(manualUrl(), "_blank")) {
+      speak(I18N.t("msg.manualOpen"), fileStatusEl);
+    } else {
+      speak(I18N.t("msg.manualBlocked"), fileStatusEl);
+    }
+  }
+  document.getElementById("btn-manual").addEventListener("click", openManual);
+  syncManualLinks();
+
   // Команды в command palette (Ctrl+Shift+P) и контекстное меню. Повседневные
   // действия — только в палитру; вставка формул и структур — в контекстное меню.
   const FORMULA_ITEM = TOOLBAR_GROUPS.flatMap((g) => g.items).find((i) => i.labelKey === "tool.formula");
@@ -1704,6 +1728,7 @@ require(["vs/editor/editor.main"], function () {
     add({ id: "mathmd.saveMd", label: I18N.t("cmd.saveMd"), run: saveMd });
     add({ id: "mathmd.exportHtml", label: I18N.t("cmd.exportHtml"), run: exportHtml });
     add({ id: "mathmd.help", label: I18N.t("cmd.help"), run: openHelpCmd });
+    add({ id: "mathmd.manual", label: I18N.t("cmd.manual"), run: openManual });
     add({ id: "mathmd.langNext", label: I18N.t("cmd.langNext"), run: () => {
       const langs = ["ru", "en", "de", "tr"];
       const cur = I18N.getLang();
@@ -1723,6 +1748,7 @@ require(["vs/editor/editor.main"], function () {
     buildToolbar();
     editor.updateOptions({ ariaLabel: I18N.t("editor.ariaLabel") });
     registerEditorActions();
+    syncManualLinks();
     speak(I18N.t("msg.langChanged", { lang: I18N.langName(lang) }), fileStatusEl);
     editor.focus();
   }

@@ -1,13 +1,15 @@
 // Service worker: PWA + offline. Bump CACHE_NAME whenever static assets
 // change so old clients drop the stale cache on their next visit.
-const CACHE_NAME = "mathmd-v36";
+const CACHE_NAME = "mathmd-v37";
 
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./i18n.js",
+  "./manual-i18n.js",
   "./script.js",
+  "./manual.html",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -71,7 +73,10 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
           return response;
         })
-        .catch(() => caches.match("./index.html"))
+        // Офлайн: руководство имеет свою страницу, остальное падает на редактор.
+        .catch(() =>
+          caches.match(url.pathname.endsWith("manual.html") ? "./manual.html" : "./index.html")
+        )
     );
     return;
   }
