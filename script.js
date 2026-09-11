@@ -16,15 +16,19 @@ const toolbarEl = document.getElementById("toolbar");
 
 // --- Скринридерные объявления ----------------------------------------------
 
-let speakTimer = null;
+// Таймер — свой у каждого live-региона. Общий на всех означал бы, что
+// объявление в один регион отменяет объявление в другой: например, пример
+// открывается отдельным документом (статус файла) и сразу же перестраивается
+// предпросмотр со своей строкой — второе объявление стирало первое.
+const speakTimers = new WeakMap();
 function speak(text, target) {
   const el = target || previewStatusEl;
-  el.textContent = "";
-  clearTimeout(speakTimer);
+  clearTimeout(speakTimers.get(el));
   // Чистим, чтобы одинаковый текст проговаривался повторно.
-  speakTimer = setTimeout(() => {
+  el.textContent = "";
+  speakTimers.set(el, setTimeout(() => {
     el.textContent = text;
-  }, 60);
+  }, 60));
 }
 
 // --- Markdown-рендер --------------------------------------------------------
