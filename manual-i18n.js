@@ -101,8 +101,8 @@
         "</ol>",
     },
     "manual.startKeys": {
-      ru: "Кнопки файла работают и по горячим клавишам: <strong>Ctrl+S</strong> — сохранить готовый HTML, <strong>Ctrl+Shift+S</strong> — скачать .md, <strong>Ctrl+O</strong> — открыть .md. Браузер тоже умеет эти сочетания, но редактор перехватывает их первым, поэтому его действие и срабатывает.",
-      en: "The file buttons also have hotkeys: <strong>Ctrl+S</strong> — save the ready HTML, <strong>Ctrl+Shift+S</strong> — download the .md, <strong>Ctrl+O</strong> — open a .md. The browser knows these combinations too, but the editor catches them first, so its action is the one that runs.",
+      ru: "Кнопки файла работают и по горячим клавишам: <strong>Ctrl+S</strong> — сохранить готовый HTML, <strong>Ctrl+Shift+S</strong> — скачать .md, <strong>Ctrl+O</strong> — открыть .md. Браузер тоже умеет эти сочетания, но редактор перехватывает их первым, поэтому его действие и срабатывает. Функциональные клавиши: <strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд, <strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить, <strong>F9</strong> — новый документ.",
+      en: "The file buttons also have hotkeys: <strong>Ctrl+S</strong> — save the ready HTML, <strong>Ctrl+Shift+S</strong> — download the .md, <strong>Ctrl+O</strong> — open a .md. The browser knows these combinations too, but the editor catches them first, so its action is the one that runs. Function keys: <strong>F1</strong> — help, <strong>Shift+F1</strong> — the command palette, <strong>F2</strong> — rename the document, <strong>Shift+F2</strong> — delete, <strong>F9</strong> — a new document.",
     },
 
     // --- markdown -----------------------------------------------------------
@@ -118,7 +118,7 @@
         "<li><strong>Список.</strong> Каждый пункт начинается с дефиса и пробела. Нумерованный список — с числа и точки: <code>1.</code>, <code>2.</code>, <code>3.</code></li>" +
         "<li><strong>Ссылка.</strong> Чтобы сделать ссылку, в квадратных скобках напишите текст ссылки, а затем без пробела в круглых скобках — сам адрес ссылки или заголовок через решётку: <code>[текст](адрес)</code>, <code>[текст](#заголовок)</code>.</li>" +
         "<li><strong>Цитата.</strong> Знак <code>&gt;</code> в начале строки. Так же набирается зачёркнутый текст и списки задач.</li>" +
-        "<li><strong>Код.</strong> Код пишется только тройными обратными кавычками — вокруг целого блока. Одиночная кавычка занята AsciiMath: <code>`x^2`</code> — это формула, а не код.</li>" +
+        "<li><strong>Код.</strong> Код пишется только тройными обратными кавычками — вокруг целого блока. Одиночная кавычка занята AsciiMath: <code>`x^2`</code> — это формула, а не код. Под каждым блоком кода в предпросмотре и в готовой странице есть кнопка <strong>Скопировать код</strong>.</li>" +
         "</ul>",
       en: "<ul>" +
         "<li><strong>A heading.</strong> To write a heading, put the character <code>#</code> before the line. One character is a first-level heading, two a second-level, five a fifth-level.</li>" +
@@ -127,7 +127,7 @@
         "<li><strong>A list.</strong> Each item starts with a dash and a space. A numbered list starts with a figure and a dot: <code>1.</code>, <code>2.</code>, <code>3.</code></li>" +
         "<li><strong>A link.</strong> To make a link, write the link text in square brackets and then, without a space, the address in round brackets — either a web address or a heading reference after a hash sign: <code>[text](address)</code>, <code>[text](#heading)</code>.</li>" +
         "<li><strong>A quote.</strong> The character <code>&gt;</code> at the start of a line. Strikethrough and task lists are written the same way.</li>" +
-        "<li><strong>Code.</strong> Code is written with triple backticks only — around a whole block. A single backtick belongs to AsciiMath: <code>`x^2`</code> is a formula, not code.</li>" +
+        "<li><strong>Code.</strong> Code is written with triple backticks only — around a whole block. A single backtick belongs to AsciiMath: <code>`x^2`</code> is a formula, not code. Under every code block, in the preview and in the exported page, there is a <strong>Copy code</strong> button.</li>" +
         "</ul>",
     },
     "manual.markdownNote": {
@@ -302,7 +302,8 @@
         "<li><strong>Alt+M</strong> — следующая формула будет в строке или отдельным блоком. <strong>Alt+L</strong> — синтаксис: LaTeX или AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — вставить дробь, корень, сумму и другие заготовки. Те же номера написаны на кнопках.</li>" +
         "<li><strong>Ctrl+Space</strong> — подсказки: делимитеры, блоки, ключи настроек, разметка markdown. Внутри формулы подсказки появляются сами.</li>" +
-        "<li><strong>F1</strong> — справка. Раньше по ней открывалась палитра команд; теперь палитра живёт на <strong>Ctrl+Alt+P</strong>, потому что F1 привычнее видеть справкой.</li>" +
+        "<li><strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд (она же <strong>Ctrl+Alt+P</strong>). F1 привычнее видеть справкой, поэтому палитра переехала.</li>" +
+        "<li><strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить документ, <strong>F9</strong> — новый документ. То же самое делают кнопки рядом со списком документов.</li>" +
         "<li><strong>Ctrl+S</strong> — сохранить готовый HTML, <strong>Ctrl+Shift+S</strong> — скачать .md, <strong>Ctrl+O</strong> — открыть .md с диска.</li>" +
         "</ul>",
       en: "<ul>" +
@@ -310,7 +311,8 @@
         "<li><strong>Alt+M</strong> — the next formula goes inline or as a separate block. <strong>Alt+L</strong> — the syntax: LaTeX or AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — insert a fraction, a root, a sum and other templates. The same numbers are printed on the buttons.</li>" +
         "<li><strong>Ctrl+Space</strong> — suggestions: delimiters, blocks, settings keys, markdown markup. Inside a formula they appear by themselves.</li>" +
-        "<li><strong>F1</strong> — help. It used to open the command palette; the palette now lives on <strong>Ctrl+Alt+P</strong>, because F1 is more usually expected to bring up help.</li>" +
+        "<li><strong>F1</strong> — help, <strong>Shift+F1</strong> — the command palette (also <strong>Ctrl+Alt+P</strong>). F1 is more usually expected to bring up help, so the palette moved.</li>" +
+        "<li><strong>F2</strong> — rename the document, <strong>Shift+F2</strong> — delete it, <strong>F9</strong> — a new document. The buttons next to the document list do the same.</li>" +
         "<li><strong>Ctrl+S</strong> — save the ready HTML, <strong>Ctrl+Shift+S</strong> — download the .md, <strong>Ctrl+O</strong> — open a .md from disk.</li>" +
         "</ul>",
     },
@@ -355,6 +357,7 @@
         "<li><strong>Скачать .md</strong> — сохранить исходник, чтобы вернуться к работе позже.</li>" +
         "<li><strong>Открыть .md</strong> — открыть файл с диска.</li>" +
         "<li><strong>Пример:</strong> — готовые документы: демо редактора, партия Морфи и пример с комментариями и вариантами.</li>" +
+        "<li><strong>Переименовать</strong> и <strong>Удалить</strong> — про текущий, открытый документ. Стоят рядом со списком документов; то же делают F2 и Shift+F2.</li>" +
         "</ul>",
       en: "<ul>" +
         "<li><strong>Show preview</strong> — the same as Alt+`.</li>" +
@@ -362,6 +365,7 @@
         "<li><strong>Download .md</strong> — save the source to come back to later.</li>" +
         "<li><strong>Open .md</strong> — open a file from disk.</li>" +
         "<li><strong>Example:</strong> — ready-made documents: the editor demo, Morphy's game, and a sample with comments and variations.</li>" +
+        "<li><strong>Rename</strong> and <strong>Delete</strong> act on the current, open document. They sit next to the document list; F2 and Shift+F2 do the same.</li>" +
         "</ul>",
     },
 
@@ -389,39 +393,49 @@
         "последний его пункт — <strong>Новый документ</strong>. Пока документ не " +
         "сохранён под своим именем, он называется untitled1.md, untitled2.md и так " +
         "далее. Когда вы первый раз скачиваете безымянный документ, редактор " +
-        "спрашивает имя — дальше файл и документ называются одинаково.",
+        "спрашивает имя — дальше файл и документ называются одинаково. Тут же " +
+        "рядом со списком стоят кнопки <strong>Переименовать</strong> и " +
+        "<strong>Удалить</strong>: они действуют на открытый документ, и то же " +
+        "самое делают F2 и Shift+F2.",
       en: "Documents live in your own browser and are never sent anywhere. The " +
         "<strong>Document:</strong> list in the “File and output” panel opens a " +
         "saved document; its last item is <strong>New document</strong>. Until you " +
         "save a document under your own name it is called untitled1.md, untitled2.md " +
         "and so on. The first time you download an unnamed document the editor asks " +
-        "for a name — from then on the file and the document share it.",
+        "for a name — from then on the file and the document share it. Right next " +
+        "to the list are the <strong>Rename</strong> and <strong>Delete</strong> " +
+        "buttons: they act on the open document, and F2 and Shift+F2 do the same.",
     },
     "manual.docsAutosave": {
       ru: "Текст сохраняется сам: через пять секунд тишины после правки и сразу при " +
         "закрытии вкладки. Возвращаетесь на сайт — документ открывается на том же " +
-        "месте. Если страницу открыли по ссылке с примером (<code>?example=…</code>), " +
-        "пример загрузится только тогда, когда документ пуст: иначе он не станет " +
-        "затирать написанное.",
+        "месте. Если открыть пример — по ссылке (<code>?example=…</code>) или из " +
+        "списка «Пример:», — он приходит отдельным документом: прежний черновик " +
+        "ничего не теряет и ждёт вас в списке <strong>Документ:</strong>. Пустой " +
+        "редактор пример просто заполняет.",
       en: "The text saves itself: five seconds after you stop typing, and " +
         "immediately when the tab closes. Come back to the site and the document opens " +
-        "where you left it. If the page was opened through an example link " +
-        "(<code>?example=…</code>), the example loads only when the document is empty — " +
-        "it will not overwrite what you have written.",
+        "where you left it. When you open an example — through a link " +
+        "(<code>?example=…</code>) or from the “Example:” list — it arrives as a " +
+        "separate document: your previous draft loses nothing and waits for you in " +
+        "the <strong>Document:</strong> list. An empty editor is simply filled by " +
+        "the example.",
     },
     "manual.docsHistory": {
       ru: "История правок хранится снимками: примерно один на каждые две минуты " +
         "работы, не больше тридцати на документ. <strong>Ctrl+Alt+Z</strong> — шаг " +
         "назад по этим снимкам, <strong>Ctrl+Alt+Y</strong> — шаг вперёд. В отличие " +
         "от обычного Ctrl+Z, который действует только внутри текущего сеанса, снимки " +
-        "переживают перезагрузку страницы. Переименовать документ, удалить его или " +
-        "стереть всё хранилище можно из палитры команд (Ctrl+Alt+P).",
+        "переживают перезагрузку страницы. Переименовать документ или удалить его " +
+        "можно кнопками рядом со списком документов (F2 и Shift+F2), а из палитры " +
+        "команд (Ctrl+Alt+P или Shift+F1) — ещё и стереть всё хранилище.",
       en: "The edit history is kept as snapshots: roughly one per two minutes of " +
         "work, at most thirty per document. <strong>Ctrl+Alt+Z</strong> steps back " +
         "through them, <strong>Ctrl+Alt+Y</strong> steps forward. Unlike plain Ctrl+Z, " +
         "which only works inside the current session, these snapshots survive a page " +
-        "reload. You can rename a document, delete it, or wipe the whole store from the " +
-        "command palette (Ctrl+Alt+P).",
+        "reload. You can rename or delete a document with the buttons next to the " +
+        "document list (F2 and Shift+F2), and wipe the whole store from the command " +
+        "palette (Ctrl+Alt+P or Shift+F1).",
     },
   });
 })();

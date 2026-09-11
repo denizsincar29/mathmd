@@ -182,6 +182,38 @@
       de: "Neues Dokument",
       tr: "Yeni belge",
     },
+    "ui.docRename": {
+      ru: "Переименовать",
+      en: "Rename",
+      de: "Umbenennen",
+      tr: "Yeniden adlandır",
+    },
+    "ui.docDelete": {
+      ru: "Удалить",
+      en: "Delete",
+      de: "Löschen",
+      tr: "Sil",
+    },
+    "ui.copyCode": {
+      ru: "Скопировать код",
+      en: "Copy code",
+      de: "Code kopieren",
+      tr: "Kodu kopyala",
+    },
+
+    // --- Блоки кода ----------------------------------------------------------
+    "msg.codeCopied": {
+      ru: "Код скопирован.",
+      en: "Code copied.",
+      de: "Code kopiert.",
+      tr: "Kod kopyalandı.",
+    },
+    "msg.codeCopyFailed": {
+      ru: "Не удалось скопировать. Выделите код и скопируйте вручную.",
+      en: "Could not copy. Select the code and copy it by hand.",
+      de: "Kopieren fehlgeschlagen. Markieren Sie den Code und kopieren Sie ihn von Hand.",
+      tr: "Kopyalanamadı. Kodu seçip elle kopyalayın.",
+    },
 
     // --- Справка ------------------------------------------------------------
     "help.title": {
@@ -233,10 +265,10 @@
       tr: "Belge ayarları (frontmatter)",
     },
     "help.frontmatterText": {
-      ru: "Введите <code>---</code> в начале пустого документа — блок настроек развернётся сам и закроется. В нём: <code>title</code> — заголовок, <code>lang</code> — язык (ru, en, de, tr), <code>author</code>, <code>description</code>. Модули подключаются сами по содержимому: есть блок <code>```chess</code> — грузится шахматный компонент, есть <code>```desmos</code> — грузится Desmos; <code>mathjax</code> включён по умолчанию.",
-      en: "Type <code>---</code> at the start of an empty document — the settings block expands and closes itself. It holds: <code>title</code> — heading, <code>lang</code> — language (ru, en, de, tr), <code>author</code>, <code>description</code>. Modules load by themselves from the content: a <code>```chess</code> block brings in the chess component, a <code>```desmos</code> block brings in Desmos; <code>mathjax</code> is on by default.",
-      de: "Geben Sie am Anfang eines leeren Dokuments <code>---</code> ein — der Einstellungsblock klappt sich selbst auf und schließt sich. Darin: <code>title</code> — Überschrift, <code>lang</code> — Sprache (ru, en, de, tr), <code>author</code>, <code>description</code>. Module laden sich selbst nach dem Inhalt: ein Block <code>```chess</code> lädt die Schachkomponente, ein Block <code>```desmos</code> lädt Desmos; <code>mathjax</code> ist standardmäßig an.",
-      tr: "Boş bir belgenin başına <code>---</code> yazın — ayar bloğu kendiliğinden açılır ve kapanır. İçinde: <code>title</code> — başlık, <code>lang</code> — dil (ru, en, de, tr), <code>author</code>, <code>description</code>. Modüller içeriğe göre kendiliğinden yüklenir: <code>```chess</code> bloğu satranç bileşenini, <code>```desmos</code> bloğu Desmos'u getirir; <code>mathjax</code> varsayılan olarak açıktır.",
+      ru: "Введите <code>---</code> в начале пустого документа — блок настроек развернётся сам и закроется. Заполнять его не обязательно: это продвинутая настройка. Заголовок готовой страницы берётся из первого заголовка первого уровня (<code>#</code>), язык определяется по тексту. В самом блоке: <code>title</code> — заголовок, <code>lang</code> — язык (ru, en, de, tr), <code>author</code>, <code>description</code>. Модули подключаются сами по содержимому: есть блок <code>```chess</code> — грузится шахматный компонент, есть <code>```desmos</code> — грузится Desmos; <code>mathjax</code> включён по умолчанию.",
+      en: "Type <code>---</code> at the start of an empty document — the settings block expands and closes itself. Filling it in is optional: this is an advanced setting. The heading of the finished page comes from the first level-one heading (<code>#</code>), and the language is detected from the text. Inside the block: <code>title</code> — heading, <code>lang</code> — language (ru, en, de, tr), <code>author</code>, <code>description</code>. Modules load by themselves from the content: a <code>```chess</code> block brings in the chess component, a <code>```desmos</code> block brings in Desmos; <code>mathjax</code> is on by default.",
+      de: "Geben Sie am Anfang eines leeren Dokuments <code>---</code> ein — der Einstellungsblock klappt sich selbst auf und schließt sich. Ausfüllen ist freiwillig: das ist eine fortgeschrittene Einstellung. Die Überschrift der fertigen Seite kommt aus der ersten Überschrift erster Ebene (<code>#</code>), die Sprache wird aus dem Text erkannt. Im Block: <code>title</code> — Überschrift, <code>lang</code> — Sprache (ru, en, de, tr), <code>author</code>, <code>description</code>. Module laden sich selbst nach dem Inhalt: ein Block <code>```chess</code> lädt die Schachkomponente, ein Block <code>```desmos</code> lädt Desmos; <code>mathjax</code> ist standardmäßig an.",
+      tr: "Boş bir belgenin başına <code>---</code> yazın — ayar bloğu kendiliğinden açılır ve kapanır. Doldurmak zorunlu değil: bu ileri düzey bir ayardır. Hazır sayfanın başlığı birinci düzey ilk başlıktan (<code>#</code>) alınır, dil metinden belirlenir. Blok içinde: <code>title</code> — başlık, <code>lang</code> — dil (ru, en, de, tr), <code>author</code>, <code>description</code>. Modüller içeriğe göre kendiliğinden yüklenir: <code>```chess</code> bloğu satranç bileşenini, <code>```desmos</code> bloğu Desmos'u getirir; <code>mathjax</code> varsayılan olarak açıktır.",
     },
     "help.chessTitle": {
       ru: "Графики и шахматы",
@@ -269,10 +301,10 @@
       tr: "Önizleme ve tuşlar",
     },
     "help.previewText": {
-      ru: "Alt+ё — переключатель между редактором и предпросмотром: открывает предпросмотр на строке курсора, из предпросмотра возвращает в редактор на ту же строку. Ctrl+Shift+Enter — скрыть предпросмотр. Текст предпросмотра обновляется при наборе.",
-      en: "Alt+` switches between the editor and the preview: it opens the preview at the cursor line and returns from the preview to the editor on the same line. Ctrl+Shift+Enter — hide the preview. Preview text updates as you type.",
-      de: "Alt+` schaltet zwischen Editor und Vorschau um: öffnet die Vorschau an der Cursorzeile und führt aus der Vorschau zurück in den Editor zur selben Zeile. Ctrl+Shift+Enter — Vorschau ausblenden. Der Vorschautext aktualisiert sich beim Tippen.",
-      tr: "Alt+` düzenleyici ile önizleme arasında geçiş yapar: imleç satırında önizlemeyi açar, önizlemeden aynı satıra düzenleyiciye döndürür. Ctrl+Shift+Enter — önizlemeyi gizle. Önizleme metni yazdıkça güncellenir.",
+      ru: "Alt+ё — переключатель между редактором и предпросмотром: открывает предпросмотр на строке курсора, из предпросмотра возвращает в редактор на ту же строку. Ctrl+Shift+Enter — скрыть предпросмотр. Текст предпросмотра обновляется при наборе. <strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд, <strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить, <strong>F9</strong> — новый документ.",
+      en: "Alt+` switches between the editor and the preview: it opens the preview at the cursor line and returns from the preview to the editor on the same line. Ctrl+Shift+Enter — hide the preview. Preview text updates as you type. <strong>F1</strong> — help, <strong>Shift+F1</strong> — command palette, <strong>F2</strong> — rename document, <strong>Shift+F2</strong> — delete, <strong>F9</strong> — new document.",
+      de: "Alt+` schaltet zwischen Editor und Vorschau um: öffnet die Vorschau an der Cursorzeile und führt aus der Vorschau zurück in den Editor zur selben Zeile. Ctrl+Shift+Enter — Vorschau ausblenden. Der Vorschautext aktualisiert sich beim Tippen. <strong>F1</strong> — Hilfe, <strong>Shift+F1</strong> — Befehlspalette, <strong>F2</strong> — Dokument umbenennen, <strong>Shift+F2</strong> — löschen, <strong>F9</strong> — neues Dokument.",
+      tr: "Alt+` düzenleyici ile önizleme arasında geçiş yapar: imleç satırında önizlemeyi açar, önizlemeden aynı satıra düzenleyiciye döndürür. Ctrl+Shift+Enter — önizlemeyi gizle. Önizleme metni yazdıkça güncellenir. <strong>F1</strong> — yardım, <strong>Shift+F1</strong> — komut paleti, <strong>F2</strong> — belgeyi yeniden adlandır, <strong>Shift+F2</strong> — sil, <strong>F9</strong> — yeni belge.",
     },
     "help.fileTitle": {
       ru: "Файл и вывод",
@@ -281,10 +313,10 @@
       tr: "Dosya ve çıktı",
     },
     "help.fileText": {
-      ru: "Открыть .md — файл с диска, Скачать .md — сохранить исходник, Сохранить готовый HTML — скачать страницу для раздачи. Примеры открываются из списка «Пример:».",
-      en: "Open .md — a file from disk, Download .md — save the source, Save finished HTML — download a page to share. Examples open from the “Example:” list.",
-      de: "Open .md — eine Datei von der Festplatte, .md herunterladen — die Quelle speichern, Fertiges HTML speichern — eine Seite zum Teilen herunterladen. Beispiele öffnen sich aus der Liste „Beispiel:“.",
-      tr: ".md aç — diskten bir dosya, .md indir — kaynağı kaydet, Hazır HTML kaydet — paylaşmak için bir sayfa indir. Örnekler „Örnek:“ listesinden açılır.",
+      ru: "Открыть .md — файл с диска, Скачать .md — сохранить исходник, Сохранить готовый HTML — скачать страницу для раздачи. Хоткеи файла: <strong>Ctrl+S</strong> — готовый HTML, <strong>Ctrl+Shift+S</strong> — .md, <strong>Ctrl+O</strong> — открыть .md. Примеры открываются из списка «Пример:».",
+      en: "Open .md — a file from disk, Download .md — save the source, Save finished HTML — download a page to share. File hotkeys: <strong>Ctrl+S</strong> — finished HTML, <strong>Ctrl+Shift+S</strong> — .md, <strong>Ctrl+O</strong> — open .md. Examples open from the “Example:” list.",
+      de: "Open .md — eine Datei von der Festplatte, .md herunterladen — die Quelle speichern, Fertiges HTML speichern — eine Seite zum Teilen herunterladen. Datei-Hotkeys: <strong>Ctrl+S</strong> — fertiges HTML, <strong>Ctrl+Shift+S</strong> — .md, <strong>Ctrl+O</strong> — .md öffnen. Beispiele öffnen sich aus der Liste „Beispiel:“.",
+      tr: ".md aç — diskten bir dosya, .md indir — kaynağı kaydet, Hazır HTML kaydet — paylaşmak için bir sayfa indir. Dosya kısayolları: <strong>Ctrl+S</strong> — hazır HTML, <strong>Ctrl+Shift+S</strong> — .md, <strong>Ctrl+O</strong> — .md aç. Örnekler „Örnek:“ listesinden açılır.",
     },
     "help.close": {
       ru: "Закрыть справку (Esc)",
@@ -433,11 +465,11 @@
       de: "Keine weiteren Änderungen.",
       tr: "Başka düzenleme yok.",
     },
-    "msg.exampleSkipped": {
-      ru: "Пример не открыт: в текущем документе есть текст. Очистите его или создайте новый.",
-      en: "Example not opened: the current document has text. Clear it or create a new document.",
-      de: "Beispiel nicht geöffnet: das aktuelle Dokument enthält Text. Leeren Sie es oder erstellen Sie ein neues.",
-      tr: "Örnek açılmadı: geçerli belgede metin var. Belgeyi temizleyin veya yeni bir belge oluşturun.",
+    "msg.exampleAsDocument": {
+      ru: "Пример открыт отдельным документом. Прежний черновик остался в списке «Документ».",
+      en: "The example is opened as a separate document. Your previous draft stays in the “Document” list.",
+      de: "Das Beispiel wurde als eigenes Dokument geöffnet. Der vorige Entwurf bleibt in der Liste „Dokument“.",
+      tr: "Örnek ayrı bir belge olarak açıldı. Önceki taslak “Belge” listesinde duruyor.",
     },
     "msg.storageOff": {
       ru: "Хранилище браузера недоступно: документы не сохранятся между визитами.",
@@ -944,6 +976,17 @@
     return s;
   }
 
+  // Перевод на заданный язык, а не на текущий. Нужен готовому документу: его
+  // язык задаёт сам документ (настройка lang или автоопределение), и подписи
+  // внутри страницы должны быть на нём, а не на языке интерфейса редактора.
+  function tIn(key, lang) {
+    var entry = DICT[key];
+    if (!entry) return key;
+    if (entry[lang] != null) return entry[lang];
+    if (entry.en != null) return entry.en;
+    return entry.ru != null ? entry.ru : key;
+  }
+
   function applyStatic() {
     var els = document.querySelectorAll("[data-i18n]");
     for (var i = 0; i < els.length; i++) els[i].innerHTML = t(els[i].getAttribute("data-i18n"));
@@ -976,6 +1019,7 @@
 
   window.I18N = {
     t: t,
+    tIn: tIn,
     add: add,
     setLang: setLang,
     getLang: function () { return current; },

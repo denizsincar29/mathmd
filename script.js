@@ -382,7 +382,7 @@ async function renderPreview(live) {
     // Ничего не изменилось — не дёргаем MathJax/Desmos впустую.
     if (html === previewEl.dataset.lastHtml) return;
     previewEl.dataset.lastHtml = html;
-    previewEl.innerHTML = html;
+    previewEl.innerHTML = withCopyButtons(html, I18N.t("ui.copyCode"));
     if (!live) initDesmosGraphs();
     await typesetMath();
   } catch (err) {
@@ -654,6 +654,69 @@ function download(filename, text, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
+// --- Кнопка «Скопировать код» ------------------------------------------------
+//
+// Код из документа уносят руками — в пример, в чужой редактор, в переписку.
+// Незрячему автору выделить блок мышью нечем, поэтому у каждого блока кода
+// стоит кнопка. Вид один и тот же в предпросмотре и в готовом документе:
+// разметку собираем строкой, и она попадает в оба места. Обработчик в
+// предпросмотре — делегат ниже, в готовом документе — скрипт внутри страницы.
+
+function copyText(text, done) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => done(true),
+      () => done(fallbackCopy(text))
+    );
+    return;
+  }
+  done(fallbackCopy(text));
+}
+
+// Запасной путь: Clipboard API нет или страница открыта как file://.
+function fallbackCopy(text) {
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.setAttribute("aria-hidden", "true");
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.appendChild(area);
+  area.select();
+  let ok = false;
+  try {
+    ok = document.execCommand("copy");
+  } catch (err) {
+    ok = false;
+  }
+  area.remove();
+  return ok;
+}
+
+// Текст блока кода, к которому относится кнопка: ближайший <pre> перед ней.
+function codeTextFor(btn) {
+  let el = btn.previousElementSibling;
+  while (el && el.tagName !== "PRE") el = el.previousElementSibling;
+  return el ? el.textContent : "";
+}
+
+function copyCode(btn) {
+  const status = btn.nextElementSibling;
+  copyText(codeTextFor(btn), (ok) => {
+    const msg = I18N.t(ok ? "msg.codeCopied" : "msg.codeCopyFailed");
+    if (status && status.classList.contains("copy-status")) status.textContent = msg;
+    speak(msg, fileStatusEl);
+  });
+}
+
+// Кнопка ставится после каждого <pre>. Подпись передаём снаружи: в готовом
+// документе она на языке документа, а не на языке интерфейса редактора.
+function withCopyButtons(html, label) {
+  const button =
+    `<button type="button" class="copy-btn" data-copy>${escHtml(label)}</button>` +
+    `<span class="copy-status" role="status" aria-live="polite"></span>`;
+  return html.replace(/<pre(?:\s[^>]*)?>[\s\S]*?<\/pre>/g, (block) => block + button);
+}
+
 // Полный самодостаточный HTML-документ из текущего markdown: используется и
 // для скачивания (exportHtml), и для показа по ?preview=html. Шахматные доски
 // остаются живыми <chessjax-board> — документ подключает компонент с CDN, а
@@ -665,8 +728,27 @@ function download(filename, text, mime) {
 //   desmos   — включается сам, если в тексте есть блок ```desmos
 // Вложенные настройки (mathjax: {…}, desmos: {…}, chess: {…}) мержатся
 // глубоко в конфиг MathJax, опции Desmos.Calculator и атрибуты досок.
+// Заголовок документа берём из первого заголовка первого уровня, если его не
+// задали настройкой title. Так обычному автору frontmatter не нужен вовсе:
+// он пишет «# Моя статья» — и это же попадает в <title> готовой страницы.
+function docTitleFromMarkdown(md) {
+  // Заголовки внутри блоков кода — не заголовки документа.
+  const text = md.replace(/^```[\s\S]*?^```/gm, "");
+  const m = text.match(/^#[ \t]+(.+?)[ \t]*$/m);
+  return m ? m[1].replace(/[*_`~]/g, "").trim() : "";
+}
+
+// Язык документа: настройка lang, иначе — по самому тексту. Кириллица выдаёт
+// русский, дальше решает язык браузера (но только из тех, что знает редактор).
+function detectDocLang(md) {
+  if (/[а-яё]/i.test(md)) return "ru";
+  const nav = (navigator.language || "en").toLowerCase().slice(0, 2);
+  return I18N.LANGS.indexOf(nav) !== -1 ? nav : "en";
+}
+
 function buildDocumentHtml() {
-  const bodyHtml = renderMarkdown(editor.getValue());
+  const md = editor.getValue();
+  const bodyHtml = renderMarkdown(md);
   const fm = fmState || {};
 
   // Модули подключаются по содержимому: есть блок ```chess — грузим chessjax,
@@ -687,8 +769,11 @@ function buildDocumentHtml() {
     ? '<div class="module-off">' + I18N.t("doc.desmosOff") + "</div>"
     : "";
 
-  const title = fm.title || I18N.t("doc.exportTitle");
-  const lang = fm.lang || "ru";
+  const title = fm.title || docTitleFromMarkdown(md) || I18N.t("doc.exportTitle");
+  const lang = fm.lang || detectDocLang(md);
+  // Подписи внутри готового документа — на его языке, а не на языке интерфейса
+  // редактора: страницу читает тот, кому её отдали.
+  const docBody = withCopyButtons(bodyHtml, I18N.tIn("ui.copyCode", lang));
   const author = fm.author ? `<meta name="author" content="${escHtml(fm.author)}">\n` : "";
   const description = fm.description ? `<meta name="description" content="${escHtml(fm.description)}">\n` : "";
   const extraCss = fm.css ? `<link rel="stylesheet" href="${escHtml(fm.css)}">\n` : "";
@@ -761,6 +846,50 @@ document.querySelectorAll(".desmos[data-desmos-idx]").forEach(function (el) {
 `;
   }
 
+  // Готовая страница самодостаточна: скрипт копирования встроен в неё, как и
+  // остальные модули. Тексты — на языке документа.
+  let copyBlock = "";
+  if (docBody.indexOf("copy-btn") !== -1) {
+    copyBlock = `<script>
+(function () {
+  var COPIED = ${JSON.stringify(I18N.tIn("msg.codeCopied", lang))};
+  var FAILED = ${JSON.stringify(I18N.tIn("msg.codeCopyFailed", lang))};
+  function fallbackCopy(text) {
+    var area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("aria-hidden", "true");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (err) { ok = false; }
+    area.remove();
+    return ok;
+  }
+  function copyText(text, done) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(fallbackCopy(text)); });
+      return;
+    }
+    done(fallbackCopy(text));
+  }
+  document.addEventListener("click", function (event) {
+    var btn = event.target && event.target.closest ? event.target.closest(".copy-btn[data-copy]") : null;
+    if (!btn) return;
+    var pre = btn.previousElementSibling;
+    while (pre && pre.tagName !== "PRE") pre = pre.previousElementSibling;
+    if (!pre) return;
+    copyText(pre.textContent, function (ok) {
+      var status = btn.nextElementSibling;
+      if (status && status.className.indexOf("copy-status") !== -1) status.textContent = ok ? COPIED : FAILED;
+    });
+  });
+})();
+</script>
+`;
+  }
+
   return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
@@ -801,13 +930,16 @@ ${author}${description}${extraCss}<style>
   chessjax-board:fullscreen .chessjax-help { max-width: min(64vh, 92vw); margin-left: auto; margin-right: auto; text-align: center; font-size: 1.1rem; color: #e2e8f0; }
   chessjax-board:fullscreen .chessjax-controls { justify-content: center; }
   chessjax-board:fullscreen .chessjax-btn { min-width: 56px; min-height: 48px; font-size: 1.4rem; }
+  .copy-btn { font: inherit; font-size: .9rem; margin: .2rem 0 .1rem; padding: .25rem .7rem; border: 1px solid #bbb; border-radius: 6px; background: #fafafa; cursor: pointer; }
+  .copy-btn:hover { border-color: #666; }
+  .copy-status { font-size: .85rem; color: #555; margin-left: .5rem; }
 </style>
 ${mjBlock}${chessBlock}${desmosBlock}</head>
 <body>
 ${chessNote}
-${bodyHtml}
+${docBody}
 ${desmosNote}
-${desmosInit}</body>
+${desmosInit}${copyBlock}</body>
 </html>`;
 }
 
@@ -892,14 +1024,6 @@ function scheduleAutosave() {
   docTouched = true;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(persistNow, SAVE_IDLE_MS);
-}
-
-// Зафиксировать текст в истории принудительно (снимок не чаще двух минут —
-// эта функция нужна там, где текст вот-вот заменят целиком).
-function commitCurrent() {
-  if (!store || !store.current()) return;
-  store.setValue(editor.getValue());
-  store.mark();
 }
 
 function openDocById(id) {
@@ -1027,6 +1151,27 @@ function openMd() {
   document.getElementById("open-input").click();
 }
 
+// Открыть чужой текст (пример по ссылке, документ по URL) отдельным
+// документом: прежний черновик не пропадает, а остаётся в списке «Документ».
+// Одно и то же имя переиспользуется — повторное открытие примера продолжает
+// его же документ, а не плодит копии (так же ведёт себя открытие файла).
+function loadAsDocument(name, text) {
+  if (!store) {
+    setEditorValue(text);
+    return;
+  }
+  clearTimeout(saveTimer);
+  if (store.current() && docTouched) {
+    store.setValue(editor.getValue());
+    store.snapshot();
+    store.flush();
+  }
+  store.openNamed(name, text);
+  docTouched = false; // чужой текст — ещё не правка человека
+  refreshDocSelect();
+  setEditorValue(text);
+}
+
 // Открыть пример из examples/: загрузить в редактор и сразу показать
 // предпросмотр. Имя — простой файл (латиница/цифры/_-), без путей.
 async function openExample(name) {
@@ -1040,10 +1185,15 @@ async function openExample(name) {
     speak(I18N.t("msg.exampleNotFound", { name: safe }), fileStatusEl);
     return;
   }
-  commitCurrent(); // пример затрёт текст — прежний уходит в историю
-  editor.setValue(await res.text());
+  // Пример — отдельный документ: то, что человек писал, остаётся в списке
+  // «Документ» и возвращается оттуда, а не растворяется в истории правок.
+  const separate = !!store && !store.isEmpty();
+  loadAsDocument(safe + ".md", await res.text());
   showPreviewAndFocus(1);
-  speak(I18N.t("msg.exampleOpened", { name: safe }), fileStatusEl);
+  speak(
+    I18N.t(separate ? "msg.exampleAsDocument" : "msg.exampleOpened", { name: safe }),
+    fileStatusEl
+  );
 }
 
 // --- Инициализация ----------------------------------------------------------
@@ -1120,21 +1270,22 @@ async function loadFromUrl() {
     const preview = params.get("preview");
     const standalone = preview === "html" || preview === "readyhtml";
     // Готовый HTML (раздача материала) отдаём всегда: это не редактирование.
-    // А в редактор пример грузим, только если черновик пуст, — иначе ссылка
-    // молча затирала бы то, что человек писал.
-    if (!standalone && store && !store.isEmpty()) {
-      speak(I18N.t("msg.exampleSkipped"), fileStatusEl);
-      return;
-    }
-    editor.setValue(md);
+    // А в редактор пример грузим тоже всегда — но отдельным документом, если
+    // в редакторе уже что-то написано: прежний черновик остаётся в списке
+    // «Документ», и ссылка ничего не затирает молча.
     if (standalone) {
+      editor.setValue(md);
       openStandaloneHtml();
       return;
     }
+    const separate = !!store && !store.isEmpty();
+    if (separate) loadAsDocument(safe + ".md", md);
+    else editor.setValue(md);
     if (preview === "on") {
       showPreviewAndFocus(1);
+      if (separate) speak(I18N.t("msg.exampleAsDocument"), fileStatusEl);
     } else {
-      speak(I18N.t("msg.exampleLoaded", { name: safe }), fileStatusEl);
+      speak(I18N.t(separate ? "msg.exampleAsDocument" : "msg.exampleLoaded", { name: safe }), fileStatusEl);
     }
     return;
   }
@@ -1155,27 +1306,33 @@ async function loadFromUrl() {
     return;
   }
   const urlStandalone = params.get("preview") === "html" || params.get("preview") === "readyhtml";
-  if (!urlStandalone && store && !store.isEmpty()) {
-    speak(I18N.t("msg.exampleSkipped"), fileStatusEl);
-    return;
-  }
+  let md = "";
   try {
     const res = await fetch(url.href);
     if (!res.ok) {
       speak(I18N.t("msg.urlHttp", { status: res.status }), fileStatusEl);
       return;
     }
-    const md = await res.text();
-    commitCurrent();
-    editor.setValue(md);
+    md = await res.text();
   } catch (e) {
     speak(I18N.t("msg.urlError", { error: e.message }), fileStatusEl);
     return;
   }
-  if (params.get("preview") === "html" || params.get("preview") === "readyhtml") {
+  if (urlStandalone) {
+    editor.setValue(md);
     openStandaloneHtml();
     return;
   }
+  // Как и пример, документ по ссылке не затирает написанное: он заводится
+  // отдельным документом, а прежний остаётся в списке «Документ».
+  const separate = !!store && !store.isEmpty();
+  if (separate) {
+    const tail = decodeURIComponent(url.pathname.split("/").pop() || "");
+    loadAsDocument(tail || "document.md", md);
+    speak(I18N.t("msg.exampleAsDocument"), fileStatusEl);
+    return;
+  }
+  editor.setValue(md);
   if (params.get("preview") === "on") {
     showPreviewAndFocus(1);
   } else {
@@ -1857,6 +2014,32 @@ require(["vs/editor/editor.main"], function () {
     true,
   );
 
+  // Файл: Ctrl+S — готовый HTML, Ctrl+Shift+S — .md, Ctrl+O — открыть .md.
+  // Ctrl+S браузер забирает себе, но в capture-фазе клавиша ещё наша.
+
+  // Функциональные клавиши. Браузер держит за собой F3 (поиск), F5
+  // (перезагрузка), F6 (адресная строка), F10 (меню), F11 (полный экран) и
+  // F12 (инструменты) — их не трогаем. Свободные отдаём делу: F1 — справка,
+  // Shift+F1 — палитра команд, F2 — переименовать документ, Shift+F2 — удалить,
+  // F9 — новый документ.
+  function runFKey(e) {
+    switch (e.code) {
+      case "F1":
+        if (e.shiftKey) editor.trigger("keyboard", "editor.action.quickCommand", null);
+        else openHelpDialog();
+        return true;
+      case "F2":
+        if (e.shiftKey) deleteDoc();
+        else renameDoc();
+        return true;
+      case "F9":
+        if (!e.shiftKey) newDoc();
+        return true;
+      default:
+        return false;
+    }
+  }
+
   // Хоткеи на уровне window в capture-фазе: это самая ранняя точка, в которую
   // доходит событие, — раньше Monaco, раньше любых обработчиков на document.
   // Монако не увидит эти клавиши (stopImmediatePropagation).
@@ -1886,6 +2069,36 @@ require(["vs/editor/editor.main"], function () {
         e.stopImmediatePropagation();
         previewSection.hidden = true;
         speak(I18N.t("msg.previewHidden"));
+        return;
+      }
+      // Файл: Ctrl+S — готовый HTML, Ctrl+Shift+S — .md, Ctrl+O — открыть .md.
+      // Первые две браузер обычно забирает себе (сохранить страницу), поэтому
+      // перехватываем их здесь, до браузера.
+      if (ctrl && !e.altKey) {
+        if (e.code === "KeyS" && !e.shiftKey) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          exportHtml();
+          return;
+        }
+        if (e.code === "KeyS" && e.shiftKey) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          saveMd();
+          return;
+        }
+        if (e.code === "KeyO" && !e.shiftKey) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          openMd();
+          return;
+        }
+      }
+      // F-клавиши. Незнакомую отдаём браузеру: он вправе перезагрузить
+      // страницу по F5 или открыть поиск по F3.
+      if (!e.altKey && !ctrl && /^F\d+$/.test(e.code) && runFKey(e)) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
         return;
       }
       // Alt+M — режим формулы (строка/блок), Alt+L — синтаксис (LaTeX/AsciiMath),
@@ -1928,6 +2141,12 @@ require(["vs/editor/editor.main"], function () {
   // Клик по блоку предпросмотра (удобно зрячему): курсор редактора прыгает
   // на строку этого блока, и можно сразу править markdown.
   previewEl.addEventListener("click", (e) => {
+    // Кнопка копирования — не переход в редактор: нажали её, значит копируют.
+    const copyBtn = e.target.closest(".copy-btn");
+    if (copyBtn) {
+      copyCode(copyBtn);
+      return;
+    }
     if (e.target.closest("a")) return;
     const block = e.target.closest(".preview-block");
     if (!block) return;
@@ -1981,16 +2200,23 @@ require(["vs/editor/editor.main"], function () {
       else if (id) openDocById(id);
     });
   }
+  // Имя документа правится рядом со списком, а не только из палитры команд:
+  // удалить ненужный документ можно прямо здесь (клавиши F2 и Shift+F2).
+  const docRenameBtn = document.getElementById("btn-doc-rename");
+  const docDeleteBtn = document.getElementById("btn-doc-delete");
+  if (docRenameBtn) docRenameBtn.addEventListener("click", renameDoc);
+  if (docDeleteBtn) docDeleteBtn.addEventListener("click", deleteDoc);
 
   // Справка: модальный диалог (native <dialog>), Esc закрывает сам.
   const helpDialog = document.getElementById("help-dialog");
   const helpClose = document.getElementById("help-close");
-  document.getElementById("btn-help").addEventListener("click", () => {
+  function openHelpDialog() {
     if (!helpDialog.open) {
       helpDialog.showModal();
       speak(I18N.t("msg.helpOpen"), fileStatusEl);
     }
-  });
+  }
+  document.getElementById("btn-help").addEventListener("click", openHelpDialog);
   helpClose.addEventListener("click", () => helpDialog.close());
   helpDialog.addEventListener("close", () => {
     document.getElementById("btn-help").focus();
@@ -2016,7 +2242,7 @@ require(["vs/editor/editor.main"], function () {
   document.getElementById("btn-manual").addEventListener("click", openManual);
   syncManualLinks();
 
-  // Команды в command palette (F1) и контекстное меню. Повседневные
+  // Команды в command palette (Shift+F1) и контекстное меню. Повседневные
   // действия — только в палитру; вставка формул и структур — в контекстное меню.
   const FORMULA_ITEM = TOOLBAR_GROUPS.flatMap((g) => g.items).find((i) => i.labelKey === "tool.formula");
   let actionDisposables = [];
