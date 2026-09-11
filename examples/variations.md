@@ -2,7 +2,6 @@
 title: Комментарии и варианты в шахматных досках
 lang: ru
 mathjax: no
-chessjax: yes
 author: Дениз
 ---
 

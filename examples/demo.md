@@ -2,8 +2,6 @@
 title: Демо mathmd
 lang: ru
 mathjax: yes
-chessjax: yes
-desmos: yes
 author: Дениз
 description: Формулы, шахматная доска и график Desmos в одном документе
 ---

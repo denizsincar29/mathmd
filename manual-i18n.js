@@ -192,8 +192,8 @@
       en: "A graph is drawn with a <code>```desmos</code> block. Each line inside is a separate expression, exactly as in the Desmos calculator: a function, a point, an inequality or a circle.",
     },
     "manual.desmosAttrs": {
-      ru: "Блок без лишних атрибутов: всё, что нужно, — выражения. В предпросмотре график можно рассматривать и тянуть мышью, он живой. Чтобы графики работали в сохранённом HTML, включи в настройках документа модуль <code>desmos: yes</code> — иначе в готовой странице останется пустое место.",
-      en: "The block needs no extra attributes: the expressions are all it takes. In the preview the graph is live and can be dragged with the mouse. For graphs to work in the exported HTML, switch the module on in the document settings with <code>desmos: yes</code> — otherwise the saved page keeps an empty space.",
+      ru: "Блок не требует атрибутов: всё, что нужно, — выражения. В предпросмотре график живой, его можно тянуть мышью. В готовую страницу Desmos подключается сам, как только в документе есть хотя бы один такой блок.",
+      en: "The block needs no attributes: the expressions are all it takes. In the preview the graph is live and can be dragged with the mouse. In the exported page Desmos is loaded by itself as soon as the document contains at least one such block.",
     },
     "manual.desmosKeys": {
       ru: "График доступен и с клавиатуры. Чтобы войти в калькулятор Desmos, поставь курсор на текст перед графиком и нажми <strong>Tab</strong>. Когда Tab приведёт в список выражений, нажми <strong>Alt+T</strong> — откроется плоскость координат, доступная программе экранного доступа. На ней стрелки влево и вправо перемещают по оси X, а высота тона сообщает значение Y. Клавиша <strong>H</strong> проводит по всему графику слева направо звуком.",
@@ -213,14 +213,14 @@
       ru: "<ul>" +
         "<li><code>fen=\"…\"</code> — позиция. Расстановка вроде <code>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</code> — начальная.</li>" +
         "<li><code>pgn=\"адрес\"</code> — партия из файла, <code>move=\"10\"</code> — сразу перейти к десятому ходу.</li>" +
-        "<li><code>id=\"имя\"</code> — имя доски. По нему из текста можно сделать кнопку «перейти к ходу»: <code>&lt;button chess=\"имя\" move=\"29\"&gt;</code> (в экспорт кнопки не попадают, они для предпросмотра).</li>" +
+        "<li><code>id=\"имя\"</code> — имя доски. По нему из текста делается кнопка перехода к ходу: <code>&lt;button chess=\"имя\" move=\"29\"&gt;</code>. Кнопка работает и в предпросмотре, и в готовой странице.</li>" +
         "<li><code>lang=\"ru\"</code> — язык доски: ru, en, de, tr.</li>" +
         "<li><code>controls=\"off\"</code> — убрать кнопки под доской, <code>sound=\"off\"</code> — без звуков, <code>tone=\"off\"</code> — без тональных отметок в разборе.</li>" +
         "</ul>",
       en: "<ul>" +
         "<li><code>fen=\"…\"</code> — a position. <code>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</code> is the starting one.</li>" +
         "<li><code>pgn=\"address\"</code> — a game from a file, <code>move=\"10\"</code> — jump straight to move ten.</li>" +
-        "<li><code>id=\"name\"</code> — the board's name. Text can then link a button to it: <code>&lt;button chess=\"name\" move=\"29\"&gt;</code> (buttons do not survive export; they are for the preview).</li>" +
+        "<li><code>id=\"name\"</code> — the board's name. Text can then link a button to it: <code>&lt;button chess=\"name\" move=\"29\"&gt;</code>. The button works both in the preview and in the exported page.</li>" +
         "<li><code>lang=\"ru\"</code> — the board language: ru, en, de, tr.</li>" +
         "<li><code>controls=\"off\"</code> — hide the buttons under the board, <code>sound=\"off\"</code> — no sounds, <code>tone=\"off\"</code> — no pitch marks during analysis.</li>" +
         "</ul>",
@@ -230,21 +230,21 @@
       en: "The board is an ordinary table with focus on a square, so a screen reader can read it. Arrows move across the squares and name them (“black pawn b7”; an empty square is “e5”). Then: <strong>Ctrl+←/→</strong> — back and forward through the game, <strong>Space</strong> — continue or pause, <strong>Ctrl+Space</strong> — auto-play from the start, <strong>Ctrl+↑/↓</strong> — faster and slower, <strong>V</strong> — a variation from a comment, <strong>Esc</strong> — leave the variation, <strong>F</strong> — fullscreen, <strong>B</strong> — best move by Stockfish, <strong>A</strong> — analyse the whole game, <strong>H</strong> — section-by-section help. Holding <strong>A</strong> for two seconds turns on informal verdicts.",
     },
     "manual.chessExport": {
-      ru: "Чтобы доски работали в сохранённой странице, включи в настройках документа <code>chessjax: yes</code>. Комментарии из PGN читаются вместе с ходом, а вариант в комментарии записывается в квадратных скобках после знака доллара: <code>$[Bc4 Nc6]</code>.",
-      en: "For boards to work in the exported page, switch on <code>chessjax: yes</code> in the document settings. Comments from the PGN are spoken together with the move, and a variation inside a comment is written in square brackets after a dollar sign: <code>$[Bc4 Nc6]</code>.",
+      ru: "В готовую страницу шахматный компонент подключается сам, как только в документе есть хотя бы один блок <code>```chess</code>. Комментарии из PGN читаются вместе с ходом, а вариант в комментарии записывается в квадратных скобках после знака доллара: <code>$[Bc4 Nc6]</code>.",
+      en: "In the exported page the chess component is loaded by itself as soon as the document contains at least one <code>```chess</code> block. Comments from the PGN are spoken together with the move, and a variation inside a comment is written in square brackets after a dollar sign: <code>$[Bc4 Nc6]</code>.",
     },
 
     // --- Клавиши ------------------------------------------------------------
     "manual.keysList": {
       ru: "<ul>" +
-        "<li><strong>Alt+ё</strong> — полный предпросмотр: пересоздать графики и перейти к тому месту, где стоит курсор. <strong>Ctrl+Shift+Enter</strong> — спрятать предпросмотр.</li>" +
+        "<li><strong>Alt+ё</strong> — переключатель между редактором и предпросмотром. Из редактора открывает предпросмотр, пересоздаёт графики и переносит фокус на место курсора; из предпросмотра возвращает в редактор на ту же строку. <strong>Ctrl+Shift+Enter</strong> — спрятать предпросмотр.</li>" +
         "<li><strong>Alt+M</strong> — следующая формула будет в строке или отдельным блоком. <strong>Alt+L</strong> — синтаксис: LaTeX или AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — вставить дробь, корень, сумму и другие заготовки. Те же номера написаны на кнопках.</li>" +
         "<li><strong>Ctrl+Space</strong> — подсказки: делимитеры, блоки, ключи настроек, разметка markdown. Внутри формулы подсказки появляются сами.</li>" +
         "<li><strong>F1</strong> — палитра команд: там собраны все действия редактора, включая предпросмотр, экспорт и смену языка. Если браузер перехватывает F1 (некоторые сборки открывают по ней свою справку) — есть Ctrl+Alt+P, его не занимает никто. А Ctrl+Shift+P лучше не использовать: в Firefox это приватное окно.</li>" +
         "</ul>",
       en: "<ul>" +
-        "<li><strong>Alt+`</strong> — full preview: rebuild the graphs and jump to the cursor line. <strong>Ctrl+Shift+Enter</strong> — hide the preview.</li>" +
+        "<li><strong>Alt+`</strong> — a switch between the editor and the preview. From the editor it opens the preview, rebuilds the graphs and moves the focus to the cursor's place; from the preview it returns to the editor on the same line. <strong>Ctrl+Shift+Enter</strong> — hide the preview.</li>" +
         "<li><strong>Alt+M</strong> — the next formula goes inline or as a separate block. <strong>Alt+L</strong> — the syntax: LaTeX or AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — insert a fraction, a root, a sum and other templates. The same numbers are printed on the buttons.</li>" +
         "<li><strong>Ctrl+Space</strong> — suggestions: delimiters, blocks, settings keys, markdown markup. Inside a formula they appear by themselves.</li>" +
@@ -266,7 +266,7 @@
         "<li><code>title</code> — заголовок документа, <code>author</code> и <code>description</code> — автор и описание.</li>" +
         "<li><code>lang</code> — язык документа: ru, en, de, tr.</li>" +
         "<li><code>mathjax</code> — включён по умолчанию; <code>mathjax: no</code> оставит формулы как есть, без вёрстки.</li>" +
-        "<li><code>chessjax: yes</code> и <code>desmos: yes</code> — подключить шахматные доски и графики к сохранённой странице (по умолчанию выключены).</li>" +
+        "<li><code>chessjax: no</code> и <code>desmos: no</code> — не подключать шахматные доски и графики к сохранённой странице. По умолчанию подключать их не нужно: модуль включается сам, если в документе есть его блок.</li>" +
         "<li><code>css: адрес</code> — подключить свой файл стилей к готовой странице.</li>" +
         "<li><code>chess:</code> с отступом — общие настройки всех досок: <code>lang</code>, <code>tone</code>, <code>sound</code>, <code>controls</code>. У <code>desmos:</code> и <code>mathjax:</code> вложенно пишутся их собственные опции.</li>" +
         "</ul>",
@@ -274,7 +274,7 @@
         "<li><code>title</code> — the document title; <code>author</code> and <code>description</code> — author and description.</li>" +
         "<li><code>lang</code> — the document language: ru, en, de, tr.</li>" +
         "<li><code>mathjax</code> — on by default; <code>mathjax: no</code> leaves formulas as they are, untypeset.</li>" +
-        "<li><code>chessjax: yes</code> and <code>desmos: yes</code> — load chessboards and graphs into the exported page (off by default).</li>" +
+        "<li><code>chessjax: no</code> and <code>desmos: no</code> — do not load chessboards and graphs into the exported page. Normally you do not need to switch them on: a module loads by itself when the document contains its block.</li>" +
         "<li><code>css: address</code> — attach your own stylesheet to the exported page.</li>" +
         "<li><code>chess:</code> with indentation — settings for every board: <code>lang</code>, <code>tone</code>, <code>sound</code>, <code>controls</code>. Under <code>desmos:</code> and <code>mathjax:</code> their own options go the same way.</li>" +
         "</ul>",
@@ -306,6 +306,19 @@
     "manual.toc.docs": {
       ru: "Документы, автосохранение и история",
       en: "Documents, autosave and history",
+    },
+    "manual.toc.practice": { ru: "Практика", en: "Practice" },
+    "manual.practiceWrite": {
+      ru: "Освоить редактор быстрее всего за работой. Открой редактор и напиши то, что уже разобрано: заголовок, абзац с выделением, список, формулу, а если нужно — блок графика или шахматную доску.",
+      en: "The quickest way to learn the editor is to work in it. Open the editor and write what you have already read about: a heading, a paragraph with emphasis, a list, a formula and, if you need them, a graph block or a chessboard.",
+    },
+    "manual.practiceLoop": {
+      ru: "Потом нажми <strong>Alt+ё</strong> — откроется предпросмотр, и можно прочитать или прослушать, что получилось. Ещё одно нажатие <strong>Alt+ё</strong> возвращает в редактор на ту же строку: правь и снова проверяй. Цикл «написал — проверил — поправил» и есть основной способ работы здесь.",
+      en: "Then press <strong>Alt+`</strong> — the preview opens, and you can read or listen to the result. Pressing <strong>Alt+`</strong> again returns you to the editor on the same line: fix it and check again. This loop — write, check, correct — is the main way of working here.",
+    },
+    "manual.practiceNext": {
+      ru: "Дальше можно взять готовый документ из списка <strong>Пример:</strong>, разобрать его и переделать под свою задачу. Когда документ готов, кнопка <strong>Сохранить готовый HTML</strong> делает из него страницу, которую можно отправить читателю.",
+      en: "After that, take a ready-made document from the <strong>Example:</strong> list, study it and rework it for your own task. When the document is ready, the <strong>Export HTML</strong> button turns it into a page you can send to a reader.",
     },
     "manual.docsIntro": {
       ru: "Документы живут в самом браузере и никуда не отправляются. Список " +

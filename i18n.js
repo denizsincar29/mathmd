@@ -72,10 +72,10 @@
       tr: "Önizleme",
     },
     "ui.previewHint": {
-      ru: "Текст обновляется при наборе. Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть. Шахматная доска — fenced-блок <code>```chess</code> с атрибутами (например <code>```chess fen=\"…\"</code>).",
-      en: "Text updates as you type. Alt+` — full preview: rebuild graphs and jump to the cursor line. Ctrl+Shift+Enter — hide. A chessboard is a fenced block <code>```chess</code> with attributes (e.g. <code>```chess fen=\"…\"</code>).",
-      de: "Text aktualisiert sich beim Tippen. Alt+` — volle Vorschau: Diagramme neu aufbauen und zur Cursorzeile springen. Ctrl+Shift+Enter — ausblenden. Ein Schachbrett ist ein Fenced-Block <code>```chess</code> mit Attributen (z. B. <code>```chess fen=\"…\"</code>).",
-      tr: "Metin yazdıkça güncellenir. Alt+` — tam önizleme: grafikleri yeniden oluştur ve imleç satırına git. Ctrl+Shift+Enter — gizle. Satranç tahtası, öznitelikli <code>```chess</code> fenced bloğudur (ör. <code>```chess fen=\"…\"</code>).",
+      ru: "Текст обновляется при наборе. Alt+ё — переключатель: открывает предпросмотр на строке курсора, а из предпросмотра возвращает в редактор на ту же строку. Ctrl+Shift+Enter — скрыть. Шахматная доска — fenced-блок <code>```chess</code> с атрибутами (например <code>```chess fen=\"…\"</code>).",
+      en: "Text updates as you type. Alt+` is a switch: it opens the preview at the cursor line and returns from the preview to the editor on the same line. Ctrl+Shift+Enter — hide. A chessboard is a fenced block <code>```chess</code> with attributes (e.g. <code>```chess fen=\"…\"</code>).",
+      de: "Text aktualisiert sich beim Tippen. Alt+` ist ein Umschalter: öffnet die Vorschau an der Cursorzeile und führt aus der Vorschau zurück in den Editor zur selben Zeile. Ctrl+Shift+Enter — ausblenden. Ein Schachbrett ist ein Fenced-Block <code>```chess</code> mit Attributen (z. B. <code>```chess fen=\"…\"</code>).",
+      tr: "Metin yazdıkça güncellenir. Alt+` bir açma-kapama tuşudur: imleç satırında önizlemeyi açar, önizlemeden aynı satıra düzenleyiciye döndürür. Ctrl+Shift+Enter — gizle. Satranç tahtası, öznitelikli <code>```chess</code> fenced bloğudur (ör. <code>```chess fen=\"…\"</code>).",
     },
     "ui.fileHeading": {
       ru: "Файл и вывод",
@@ -233,10 +233,10 @@
       tr: "Belge ayarları (frontmatter)",
     },
     "help.frontmatterText": {
-      ru: "Введите <code>---</code> в начале пустого документа — блок настроек развернётся сам и закроется. В нём: <code>title</code> — заголовок, <code>lang</code> — язык (ru, en, de, tr), <code>author</code>, <code>description</code>. Модули: <code>mathjax</code> включён по умолчанию, <code>chessjax</code> и <code>desmos</code> выключены — включить: <code>chessjax: yes</code>.",
-      en: "Type <code>---</code> at the start of an empty document — the settings block expands and closes itself. It holds: <code>title</code> — heading, <code>lang</code> — language (ru, en, de, tr), <code>author</code>, <code>description</code>. Modules: <code>mathjax</code> is on by default, <code>chessjax</code> and <code>desmos</code> are off — enable with <code>chessjax: yes</code>.",
-      de: "Geben Sie am Anfang eines leeren Dokuments <code>---</code> ein — der Einstellungsblock klappt sich selbst auf und schließt sich. Darin: <code>title</code> — Überschrift, <code>lang</code> — Sprache (ru, en, de, tr), <code>author</code>, <code>description</code>. Module: <code>mathjax</code> ist standardmäßig an, <code>chessjax</code> und <code>desmos</code> sind aus — einschalten: <code>chessjax: yes</code>.",
-      tr: "Boş bir belgenin başına <code>---</code> yazın — ayar bloğu kendiliğinden açılır ve kapanır. İçinde: <code>title</code> — başlık, <code>lang</code> — dil (ru, en, de, tr), <code>author</code>, <code>description</code>. Modüller: <code>mathjax</code> varsayılan olarak açık, <code>chessjax</code> ve <code>desmos</code> kapalı — açmak için: <code>chessjax: yes</code>.",
+      ru: "Введите <code>---</code> в начале пустого документа — блок настроек развернётся сам и закроется. В нём: <code>title</code> — заголовок, <code>lang</code> — язык (ru, en, de, tr), <code>author</code>, <code>description</code>. Модули подключаются сами по содержимому: есть блок <code>```chess</code> — грузится шахматный компонент, есть <code>```desmos</code> — грузится Desmos; <code>mathjax</code> включён по умолчанию.",
+      en: "Type <code>---</code> at the start of an empty document — the settings block expands and closes itself. It holds: <code>title</code> — heading, <code>lang</code> — language (ru, en, de, tr), <code>author</code>, <code>description</code>. Modules load by themselves from the content: a <code>```chess</code> block brings in the chess component, a <code>```desmos</code> block brings in Desmos; <code>mathjax</code> is on by default.",
+      de: "Geben Sie am Anfang eines leeren Dokuments <code>---</code> ein — der Einstellungsblock klappt sich selbst auf und schließt sich. Darin: <code>title</code> — Überschrift, <code>lang</code> — Sprache (ru, en, de, tr), <code>author</code>, <code>description</code>. Module laden sich selbst nach dem Inhalt: ein Block <code>```chess</code> lädt die Schachkomponente, ein Block <code>```desmos</code> lädt Desmos; <code>mathjax</code> ist standardmäßig an.",
+      tr: "Boş bir belgenin başına <code>---</code> yazın — ayar bloğu kendiliğinden açılır ve kapanır. İçinde: <code>title</code> — başlık, <code>lang</code> — dil (ru, en, de, tr), <code>author</code>, <code>description</code>. Modüller içeriğe göre kendiliğinden yüklenir: <code>```chess</code> bloğu satranç bileşenini, <code>```desmos</code> bloğu Desmos'u getirir; <code>mathjax</code> varsayılan olarak açıktır.",
     },
     "help.chessTitle": {
       ru: "Графики и шахматы",
@@ -269,10 +269,10 @@
       tr: "Önizleme ve tuşlar",
     },
     "help.previewText": {
-      ru: "Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть предпросмотр. Текст предпросмотра обновляется при наборе.",
-      en: "Alt+` — full preview: rebuild graphs and jump to the cursor line. Ctrl+Shift+Enter — hide the preview. Preview text updates as you type.",
-      de: "Alt+` — volle Vorschau: Diagramme neu aufbauen und zur Cursorzeile springen. Ctrl+Shift+Enter — Vorschau ausblenden. Der Vorschautext aktualisiert sich beim Tippen.",
-      tr: "Alt+` — tam önizleme: grafikleri yeniden oluştur ve imleç satırına git. Ctrl+Shift+Enter — önizlemeyi gizle. Önizleme metni yazdıkça güncellenir.",
+      ru: "Alt+ё — переключатель между редактором и предпросмотром: открывает предпросмотр на строке курсора, из предпросмотра возвращает в редактор на ту же строку. Ctrl+Shift+Enter — скрыть предпросмотр. Текст предпросмотра обновляется при наборе.",
+      en: "Alt+` switches between the editor and the preview: it opens the preview at the cursor line and returns from the preview to the editor on the same line. Ctrl+Shift+Enter — hide the preview. Preview text updates as you type.",
+      de: "Alt+` schaltet zwischen Editor und Vorschau um: öffnet die Vorschau an der Cursorzeile und führt aus der Vorschau zurück in den Editor zur selben Zeile. Ctrl+Shift+Enter — Vorschau ausblenden. Der Vorschautext aktualisiert sich beim Tippen.",
+      tr: "Alt+` düzenleyici ile önizleme arasında geçiş yapar: imleç satırında önizlemeyi açar, önizlemeden aynı satıra düzenleyiciye döndürür. Ctrl+Shift+Enter — önizlemeyi gizle. Önizleme metni yazdıkça güncellenir.",
     },
     "help.fileTitle": {
       ru: "Файл и вывод",
@@ -468,6 +468,12 @@
       en: "Preview hidden.",
       de: "Vorschau ausgeblendet.",
       tr: "Önizleme gizlendi.",
+    },
+    "msg.backToEditor": {
+      ru: "Редактор, строка {n}.",
+      en: "Editor, line {n}.",
+      de: "Editor, Zeile {n}.",
+      tr: "Düzenleyici, satır {n}.",
     },
     "msg.formulaMode": {
       ru: "Режим вставки формулы: {mode}.",
@@ -855,16 +861,16 @@
 
     // --- Экспорт и документ ----------------------------------------------------
     "doc.chessOff": {
-      ru: "Шахматные доски не подключены — добавьте в начало файла: <code>chessjax: yes</code>",
-      en: "Chessboards are not included — add at the top of the file: <code>chessjax: yes</code>",
-      de: "Schachbretter sind nicht eingebunden — fügen Sie oben in die Datei ein: <code>chessjax: yes</code>",
-      tr: "Satranç tahtaları dahil edilmedi — dosyanın başına ekleyin: <code>chessjax: yes</code>",
+      ru: "Шахматные доски отключены настройкой <code>chessjax: no</code> в начале файла.",
+      en: "Chessboards are switched off by <code>chessjax: no</code> at the top of the file.",
+      de: "Schachbretter sind durch <code>chessjax: no</code> am Dateianfang abgeschaltet.",
+      tr: "Satranç tahtaları dosyanın başındaki <code>chessjax: no</code> ile kapatılmış.",
     },
     "doc.desmosOff": {
-      ru: "Графики Desmos не подключены — добавьте в начало файла: <code>desmos: yes</code>",
-      en: "Desmos graphs are not included — add at the top of the file: <code>desmos: yes</code>",
-      de: "Desmos-Diagramme sind nicht eingebunden — fügen Sie oben in die Datei ein: <code>desmos: yes</code>",
-      tr: "Desmos grafikleri dahil edilmedi — dosyanın başına ekleyin: <code>desmos: yes</code>",
+      ru: "Графики Desmos отключены настройкой <code>desmos: no</code> в начале файла.",
+      en: "Desmos graphs are switched off by <code>desmos: no</code> at the top of the file.",
+      de: "Desmos-Grafiken sind durch <code>desmos: no</code> am Dateianfang abgeschaltet.",
+      tr: "Desmos grafikleri dosyanın başındaki <code>desmos: no</code> ile kapatılmış.",
     },
     "doc.exportTitle": { ru: "Математический документ", en: "Math document", de: "Mathedokument", tr: "Matematik belgesi" },
 

@@ -59,8 +59,8 @@ const converter = new showdown.Converter({
 //   title: Морфи
 //   lang: ru
 //   mathjax: no            # не грузить MathJax в этом экспорте
-//   chessjax: yes          # подключить шахматный компонент (по умолчанию нет)
-//   desmos: yes            # подключить Desmos (по умолчанию нет)
+//   chessjax: no           # не грузить шахматный компонент (включается сам,
+//   desmos: no             #  если в тексте есть блок ```chess / ```desmos)
 //   author: Дениз
 //   description: Партия Морфи
 //   css: https://…/style.css
@@ -438,6 +438,18 @@ function showPreviewAndFocus(line) {
   renderPreview().then(() => focusPreviewAtLine(line));
 }
 
+// Обратный ход того же переключателя: из предпросмотра в редактор — курсор
+// встаёт на строку, из которой построен текущий блок предпросмотра.
+function backToEditor() {
+  const block = document.activeElement && document.activeElement.closest(".preview-block");
+  let line = block && block.dataset.line ? Number(block.dataset.line) : 0;
+  if (!line) line = editor.getPosition().lineNumber;
+  editor.setPosition({ lineNumber: line, column: 1 });
+  editor.revealLineInCenterIfOutsideViewport(line);
+  editor.focus();
+  speak(I18N.t("msg.backToEditor", { n: line }));
+}
+
 // --- Вставка сниппетов ------------------------------------------------------
 //
 // Сниппет = { label, face, latex, asciimath } — вставляется в текущем синтаксисе
@@ -647,23 +659,24 @@ function download(filename, text, mime) {
 // остаются живыми <chessjax-board> — документ подключает компонент с CDN, а
 // CSS (включая fullscreen) встроен в <style>.
 //
-// Какие модули грузить решает frontmatter:
+// Какие модули грузить, решает содержимое документа:
 //   mathjax  — по умолчанию включён (выкл: mathjax: no)
-//   chessjax — по умолчанию выключен (вкл: chessjax: yes)
-//   desmos   — по умолчанию выключен (вкл: desmos: yes)
+//   chessjax — включается сам, если в тексте есть блок ```chess
+//   desmos   — включается сам, если в тексте есть блок ```desmos
 // Вложенные настройки (mathjax: {…}, desmos: {…}, chess: {…}) мержатся
 // глубоко в конфиг MathJax, опции Desmos.Calculator и атрибуты досок.
 function buildDocumentHtml() {
   const bodyHtml = renderMarkdown(editor.getValue());
   const fm = fmState || {};
 
-  // Модуль включён, если флаг true ИЛИ задан объектом настроек: `desmos: yes`
-  // и `desmos:` (вложенные опции) оба включают модуль.
-  const modOn = (v) => v === true || (v && typeof v === "object" && !Array.isArray(v));
+  // Модули подключаются по содержимому: есть блок ```chess — грузим chessjax,
+  // есть ```desmos — грузим Desmos. В настройках документа их указывать не надо.
+  // `chessjax: no` и `desmos: no` выключают модуль принудительно; `yes` включает
+  // его, даже если блоков нет (например, доски приходят скриптом документа).
   const mods = {
     mathjax: fm.mathjax !== false,
-    chessjax: modOn(fm.chessjax),
-    desmos: modOn(fm.desmos),
+    chessjax: fm.chessjax === false ? false : chessBlocks.length > 0 || fm.chessjax === true,
+    desmos: fm.desmos === false ? false : desmosBlocks.length > 0 || fm.desmos === true,
   };
 
   // Если в тексте есть блоки, а модуль отключён — честная подсказка в документе.
@@ -707,6 +720,20 @@ window.MathJax = ${JSON.stringify(mjConfig)};
   let chessBlock = "";
   if (mods.chessjax) {
     chessBlock = `<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.1/chessjax.js"></script>
+<script>
+// Кнопки-ходы <button chess="id" move="N"> в тексте. Свой делегат chessjax
+// навешивает при загрузке модуля, но при показе готового HTML через
+// ?preview=html страница создаётся document.open() — это новый документ, а
+// модуль из кэша повторно не выполняется, и обработчик теряется. Поэтому
+// делегат повторяем здесь: он не зависит от модуля и работает в любом
+// документе, в том числе в скачанном файле.
+document.addEventListener("click", function (event) {
+  var btn = event.target && event.target.closest ? event.target.closest("button[chess][move]") : null;
+  if (!btn) return;
+  var board = document.getElementById(btn.getAttribute("chess"));
+  if (board && typeof board.goTo === "function") board.goTo(btn.getAttribute("move"));
+});
+</script>
 `;
   }
 
@@ -1836,13 +1863,20 @@ require(["vs/editor/editor.main"], function () {
   window.addEventListener(
     "keydown",
     (e) => {
-      // Alt+ё (та же клавиша, что и `) — полный предпросмотр: показать секцию,
-      // пересоздать графики Desmos и объявить содержимое строки курсора.
+      // Alt+ё (та же клавиша, что и `) — переключатель между редактором и
+      // предпросмотром. Из редактора: показать секцию, пересоздать графики
+      // Desmos и объявить содержимое строки курсора. Из предпросмотра: вернуть
+      // фокус в редактор на ту строку, с которой пришли.
+      // Так правка идёт циклом: набрал — Alt+ё — послушал — Alt+ё — поправил.
       if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.code === "Backquote") {
         e.preventDefault();
         e.stopImmediatePropagation();
-        const line = editor.getPosition().lineNumber;
-        showPreviewAndFocus(line);
+        if (previewSection.contains(document.activeElement)) {
+          backToEditor();
+        } else {
+          const line = editor.getPosition().lineNumber;
+          showPreviewAndFocus(line);
+        }
         return;
       }
       // Ctrl+Shift+Enter — скрыть предпросмотр.

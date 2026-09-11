@@ -2,7 +2,6 @@
 title: The Opera Game
 lang: en
 mathjax: no
-chessjax: yes
 author: Paul Morphy
 description: Opera Game — Morphy vs Duke Karl & Count Isouard, Paris 1858
 ---
