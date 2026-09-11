@@ -263,7 +263,8 @@
         "</ul>",
     },
     "manual.chessKeys": {
-      ru: "<p>Доска — не обычная таблица, а отдельный объект со своим набором клавиш. Поэтому стрелки начинают работать не сразу: сначала нужно включить режим навигации программы экранного доступа — <strong>NVDA+Space</strong> в NVDA, режим форм в JAWS. После этого стрелки передаются доске и называют клетки: «чёрная пешка b7», пустая клетка — «e5».</p>" +
+      ru: "<p>Доска — не обычная таблица, а отдельный объект со своим набором клавиш. Поэтому стрелки начинают работать не сразу: нужно перейти в режим форм (редактирования) — <strong>NVDA+Space</strong> в NVDA, режим форм в JAWS.</p>" +
+        "<p>Проще всего ничего не переключать вручную: листая документ стрелками, перед доской вы услышите «Шахматная доска, область. Нажмите Enter, чтобы взаимодействовать с доской». Нажмите <strong>Enter</strong> (годится и клик по доске) — нужный режим включится сам, а фокус встанет на клетку. Дальше стрелки называют клетки: «чёрная пешка b7», пустая клетка — «e5».</p>" +
         "<ul>" +
         "<li><strong>Стрелки</strong> — перейти по клеткам и услышать, что на клетке.</li>" +
         "<li><strong>Ctrl+←</strong> и <strong>Ctrl+→</strong> — назад и вперёд по ходу партии.</li>" +
@@ -276,7 +277,8 @@
         "<li><strong>A</strong> — разбор всей партии; удержание <strong>A</strong> две секунды — шутливые оценки.</li>" +
         "<li><strong>H</strong> — помощь по разделам.</li>" +
         "</ul>",
-      en: "<p>The board is not an ordinary table but an object of its own with its own keys. That is why the arrows do not work straight away: first switch your screen reader into navigation mode — <strong>NVDA+Space</strong> in NVDA, forms mode in JAWS. After that the arrows go to the board and name the squares: “black pawn b7”, an empty square is “e5”.</p>" +
+      en: "<p>The board is not an ordinary table but an object of its own with its own keys. That is why the arrows do not work straight away: you have to switch into focus (forms) mode — <strong>NVDA+Space</strong> in NVDA, forms mode in JAWS.</p>" +
+        "<p>Easier still: switch nothing by hand. Browsing the document with the arrow keys, before the board you hear “Chessboard, region. Press Enter to interact with the board.” Press <strong>Enter</strong> (clicking the board works too) — the right mode turns on by itself and focus lands on a square. From there the arrows name the squares: “black pawn b7”, an empty square is “e5”.</p>" +
         "<ul>" +
         "<li><strong>Arrows</strong> — move to a square and hear what stands on it.</li>" +
         "<li><strong>Ctrl+←</strong> and <strong>Ctrl+→</strong> — back and forward through the game.</li>" +

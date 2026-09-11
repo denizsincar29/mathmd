@@ -6,7 +6,7 @@
 // Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
 // Импорт с CDN (jsdelivr, GH-тег v0.6.1) по side-effect: регистрирует
 // кастомный элемент и document-level делегат для кнопок <button chess="id" move="N">.
-import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.1/chessjax.js";
+import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.3/chessjax.js";
 
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
@@ -808,7 +808,7 @@ window.MathJax = ${JSON.stringify(mjConfig)};
 
   let chessBlock = "";
   if (mods.chessjax) {
-    chessBlock = `<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.1/chessjax.js"></script>
+    chessBlock = `<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.3/chessjax.js"></script>
 <script>
 // Кнопки-ходы <button chess="id" move="N"> в тексте. Свой делегат chessjax
 // навешивает при загрузке модуля, но при показе готового HTML через
