@@ -7,9 +7,50 @@
 <title>Руководство — mathmd</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=38">
-<script src="i18n.js?v=38"></script>
-<script src="manual-i18n.js?v=38"></script>
+<link rel="stylesheet" href="style.css?v=39">
+<script src="i18n.js?v=39"></script>
+<script src="manual-i18n.js?v=39"></script>
+
+<script>
+  // MathJax обязан быть настроен до загрузки самого MathJax. Конфигурация — та
+  // же, что в редакторе: скрытый MathML вместо англоязычной речи, чтобы NVDA
+  // читал формулы на своём языке.
+  window.MathJax = {
+    loader: { load: ["input/tex", "input/asciimath", "output/chtml"] },
+    tex: {
+      inlineMath: [["$", "$"], ["\\(", "\\)"]],
+      displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+      packages: { "[+]": ["ams"] }
+    },
+    asciimath: {
+      delimiters: [["`", "`"]]
+    },
+    options: {
+      menuOptions: {
+        settings: {
+          enrich: true,
+          assistiveMml: true,
+          speech: false,
+          braille: false
+        }
+      },
+      a11y: {
+        speech: false,
+        assistiveMml: true
+      },
+      enableMenu: false,
+      renderActions: {}
+    }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+<script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+<script type="module">
+  // Шахматные доски тех же версий, что и в редакторе: пример в руководстве
+  // обязан выглядеть как настоящий документ.
+  import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.1/chessjax.js";
+</script>
 <style>
   /* Руководство — текст для чтения, а не рабочая панель: узкая колонка,
      крупные заголовки, воздух между разделами. */
@@ -46,6 +87,50 @@
   .toc a { color: var(--accent); }
   .back { display: inline-block; margin-bottom: 0.75rem; color: var(--accent); }
   .langs { margin-top: 0.5rem; color: var(--fg-muted); font-size: 0.9rem; }
+
+  /* Примеры: код, кнопка копирования и предпросмотр под ним. */
+  .example { margin: 0 0 1.5rem; }
+  .example pre { margin-bottom: 0.5rem; }
+  .copy-btn {
+    font: inherit;
+    background: var(--bg-input);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+  }
+  .copy-btn:hover { border-color: var(--accent); }
+  .example-preview {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+  }
+  .example-preview .preview-label {
+    margin: 0 0 0.5rem;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .example-preview > :last-child { margin-bottom: 0; }
+  /* Внутри предпросмотра заголовки — заголовки документа, а не разделов
+     руководства: без акцентной линии и на своём размере. */
+  .example-preview h1, .example-preview h2, .example-preview h3 {
+    border-top: 0;
+    padding-top: 0;
+    color: var(--fg);
+    margin: 0.75rem 0 0.5rem;
+  }
+  .example-preview h1 { font-size: 1.5rem; }
+  .example-preview h2 { font-size: 1.25rem; }
+  .example-preview h3 { font-size: 1.1rem; }
+  .example-preview ul, .example-preview ol { padding-left: 1.4rem; }
+  .example-preview table { border-collapse: collapse; }
+  .example-preview th, .example-preview td { border: 1px solid var(--border); padding: 0.25rem 0.6rem; }
+  .example-preview .desmos { height: 20rem; }
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 </style>
 </head>
@@ -91,15 +176,41 @@
     <h2 id="markdown" data-i18n="manual.toc.markdown">Обычный текст и markdown</h2>
     <p data-i18n="manual.markdownIntro"></p>
     <div data-i18n="manual.markdownList"></div>
+    <p data-i18n="manual.markdownExample"></p>
     <p data-i18n="manual.example">Пример:</p>
-<pre><code># Моё эссе
+<pre data-example="markdown"><code># Заголовок первого уровня
 
-Обычный абзац с **жирным** словом и [ссылкой](https://example.com).
+## Заголовок второго уровня
 
-- первый пункт
+Обычный абзац: **жирный текст**, *курсив*, ~~зачёркнутый~~, `код в строке`
+и [ссылка на сайт](https://example.com).
+
+- первый пункт списка
 - второй пункт
+  - вложенный пункт
 
-&gt; Цитата.</code></pre>
+1. первый шаг
+2. второй шаг
+
+- [ ] задача не сделана
+- [x] задача сделана
+
+&gt; Цитата: мысль, которую хочется выделить.
+
+| Формула | Значение |
+| --- | --- |
+| $x^2$ | квадрат |
+| `sqrt(2)` | корень из двух |
+
+Формула LaTeX в строке: $E = mc^2$, формула AsciiMath в обратных кавычках: `sum_(i=1)^n i`.
+
+$$
+\int_0^1 x^2\,dx = \frac{1}{3}
+$$
+
+---
+
+Конец примера.</code></pre>
     <p data-i18n="manual.markdownNote"></p>
   </section>
 
@@ -116,7 +227,7 @@
     <p data-i18n="manual.asciiIntro"></p>
     <div data-i18n="manual.asciiList"></div>
     <p data-i18n="manual.example">Пример:</p>
-<pre><code>Корни квадратного уравнения: `x = (-b +- sqrt(b^2-4ac))/(2a)`.
+<pre data-example="markdown"><code>Корни квадратного уравнения: `x = (-b +- sqrt(b^2-4ac))/(2a)`.
 
 Сумма ряда: `sum_(i=1)^n i = (n(n+1))/2`.</code></pre>
     <p data-i18n="manual.asciiButtons"></p>
@@ -127,7 +238,7 @@
     <p data-i18n="manual.latexIntro"></p>
     <div data-i18n="manual.latexList"></div>
     <p data-i18n="manual.example">Пример:</p>
-<pre><code>Площадь круга: $S = \pi r^2$.
+<pre data-example="markdown"><code>Площадь круга: $S = \pi r^2$.
 
 $$\int_0^1 x^2\,dx = \frac{1}{3}$$
 
@@ -139,12 +250,13 @@ $$\int_0^1 x^2\,dx = \frac{1}{3}$$
     <h2 id="desmos" data-i18n="manual.toc.desmos">Графики Desmos</h2>
     <p data-i18n="manual.desmosIntro"></p>
     <p data-i18n="manual.example">Пример:</p>
-<pre><code>```desmos
+<pre data-example="desmos"><code>```desmos
 y = x^2
 y = sin(x)
 (x-1)^2 + (y-2)^2 = 9
 ```</code></pre>
     <p data-i18n="manual.desmosAttrs"></p>
+    <p data-i18n="manual.desmosKeys"></p>
     <p data-i18n="manual.desmosRefresh"></p>
   </section>
 
@@ -152,7 +264,7 @@ y = sin(x)
     <h2 id="chess" data-i18n="manual.toc.chess">Шахматные доски</h2>
     <p data-i18n="manual.chessIntro"></p>
     <p data-i18n="manual.example">Пример:</p>
-<pre><code>```chess
+<pre data-example="chess"><code>```chess
 fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 ```
 
@@ -179,7 +291,7 @@ move=10
     <h2 id="frontmatter" data-i18n="manual.toc.frontmatter">Настройки документа</h2>
     <p data-i18n="manual.fmIntro"></p>
     <p data-i18n="manual.example">Пример:</p>
-<pre><code>---
+<pre data-example="frontmatter"><code>---
 title: Моя статья
 lang: ru
 author: Дениз
@@ -217,5 +329,6 @@ chess:
   document.getElementById("back-link").href = back;
   document.getElementById("back-link-2").href = back;
 </script>
+<script src="manual-examples.js?v=39"></script>
 </body>
 </html>

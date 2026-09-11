@@ -42,60 +42,68 @@
     "manual.toc.frontmatter": { ru: "Настройки документа", en: "Document settings" },
     "manual.toc.files": { ru: "Файлы, примеры и экспорт", en: "Files, examples and export" },
     "manual.example": { ru: "Пример:", en: "Example:" },
+    "manual.copyCode": { ru: "Скопировать код", en: "Copy code" },
+    "manual.copied": { ru: "Код скопирован в буфер обмена.", en: "Code copied to the clipboard." },
+    "manual.copyFailed": { ru: "Не удалось скопировать. Выделите код и скопируйте вручную.", en: "Could not copy. Select the code and copy it by hand." },
+    "manual.previewLabel": { ru: "Предпросмотр", en: "Preview" },
+    "manual.markdownExample": {
+      ru: "Ниже собрана вся разметка сразу. Это и код, и результат: после кода показано, как он выглядит в готовом документе.",
+      en: "Below, all the markup is collected in one place. It is both code and result: after the code you see how it looks in a finished document.",
+    },
     "manual.chessHeadAttrs": { ru: "Атрибуты", en: "Attributes" },
     "manual.chessHeadKeys": { ru: "Клавиши", en: "Keys" },
     "manual.chessHeadExport": { ru: "В готовой странице", en: "In the exported page" },
 
     // --- Введение -----------------------------------------------------------
     "manual.introText1": {
-      ru: "mathmd — редактор в браузере. Сверху панель кнопок для вставки формул, под ней поле редактора, ниже предпросмотр: набираешь текст и сразу видишь результат. Устанавливать ничего не нужно, всё работает на обычной странице сайта.",
-      en: "mathmd is an editor that runs in the browser. The formula button panel is at the top, the editor field below it, and the preview under that: you type and see the result right away. Nothing to install — it all runs on an ordinary web page.",
+      ru: "mathmd существует ради одной задачи: чтобы незрячий автор мог самостоятельно написать и опубликовать документ с математикой. Всё делается в браузере, только с клавиатуры и с опорой на программу экранного доступа. Формулы, графики и шахматные доски доступны на слух, а не только на глаз.",
+      en: "mathmd exists for one purpose: to let a blind author write and publish a document with mathematics independently. Everything happens in the browser, from the keyboard alone, with a screen reader as the main instrument. Formulas, graphs and chessboards are available by ear, not only by eye.",
     },
     "manual.introText2": {
-      ru: "Документ — это обычный текстовый файл <code>.md</code> с разметкой markdown. Внутри него можно писать формулы, рисовать графики и ставить шахматные доски. Файл можно скачать, открыть заново и отправить кому угодно.",
-      en: "A document is a plain text <code>.md</code> file with markdown markup. It can hold formulas, graphs and chessboards. You can download it, open it again later and send it to anyone.",
+      ru: "Вторая задача — оформление. Написанное здесь превращается в аккуратно свёрстанную страницу: заголовки, списки, формулы, графики и шахматные доски выглядят так, как их принято видеть в публикации. Программа вёрстки для этого не нужна.",
+      en: "The second purpose is presentation. What you write here becomes a properly typeset page: headings, lists, formulas, graphs and chessboards look the way they are expected to look in a publication. No typesetting program is required.",
     },
     "manual.introText3": {
-      ru: "Кнопка «Сохранить готовый HTML» делает из документа отдельную страницу: она открывается в любом браузере, формулы и доски в ней работают, а исходный код не нужен. Это то, что стоит отдавать читателю.",
-      en: "The “Export HTML” button turns the document into a standalone page: it opens in any browser with formulas and boards working, and needs no source code. This is what you hand to a reader.",
+      ru: "Устроен редактор просто: сверху панель кнопок для вставки формул, под ней поле редактора, ниже предпросмотр. Изменения видны сразу. Устанавливать ничего не нужно — это обычная страница сайта.",
+      en: "The editor itself is simple: a formula button panel at the top, the editor field below it, the preview under that. Changes are visible at once. Nothing has to be installed — it is an ordinary web page.",
     },
     "manual.introText4": {
-      ru: "Редактор рассчитан на работу с программой экранного доступа: вставки и переключения озвучиваются, формул в предпросмотре читаются как математика, а не как набор символов.",
-      en: "The editor is built for screen reader use: insertions and toggles are announced, and formulas in the preview are read as mathematics, not as a jumble of characters.",
+      ru: "Документ — обычный текстовый файл <code>.md</code> с разметкой markdown. Внутри него могут быть формулы, графики и шахматные доски. Файл можно скачать, открыть заново, править в любом текстовом редакторе и передать другому человеку. Кнопка «Сохранить готовый HTML» делает из него отдельную страницу для чтения: она открывается в любом браузере, а исходный код читателю не нужен.",
+      en: "A document is a plain text <code>.md</code> file with markdown markup. It can hold formulas, graphs and chessboards. You can download it, open it again, edit it in any text editor and hand it to someone else. The “Export HTML” button turns it into a standalone page for reading: it opens in any browser, and the reader needs no source code.",
     },
     "manual.introText5": {
-      ru: "Кнопка «Справка» — короткая шпаргалка на восемь пунктов. Эта страница — полное руководство.",
-      en: "The “Help” button is a short eight-point cheat sheet. This page is the complete manual.",
+      ru: "Кнопка «Справка» в редакторе — краткая справка на восемь пунктов. Эта страница — полное руководство.",
+      en: "The “Help” button in the editor is a short eight-point reference. This page is the complete manual.",
     },
 
     // --- markdown -----------------------------------------------------------
     "manual.markdownIntro": {
-      ru: "Markdown — это разметка обычным текстом: чтобы сделать заголовок, поставь решётку, чтобы выделить слово — звёздочки. Специальных программ не нужно, файл остаётся читаемым сам по себе.",
-      en: "Markdown is markup written in plain text: put a hash for a heading, asterisks to emphasise a word. No special software — the file stays readable on its own.",
+      ru: "Markdown — это разметка обычным текстом. Специальных программ не нужно, файл остаётся читаемым сам по себе, а разметка состоит из обычных символов: <code>#</code>, <code>*</code>, <code>-</code>, <code>&gt;</code>.",
+      en: "Markdown is markup written in plain text. No special software is needed, the file stays readable on its own, and the markup consists of ordinary characters: <code>#</code>, <code>*</code>, <code>-</code>, <code>&gt;</code>.",
     },
     "manual.markdownList": {
       ru: "<ul>" +
-        "<li><strong># Заголовок</strong> в начале строки — крупный заголовок, <code>##</code> — подзаголовок, <code>###</code> — ещё мельче.</li>" +
-        "<li><strong>Пустая строка</strong> разделяет абзацы. Одна строка без пустой — продолжение того же абзаца.</li>" +
-        "<li><strong>**жирный**</strong> и <strong>*курсив*</strong> — двумя и одной звёздочкой.</li>" +
-        "<li><strong>Список</strong> — дефис в начале строки. Нумерованный — просто пиши <code>1.</code>, <code>2.</code>, <code>3.</code></li>" +
-        "<li><strong>Ссылка</strong> — <code>[текст](адрес)</code>. Голый адрес в тексте тоже становится ссылкой.</li>" +
-        "<li><strong>Цитата</strong> — знак <code>&gt;</code> в начале строки. <strong>Таблица</strong>, зачёркнутый текст и списки задач тоже работают.</li>" +
-        "<li><strong>Код</strong> — обратные кавычки вокруг слова, три кавычки — целый блок.</li>" +
+        "<li><strong>Заголовок.</strong> Чтобы написать заголовок, перед строкой ставится знак <code>#</code>. Один знак — заголовок первого уровня, два — второго, пять — пятого.</li>" +
+        "<li><strong>Абзац.</strong> Абзацы разделяются пустой строкой. Если пустой строки нет, следующие строки продолжают тот же абзац.</li>" +
+        "<li><strong>Выделение.</strong> <code>**жирный**</code> — два знака <code>*</code> с обеих сторон слова, <code>*курсив*</code> — один знак.</li>" +
+        "<li><strong>Список.</strong> Каждый пункт начинается с дефиса и пробела. Нумерованный список — с числа и точки: <code>1.</code>, <code>2.</code>, <code>3.</code></li>" +
+        "<li><strong>Ссылка.</strong> <code>[текст](адрес)</code>. Адрес, написанный в тексте без разметки, тоже становится ссылкой.</li>" +
+        "<li><strong>Цитата.</strong> Знак <code>&gt;</code> в начале строки. Так же работают таблицы, зачёркнутый текст и списки задач.</li>" +
+        "<li><strong>Код.</strong> Обратные кавычки вокруг слова, три обратные кавычки — вокруг целого блока.</li>" +
         "</ul>",
       en: "<ul>" +
-        "<li><strong># Heading</strong> at the start of a line — a big heading, <code>##</code> — a subheading, <code>###</code> — smaller still.</li>" +
-        "<li><strong>A blank line</strong> separates paragraphs. A single line break continues the same paragraph.</li>" +
-        "<li><strong>**bold**</strong> and <strong>*italic*</strong> — two and one asterisk.</li>" +
-        "<li><strong>A list</strong> — a dash at the start of a line. Numbered — just write <code>1.</code>, <code>2.</code>, <code>3.</code></li>" +
-        "<li><strong>A link</strong> — <code>[text](address)</code>. A bare address in the text becomes a link too.</li>" +
-        "<li><strong>A quote</strong> — <code>&gt;</code> at the start of a line. <strong>Tables</strong>, strikethrough and task lists work as well.</li>" +
-        "<li><strong>Code</strong> — backticks around a word, three backticks around a whole block.</li>" +
+        "<li><strong>A heading.</strong> To write a heading, put the character <code>#</code> before the line. One character is a first-level heading, two a second-level, five a fifth-level.</li>" +
+        "<li><strong>A paragraph.</strong> Paragraphs are separated by a blank line. Without a blank line the following lines continue the same paragraph.</li>" +
+        "<li><strong>Emphasis.</strong> <code>**bold**</code> — two <code>*</code> characters on either side of the word, <code>*italic*</code> — one character.</li>" +
+        "<li><strong>A list.</strong> Each item starts with a dash and a space. A numbered list starts with a figure and a dot: <code>1.</code>, <code>2.</code>, <code>3.</code></li>" +
+        "<li><strong>A link.</strong> <code>[text](address)</code>. An address written plainly in the text also becomes a link.</li>" +
+        "<li><strong>A quote.</strong> The character <code>&gt;</code> at the start of a line. Tables, strikethrough and task lists work the same way.</li>" +
+        "<li><strong>Code.</strong> Backticks around a word, three backticks around a whole block.</li>" +
         "</ul>",
     },
     "manual.markdownNote": {
-      ru: "Важно: внутри формул и блоков кода markdown не действует — там символы означают сами себя. И наоборот: звёздочка в обычном тексте может случайно включить курсив, если её не экранировать обратным слэшем.",
-      en: "Important: markdown does not apply inside formulas or code blocks — there the characters mean themselves. And the other way round: an asterisk in ordinary text may accidentally start italics unless you escape it with a backslash.",
+      ru: "Внутри формул и блоков кода markdown не действует: там символы означают сами себя. В обычном тексте знак <code>*</code> может случайно начать курсив — в этом случае перед ним ставят обратный слэш.",
+      en: "Inside formulas and code blocks markdown does not apply: there the characters mean themselves. In ordinary text the character <code>*</code> may accidentally start italics; in that case a backslash is placed before it.",
     },
 
     // --- Два языка формул ---------------------------------------------------
@@ -124,13 +132,13 @@
     "manual.asciiList": {
       ru: "<ul>" +
         "<li><strong>Дробь</strong> — скобками: <code>`(a+b)/(c+d)`</code>. Скобки говорят, что стоит в числителе и знаменателе.</li>" +
-        "<li><strong>Степень</strong> — крышкой: <code>`x^2`</code>, а для длинного показателя — <code>`x^(n+1)`</code>.</li>" +
+        "<li><strong>Степень</strong> — знаком <code>^</code>: <code>`x^2`</code>, а для длинного показателя — <code>`x^(n+1)`</code>.</li>" +
         "<li><strong>Корень</strong> — <code>`sqrt(x)`</code>; корень третьей степени — <code>`root(3)(x)`</code>.</li>" +
         "<li><strong>Сумма, интеграл, предел</strong> — <code>`sum_(i=1)^n i`</code>, <code>`int_(0)^(1) x dx`</code>, <code>`lim_(x-&gt;0)`</code>. Нижний и верхний пределы — в скобках.</li>" +
         "<li><strong>Матрица</strong> — двойные квадратные скобки: <code>`[[a,b],[c,d]]`</code>. Строки разделяются запятыми внутри внешних скобок.</li>" +
         "<li><strong>Греческие буквы</strong> — словом: <code>alpha</code>, <code>beta</code>, <code>pi</code>, <code>theta</code>, <code>omega</code>, большая сигма — <code>Sigma</code>.</li>" +
         "<li><strong>Знаки</strong> — обычными символами: <code>&gt;=</code>, <code>&lt;=</code>, <code>!=</code>, <code>~=</code>, бесконечность <code>oo</code>, стрелка <code>-&gt;</code>, принадлежность <code>in</code>.</li>" +
-        "<li><strong>Пробел</strong> разделяет части формулы: <code>`int x dx`</code> — так интеграл не слипнется с подынтегральным выражением.</li>" +
+        "<li><strong>Пробел</strong> разделяет части формулы: <code>`int x dx`</code> — подынтегральное выражение не присоединяется к знаку интеграла.</li>" +
         "</ul>",
       en: "<ul>" +
         "<li><strong>A fraction</strong> uses brackets: <code>`(a+b)/(c+d)`</code>. The brackets say what is on top and what is below.</li>" +
@@ -144,8 +152,8 @@
         "</ul>",
     },
     "manual.asciiButtons": {
-      ru: "Кнопки на панели умеют вставлять и AsciiMath: переключи синтаксис по <strong>Alt+L</strong> — и кнопки будут подставлять аскиматовскую запись вместо латеховской.",
-      en: "The panel buttons can insert AsciiMath too: switch the syntax with <strong>Alt+L</strong> and the buttons will insert AsciiMath forms instead of LaTeX ones.",
+      ru: "Кнопки панели умеют вставлять формулы и в записи AsciiMath. Чтобы переключить язык формул, нажми <strong>Alt+L</strong>: после этого кнопки вставляют AsciiMath вместо LaTeX.",
+      en: "The panel buttons can insert formulas in AsciiMath notation as well. To switch the formula language, press <strong>Alt+L</strong>: from then on the buttons insert AsciiMath instead of LaTeX.",
     },
 
     // --- LaTeX --------------------------------------------------------------
@@ -174,7 +182,7 @@
         "</ul>",
     },
     "manual.latexTips": {
-      ru: "Две частые ошибки: забытый закрывающий доллар (формула тогда тянется до конца документа) и степень без фигурных скобок — <code>x^10</code> даст икс в первой степени и ноль рядом, правильно <code>x^{10}</code>. Подсказки сами появляются внутри формулы: начни печатать <code>\\fr</code> и увидишь <code>\\frac</code>. Кнопка формулы на панели всегда вставляет доллары, то есть LaTeX.",
+      ru: "Две частые ошибки: забытый закрывающий доллар (тогда формула продолжается до конца документа) и степень без фигурных скобок — <code>x^10</code> даст икс в первой степени и ноль рядом, правильно <code>x^{10}</code>. Подсказки сами появляются внутри формулы: начни печатать <code>\\fr</code> и увидишь <code>\\frac</code>. Кнопка формулы на панели всегда вставляет доллары, то есть LaTeX.",
       en: "Two common mistakes: a forgotten closing dollar (the formula then runs to the end of the document), and a power without braces — <code>x^10</code> gives x to the first power with a zero after it; write <code>x^{10}</code>. Suggestions appear by themselves inside a formula: start typing <code>\\fr</code> and you will see <code>\\frac</code>. The formula button on the panel always inserts dollars, that is LaTeX.",
     },
 
@@ -187,8 +195,12 @@
       ru: "Блок без лишних атрибутов: всё, что нужно, — выражения. В предпросмотре график можно рассматривать и тянуть мышью, он живой. Чтобы графики работали в сохранённом HTML, включи в настройках документа модуль <code>desmos: yes</code> — иначе в готовой странице останется пустое место.",
       en: "The block needs no extra attributes: the expressions are all it takes. In the preview the graph is live and can be dragged with the mouse. For graphs to work in the exported HTML, switch the module on in the document settings with <code>desmos: yes</code> — otherwise the saved page keeps an empty space.",
     },
+    "manual.desmosKeys": {
+      ru: "График доступен и с клавиатуры. Чтобы войти в калькулятор Desmos, поставь курсор на текст перед графиком и нажми <strong>Tab</strong>. Когда Tab приведёт в список выражений, нажми <strong>Alt+T</strong> — откроется плоскость координат, доступная программе экранного доступа. На ней стрелки влево и вправо перемещают по оси X, а высота тона сообщает значение Y. Клавиша <strong>H</strong> проводит по всему графику слева направо звуком.",
+      en: "The graph is reachable from the keyboard as well. To enter the Desmos calculator, put the cursor on the text before the graph and press <strong>Tab</strong>. When Tab brings you into the list of expressions, press <strong>Alt+T</strong> — a coordinate plane opens, accessible to a screen reader. On it the left and right arrows move along the X axis, and the pitch of the tone reports the value of Y. The <strong>H</strong> key sweeps the whole graph from left to right in sound.",
+    },
     "manual.desmosRefresh": {
-      ru: "Если график не появился или замер, нажми <strong>Alt+ё</strong> — полный предпросмотр пересоздаёт графики заново.",
+      ru: "Если график не появился или перестал отвечать, нажми <strong>Alt+ё</strong> — полный предпросмотр пересоздаёт графики заново.",
       en: "If a graph does not appear or freezes, press <strong>Alt+`</strong> — the full preview rebuilds the graphs from scratch.",
     },
 
@@ -229,7 +241,7 @@
         "<li><strong>Alt+M</strong> — следующая формула будет в строке или отдельным блоком. <strong>Alt+L</strong> — синтаксис: LaTeX или AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — вставить дробь, корень, сумму и другие заготовки. Те же номера написаны на кнопках.</li>" +
         "<li><strong>Ctrl+Space</strong> — подсказки: делимитеры, блоки, ключи настроек, разметка markdown. Внутри формулы подсказки появляются сами.</li>" +
-        "<li><strong>F1</strong> — палитра команд: там собраны все действия редактора, включая предпросмотр, экспорт и смену языка. Если браузер перехватывает F1 (некоторые сборки открывают по ней свою справку) — есть Ctrl+Alt+P, его не занимает никто. А Ctrl+Shift+P лучше не привыкать: в Firefox это приватное окно.</li>" +
+        "<li><strong>F1</strong> — палитра команд: там собраны все действия редактора, включая предпросмотр, экспорт и смену языка. Если браузер перехватывает F1 (некоторые сборки открывают по ней свою справку) — есть Ctrl+Alt+P, его не занимает никто. А Ctrl+Shift+P лучше не использовать: в Firefox это приватное окно.</li>" +
         "</ul>",
       en: "<ul>" +
         "<li><strong>Alt+`</strong> — full preview: rebuild the graphs and jump to the cursor line. <strong>Ctrl+Shift+Enter</strong> — hide the preview.</li>" +
