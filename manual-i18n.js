@@ -32,6 +32,7 @@
       en: "Contents",
     },
     "manual.toc.intro": { ru: "Введение", en: "Introduction" },
+    "manual.toc.start": { ru: "С чего начать", en: "Getting started" },
     "manual.toc.markdown": { ru: "Обычный текст и markdown", en: "Plain text and markdown" },
     "manual.toc.formulas": { ru: "Два языка формул: AsciiMath и LaTeX", en: "Two formula languages: AsciiMath and LaTeX" },
     "manual.toc.asciimath": { ru: "AsciiMath: как писать", en: "AsciiMath: how to write" },
@@ -52,7 +53,7 @@
     },
     "manual.chessHeadAttrs": { ru: "Атрибуты", en: "Attributes" },
     "manual.chessHeadKeys": { ru: "Клавиши", en: "Keys" },
-    "manual.chessHeadExport": { ru: "В готовой странице", en: "In the exported page" },
+    "manual.chessHeadExport": { ru: "Что в готовом документе", en: "What the exported document contains" },
 
     // --- Введение -----------------------------------------------------------
     "manual.introText1": {
@@ -74,6 +75,34 @@
     "manual.introText5": {
       ru: "Документ — обычный текстовый файл <code>.md</code> с разметкой markdown. Внутри него могут быть формулы, графики и шахматные доски. Файл можно скачать, открыть заново, править в любом текстовом редакторе и передать другому человеку. Кнопка «Сохранить готовый HTML» делает из него отдельную страницу для чтения: она открывается в любом браузере, а исходный код читателю не нужен. Кнопка «Справка» в редакторе — краткая справка, эта страница — полное руководство.",
       en: "A document is a plain text <code>.md</code> file with markdown markup. It can hold formulas, graphs and chessboards. You can download it, open it again, edit it in any text editor and hand it to someone else. The “Export HTML” button turns it into a standalone page for reading: it opens in any browser, and the reader needs no source code. The “Help” button in the editor is a short reference; this page is the complete manual.",
+    },
+
+    // --- С чего начать ------------------------------------------------------
+    "manual.startLead": {
+      ru: "Шесть шагов, которые стоит пройти один раз, — дальше всё будет понятно само.",
+      en: "Six steps worth taking once; after that everything falls into place by itself.",
+    },
+    "manual.startList": {
+      ru: "<ol>" +
+        "<li>Откройте сайт редактора.</li>" +
+        "<li>Вы попадёте в поле редактора — это место, где набирается текст. Если курсор туда не встал, найдите редактор клавишами быстрой навигации: <strong>E</strong> и <strong>Shift+E</strong> в NVDA и JAWS, либо <strong>Tab</strong> и <strong>Shift+Tab</strong>.</li>" +
+        "<li>Изучите пример, который уже написан в редакторе, и его разметку: заголовки, формулы, списки.</li>" +
+        "<li>Нажмите <strong>Alt+ё</strong> — откроется предпросмотр, и вы услышите, как этот пример выглядит в готовом документе.</li>" +
+        "<li>Нажмите <strong>Alt+ё</strong> ещё раз — вы вернётесь в редактор на ту же строку. Правьте пример по своему усмотрению и снова проверяйте предпросмотром.</li>" +
+        "<li>Когда текст готов, найдите кнопку <strong>Сохранить готовый HTML</strong> и сохраните страницу. Рядом кнопки <strong>Скачать .md</strong> — исходник для правки — и <strong>Открыть .md</strong> — вернуть сохранённый файл.</li>" +
+        "</ol>",
+      en: "<ol>" +
+        "<li>Open the editor site.</li>" +
+        "<li>You land in the editor field — the place where the text is written. If the cursor did not go there, find the editor with quick navigation keys: <strong>E</strong> and <strong>Shift+E</strong> in NVDA and JAWS, or <strong>Tab</strong> and <strong>Shift+Tab</strong>.</li>" +
+        "<li>Study the example already written in the editor and its markup: headings, formulas, lists.</li>" +
+        "<li>Press <strong>Alt+`</strong> — the preview opens, and you can hear how that example looks in a finished document.</li>" +
+        "<li>Press <strong>Alt+`</strong> again — you return to the editor on the same line. Edit the example as you like and check it in the preview again.</li>" +
+        "<li>When the text is ready, find the <strong>Export HTML</strong> button and save the page. Next to it are <strong>Download .md</strong> — the source for editing — and <strong>Open .md</strong> — to bring a saved file back.</li>" +
+        "</ol>",
+    },
+    "manual.startKeys": {
+      ru: "Кнопки файла работают и по горячим клавишам: <strong>Ctrl+S</strong> — сохранить готовый HTML, <strong>Ctrl+Shift+S</strong> — скачать .md, <strong>Ctrl+O</strong> — открыть .md. Браузер тоже умеет эти сочетания, но редактор перехватывает их первым, поэтому его действие и срабатывает.",
+      en: "The file buttons also have hotkeys: <strong>Ctrl+S</strong> — save the ready HTML, <strong>Ctrl+Shift+S</strong> — download the .md, <strong>Ctrl+O</strong> — open a .md. The browser knows these combinations too, but the editor catches them first, so its action is the one that runs.",
     },
 
     // --- markdown -----------------------------------------------------------
@@ -157,6 +186,10 @@
     },
 
     // --- LaTeX --------------------------------------------------------------
+    "manual.latexSkip": {
+      ru: "Если LaTeX вам не нужен, пропустите этот раздел и переходите к следующему.",
+      en: "If you do not need LaTeX, skip this section and go on to the next one.",
+    },
     "manual.latexIntro": {
       ru: "Формула в строке пишется в долларах: <code>$x^2$</code>. Формула на отдельной строке, по центру — в двойных долларах: <code>$$…$$</code>. То же самое можно записать скобками <code>\\(…\\)</code> и <code>\\[…\\]</code>.",
       en: "An inline formula goes between dollar signs: <code>$x^2$</code>. A formula on its own centred line goes between double dollars: <code>$$…$$</code>. The same works with <code>\\(…\\)</code> and <code>\\[…\\]</code>.",
@@ -196,8 +229,12 @@
       en: "The block needs no attributes: the expressions are all it takes. In the preview the graph is live and can be dragged with the mouse. In the exported page Desmos is loaded by itself as soon as the document contains at least one such block.",
     },
     "manual.desmosKeys": {
-      ru: "График доступен и с клавиатуры. Чтобы войти в калькулятор Desmos, поставь курсор на текст перед графиком и нажми <strong>Tab</strong>. Когда Tab приведёт в список выражений, нажми <strong>Alt+T</strong> — откроется плоскость координат, доступная программе экранного доступа. На ней стрелки влево и вправо перемещают по оси X, а высота тона сообщает значение Y. Клавиша <strong>H</strong> проводит по всему графику слева направо звуком.",
-      en: "The graph is reachable from the keyboard as well. To enter the Desmos calculator, put the cursor on the text before the graph and press <strong>Tab</strong>. When Tab brings you into the list of expressions, press <strong>Alt+T</strong> — a coordinate plane opens, accessible to a screen reader. On it the left and right arrows move along the X axis, and the pitch of the tone reports the value of Y. The <strong>H</strong> key sweeps the whole graph from left to right in sound.",
+      ru: "График открывается с клавиатуры, но вход в него не совсем обычный. Читайте страницу стрелкой вниз, пока не дойдёте до надписи <strong>Desmos Graphing Calculator</strong> — это и есть вход в калькулятор. На этой надписи нажмите <strong>пробел</strong>, и вы окажетесь внутри. Дальше нажимайте <strong>Tab</strong>, пока не попадёте в список выражений: в нём перечислены строки графика. Из списка нажмите <strong>Alt+T</strong> — откроется плоскость координат, доступная программе экранного доступа. На ней стрелки влево и вправо ведут по оси X, высота тона сообщает значение Y, а клавиша <strong>H</strong> проводит по всему графику слева направо звуком.",
+      en: "The graph is reachable from the keyboard, but the way in is unusual. Read the page with the down arrow until you reach the words <strong>Desmos Graphing Calculator</strong> — that is the entrance to the calculator. Press <strong>space</strong> on those words and you are inside. Then press <strong>Tab</strong> until you reach the list of expressions: it lists the lines of the graph. From the list press <strong>Alt+T</strong> — a coordinate plane opens, accessible to a screen reader. On it the left and right arrows move along the X axis, the pitch of the tone reports the value of Y, and the <strong>H</strong> key sweeps the whole graph from left to right in sound.",
+    },
+    "manual.desmosBack": {
+      ru: "Вернуться в руководство можно двумя способами. <strong>Shift+Tab</strong> ведёт назад по элементам калькулятора, пока вы не выйдете из его панели. Быстрее — <strong>NVDA+Ctrl+Space</strong>: эта команда сразу выводит из области калькулятора, и дальше страница снова читается стрелками.",
+      en: "There are two ways back to the manual. <strong>Shift+Tab</strong> walks back through the calculator's elements until you leave its panel. Faster is <strong>NVDA+Ctrl+Space</strong>: that command takes you straight out of the calculator's area, and the page can be read with the arrows again.",
     },
     "manual.desmosRefresh": {
       ru: "Если график не появился или перестал отвечать, нажми <strong>Alt+ё</strong> — полный предпросмотр пересоздаёт графики заново.",
@@ -226,8 +263,32 @@
         "</ul>",
     },
     "manual.chessKeys": {
-      ru: "Доска — обычная таблица с фокусом на клетке, поэтому читается экранным доступом. Стрелки ходят по клеткам и называют их («чёрная пешка b7», пустая — «e5»). Дальше: <strong>Ctrl+←/→</strong> — назад и вперёд по ходу партии, <strong>Space</strong> — продолжить или пауза, <strong>Ctrl+Space</strong> — автопроигрывание с начала, <strong>Ctrl+↑/↓</strong> — быстрее и медленнее, <strong>V</strong> — вариант из комментария, <strong>Esc</strong> — выйти из варианта, <strong>F</strong> — во весь экран, <strong>B</strong> — лучший ход по Stockfish, <strong>A</strong> — разбор всей партии, <strong>H</strong> — помощь по разделам. Удержание <strong>A</strong> две секунды включает шутливые оценки.",
-      en: "The board is an ordinary table with focus on a square, so a screen reader can read it. Arrows move across the squares and name them (“black pawn b7”; an empty square is “e5”). Then: <strong>Ctrl+←/→</strong> — back and forward through the game, <strong>Space</strong> — continue or pause, <strong>Ctrl+Space</strong> — auto-play from the start, <strong>Ctrl+↑/↓</strong> — faster and slower, <strong>V</strong> — a variation from a comment, <strong>Esc</strong> — leave the variation, <strong>F</strong> — fullscreen, <strong>B</strong> — best move by Stockfish, <strong>A</strong> — analyse the whole game, <strong>H</strong> — section-by-section help. Holding <strong>A</strong> for two seconds turns on informal verdicts.",
+      ru: "<p>Доска — не обычная таблица, а отдельный объект со своим набором клавиш. Поэтому стрелки начинают работать не сразу: сначала нужно включить режим навигации программы экранного доступа — <strong>NVDA+Space</strong> в NVDA, режим форм в JAWS. После этого стрелки передаются доске и называют клетки: «чёрная пешка b7», пустая клетка — «e5».</p>" +
+        "<ul>" +
+        "<li><strong>Стрелки</strong> — перейти по клеткам и услышать, что на клетке.</li>" +
+        "<li><strong>Ctrl+←</strong> и <strong>Ctrl+→</strong> — назад и вперёд по ходу партии.</li>" +
+        "<li><strong>Space</strong> — продолжить или пауза.</li>" +
+        "<li><strong>Ctrl+Space</strong> — автопроигрывание с начала.</li>" +
+        "<li><strong>Ctrl+↑</strong> и <strong>Ctrl+↓</strong> — быстрее и медленнее.</li>" +
+        "<li><strong>V</strong> — войти в вариант из комментария, <strong>Esc</strong> — выйти из варианта.</li>" +
+        "<li><strong>F</strong> — во весь экран.</li>" +
+        "<li><strong>B</strong> — лучший ход по Stockfish.</li>" +
+        "<li><strong>A</strong> — разбор всей партии; удержание <strong>A</strong> две секунды — шутливые оценки.</li>" +
+        "<li><strong>H</strong> — помощь по разделам.</li>" +
+        "</ul>",
+      en: "<p>The board is not an ordinary table but an object of its own with its own keys. That is why the arrows do not work straight away: first switch your screen reader into navigation mode — <strong>NVDA+Space</strong> in NVDA, forms mode in JAWS. After that the arrows go to the board and name the squares: “black pawn b7”, an empty square is “e5”.</p>" +
+        "<ul>" +
+        "<li><strong>Arrows</strong> — move to a square and hear what stands on it.</li>" +
+        "<li><strong>Ctrl+←</strong> and <strong>Ctrl+→</strong> — back and forward through the game.</li>" +
+        "<li><strong>Space</strong> — continue or pause.</li>" +
+        "<li><strong>Ctrl+Space</strong> — auto-play from the start.</li>" +
+        "<li><strong>Ctrl+↑</strong> and <strong>Ctrl+↓</strong> — faster and slower.</li>" +
+        "<li><strong>V</strong> — enter a variation from a comment, <strong>Esc</strong> — leave the variation.</li>" +
+        "<li><strong>F</strong> — fullscreen.</li>" +
+        "<li><strong>B</strong> — best move by Stockfish.</li>" +
+        "<li><strong>A</strong> — analyse the whole game; holding <strong>A</strong> for two seconds gives informal verdicts.</li>" +
+        "<li><strong>H</strong> — section-by-section help.</li>" +
+        "</ul>",
     },
     "manual.chessExport": {
       ru: "В готовую страницу шахматный компонент подключается сам, как только в документе есть хотя бы один блок <code>```chess</code>. Комментарии из PGN читаются вместе с ходом, а вариант в комментарии записывается в квадратных скобках после знака доллара: <code>$[Bc4 Nc6]</code>.",
@@ -241,14 +302,16 @@
         "<li><strong>Alt+M</strong> — следующая формула будет в строке или отдельным блоком. <strong>Alt+L</strong> — синтаксис: LaTeX или AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — вставить дробь, корень, сумму и другие заготовки. Те же номера написаны на кнопках.</li>" +
         "<li><strong>Ctrl+Space</strong> — подсказки: делимитеры, блоки, ключи настроек, разметка markdown. Внутри формулы подсказки появляются сами.</li>" +
-        "<li><strong>F1</strong> — палитра команд: там собраны все действия редактора, включая предпросмотр, экспорт и смену языка. Если браузер перехватывает F1 (некоторые сборки открывают по ней свою справку) — есть Ctrl+Alt+P, его не занимает никто. А Ctrl+Shift+P лучше не использовать: в Firefox это приватное окно.</li>" +
+        "<li><strong>F1</strong> — справка. Раньше по ней открывалась палитра команд; теперь палитра живёт на <strong>Ctrl+Alt+P</strong>, потому что F1 привычнее видеть справкой.</li>" +
+        "<li><strong>Ctrl+S</strong> — сохранить готовый HTML, <strong>Ctrl+Shift+S</strong> — скачать .md, <strong>Ctrl+O</strong> — открыть .md с диска.</li>" +
         "</ul>",
       en: "<ul>" +
         "<li><strong>Alt+`</strong> — a switch between the editor and the preview. From the editor it opens the preview, rebuilds the graphs and moves the focus to the cursor's place; from the preview it returns to the editor on the same line. <strong>Ctrl+Shift+Enter</strong> — hide the preview.</li>" +
         "<li><strong>Alt+M</strong> — the next formula goes inline or as a separate block. <strong>Alt+L</strong> — the syntax: LaTeX or AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — insert a fraction, a root, a sum and other templates. The same numbers are printed on the buttons.</li>" +
         "<li><strong>Ctrl+Space</strong> — suggestions: delimiters, blocks, settings keys, markdown markup. Inside a formula they appear by themselves.</li>" +
-        "<li><strong>F1</strong> — the command palette: every editor action lives there, including preview, export and language switching. If your browser takes F1 for its own help, use Ctrl+Alt+P — no browser claims it. And do not get used to Ctrl+Shift+P: in Firefox it opens a private window.</li>" +
+        "<li><strong>F1</strong> — help. It used to open the command palette; the palette now lives on <strong>Ctrl+Alt+P</strong>, because F1 is more usually expected to bring up help.</li>" +
+        "<li><strong>Ctrl+S</strong> — save the ready HTML, <strong>Ctrl+Shift+S</strong> — download the .md, <strong>Ctrl+O</strong> — open a .md from disk.</li>" +
         "</ul>",
     },
     "manual.keysButtons": {
@@ -258,21 +321,21 @@
 
     // --- Frontmatter --------------------------------------------------------
     "manual.fmIntro": {
-      ru: "Настройки документа пишутся в самом начале файла, между двумя строками с тремя дефисами. Так задаётся заголовок страницы, язык и то, какие модули подключать в готовый HTML.",
-      en: "Document settings go at the very top of the file, between two lines of three dashes. This is where the page title, the language and the modules to load into the exported HTML are set.",
+      ru: "Настройки документа пишутся в самом начале файла, между двумя строками с тремя дефисами. Это <strong>продвинутая настройка</strong>: обычному документу она не нужна. Заголовок страницы берётся из первого заголовка первого уровня, а язык документа определяется сам — по кириллице как русский, иначе по языку браузера. Frontmatter нужен, когда хочется задать это вручную или подключить к странице что-то своё.",
+      en: "Document settings go at the very top of the file, between two lines of three dashes. This is an <strong>advanced setting</strong>: an ordinary document does not need it. The page title is taken from the first first-level heading, and the document language is detected by itself — Cyrillic means Russian, otherwise the browser language. Frontmatter is for setting these by hand or attaching something of your own to the page.",
     },
     "manual.fmList": {
       ru: "<ul>" +
-        "<li><code>title</code> — заголовок документа, <code>author</code> и <code>description</code> — автор и описание.</li>" +
-        "<li><code>lang</code> — язык документа: ru, en, de, tr.</li>" +
+        "<li><code>title</code> — заголовок документа. Без него берётся первый заголовок первого уровня; <code>author</code> и <code>description</code> — автор и описание.</li>" +
+        "<li><code>lang</code> — язык документа: ru, en, de, tr. Определяется сам по тексту и браузеру; здесь его можно задать вручную.</li>" +
         "<li><code>mathjax</code> — включён по умолчанию; <code>mathjax: no</code> оставит формулы как есть, без вёрстки.</li>" +
         "<li><code>chessjax: no</code> и <code>desmos: no</code> — не подключать шахматные доски и графики к сохранённой странице. По умолчанию подключать их не нужно: модуль включается сам, если в документе есть его блок.</li>" +
         "<li><code>css: адрес</code> — подключить свой файл стилей к готовой странице.</li>" +
         "<li><code>chess:</code> с отступом — общие настройки всех досок: <code>lang</code>, <code>tone</code>, <code>sound</code>, <code>controls</code>. У <code>desmos:</code> и <code>mathjax:</code> вложенно пишутся их собственные опции.</li>" +
         "</ul>",
       en: "<ul>" +
-        "<li><code>title</code> — the document title; <code>author</code> and <code>description</code> — author and description.</li>" +
-        "<li><code>lang</code> — the document language: ru, en, de, tr.</li>" +
+        "<li><code>title</code> — the document title. Without it the first first-level heading is used; <code>author</code> and <code>description</code> — author and description.</li>" +
+        "<li><code>lang</code> — the document language: ru, en, de, tr. It is detected from the text and the browser; here you can set it by hand.</li>" +
         "<li><code>mathjax</code> — on by default; <code>mathjax: no</code> leaves formulas as they are, untypeset.</li>" +
         "<li><code>chessjax: no</code> and <code>desmos: no</code> — do not load chessboards and graphs into the exported page. Normally you do not need to switch them on: a module loads by itself when the document contains its block.</li>" +
         "<li><code>css: address</code> — attach your own stylesheet to the exported page.</li>" +
@@ -280,8 +343,8 @@
         "</ul>",
     },
     "manual.fmHow": {
-      ru: "Быстрее всего не печатать блок руками, а вставить его командой из палитры (<strong>F1</strong>, «Вставить frontmatter») — заготовка появится сама и курсор встанет на нужное место. Если начать документ с трёх дефисов, блок развернётся и закроется автоматически.",
-      en: "The quickest way is not to type the block by hand but to insert it from the palette (<strong>F1</strong>, “Insert frontmatter”) — the template appears with the cursor in the right place. If you start a document with three dashes, the block unfolds and closes by itself.",
+      ru: "Быстрее всего не печатать блок руками, а вставить его командой из палитры (<strong>Ctrl+Alt+P</strong>, «Вставить frontmatter») — заготовка появится сама и курсор встанет на нужное место. Если начать документ с трёх дефисов, блок развернётся и закроется автоматически.",
+      en: "The quickest way is not to type the block by hand but to insert it from the palette (<strong>Ctrl+Alt+P</strong>, “Insert frontmatter”) — the template appears with the cursor in the right place. If you start a document with three dashes, the block unfolds and closes by itself.",
     },
 
     // --- Файлы --------------------------------------------------------------
@@ -352,13 +415,13 @@
         "назад по этим снимкам, <strong>Ctrl+Alt+Y</strong> — шаг вперёд. В отличие " +
         "от обычного Ctrl+Z, который действует только внутри текущего сеанса, снимки " +
         "переживают перезагрузку страницы. Переименовать документ, удалить его или " +
-        "стереть всё хранилище можно из палитры команд (F1).",
+        "стереть всё хранилище можно из палитры команд (Ctrl+Alt+P).",
       en: "The edit history is kept as snapshots: roughly one per two minutes of " +
         "work, at most thirty per document. <strong>Ctrl+Alt+Z</strong> steps back " +
         "through them, <strong>Ctrl+Alt+Y</strong> steps forward. Unlike plain Ctrl+Z, " +
         "which only works inside the current session, these snapshots survive a page " +
         "reload. You can rename a document, delete it, or wipe the whole store from the " +
-        "command palette (F1).",
+        "command palette (Ctrl+Alt+P).",
     },
   });
 })();
