@@ -2210,6 +2210,10 @@ require(["vs/editor/editor.main"], function () {
       return;
     }
     if (e.target.closest("a")) return;
+    // График Desmos — чужое интерактивное содержимое. Щелчок по кнопке входа или
+    // по самому графику не должен уводить в редактор: иначе Monaco тут же
+    // отбирает фокус, который кнопка только что отдала калькулятору.
+    if (e.target.closest(".desmos-enter") || e.target.closest(".desmos")) return;
     const block = e.target.closest(".preview-block");
     if (!block) return;
     const line = parseInt(block.dataset.line, 10);
