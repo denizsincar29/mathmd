@@ -2833,11 +2833,39 @@ require(["vs/editor/editor.main"], function () {
   });
 
   // Список документов: выбор открывает сохранённый, последний пункт — новый.
+  // Стрелка только ВЫБИРАЕТ пункт, переключает документ Enter/Пробел или клик —
+  // та же грабля, что была у списка примеров: нативный select шлёт change на
+  // первом нажатии стрелки, и документ менялся на ходу вместе с пересборкой
+  // предпросмотра.
   if (docSelectEl) {
-    docSelectEl.addEventListener("change", () => {
-      const id = docSelectEl.value;
+    let docPending = ""; // выбранный, но ещё не открытый документ
+    let docByPointer = false; // выбор сделан указателем — переключаем сразу
+    function commitDoc(id) {
+      docPending = "";
+      docByPointer = false;
       if (id === "__new") newDoc();
       else if (id) openDocById(id);
+    }
+    docSelectEl.addEventListener("pointerdown", () => {
+      docByPointer = true;
+    });
+    docSelectEl.addEventListener("change", () => {
+      if (docByPointer) commitDoc(docSelectEl.value);
+      else docPending = docSelectEl.value;
+    });
+    docSelectEl.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const id = docPending || docSelectEl.value;
+      if (!id) return;
+      event.preventDefault();
+      commitDoc(id);
+    });
+    // Уход с поля отменяет неоткрытый выбор: список снова показывает текущий
+    // документ, а не тот, до которого дошли стрелкой.
+    docSelectEl.addEventListener("blur", () => {
+      docPending = "";
+      docByPointer = false;
+      if (store) docSelectEl.value = store.currentId() || "";
     });
   }
   // Имя документа правится рядом со списком, а не только из палитры команд:
