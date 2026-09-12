@@ -233,9 +233,14 @@
 
     // Подпись — обычным текстом: скринридер прочитает её перед содержимым,
     // а зрячий увидит, что это за блок. Скрытых описаний не заводим.
+    // У графиков и досок к подписи добавляется выход: из интерактива Escape
+    // возвращает к руководству, и знать об этом нужно до входа в него.
     var label = document.createElement("p");
     label.className = "preview-label";
     label.textContent = I18N.t("manual.previewLabel");
+    if (kind === "desmos" || kind === "chess") {
+      label.textContent += " " + I18N.t("manual.previewEscape");
+    }
 
     var preview = document.createElement("div");
     preview.className = "example-preview";

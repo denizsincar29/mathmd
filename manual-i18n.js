@@ -27,6 +27,18 @@
       ru: "Вернуться к редактору",
       en: "Back to the editor",
     },
+    // Подсказка сверху страницы: Escape закрывает руководство и возвращает в
+    // редактор (из редактора руководство открывают новой вкладкой — её и закрываем).
+    "manual.escapeHint": {
+      ru: "<strong>Escape</strong> — вернуться в редактор.",
+      en: "<strong>Escape</strong> — back to the editor.",
+    },
+    // Подсказка над живым примером: из графика или доски Escape возвращает
+    // к тексту руководства, на кнопку входа в интерактив.
+    "manual.previewEscape": {
+      ru: "Нажмите Escape, чтобы вернуться к руководству.",
+      en: "Press Escape to return to the manual.",
+    },
     "manual.tocHeading": {
       ru: "Содержание",
       en: "Contents",
