@@ -6,7 +6,7 @@
 // Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
 // Импорт с CDN (jsdelivr, GH-тег v0.6.1) по side-effect: регистрирует
 // кастомный элемент и document-level делегат для кнопок <button chess="id" move="N">.
-import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.4/chessjax.js";
+import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.5/chessjax.js";
 
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
@@ -1220,7 +1220,7 @@ window.MathJax = ${JSON.stringify(mjConfig)};
 
   let chessBlock = "";
   if (mods.chessjax) {
-    chessBlock = `<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.4/chessjax.js"></script>
+    chessBlock = `<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.5/chessjax.js"></script>
 <script>
 // Кнопки-ходы <button chess="id" move="N"> в тексте. Свой делегат chessjax
 // навешивает при загрузке модуля, но при показе готового HTML через
@@ -2776,11 +2776,42 @@ require(["vs/editor/editor.main"], function () {
   document.getElementById("btn-export").addEventListener("click", exportHtml);
   document.getElementById("btn-save").addEventListener("click", () => saveMdToDisk());
   document.getElementById("btn-open").addEventListener("click", openFromDisk);
+  // Список примеров: стрелка только ВЫБИРАЕТ пункт, открывает его Enter/Пробел
+  // или клик. Нативный <select> шлёт change уже на первом нажатии стрелки — из-за
+  // этого пример открывался, едва до него дойдёшь стрелкой, и на каждом шаге
+  // предпросмотр пересобирался заново. Поэтому change больше ничего не открывает:
+  // он лишь запоминает выбор, а действие делает Enter/Пробел (клавиатура) либо
+  // указатель (мышь, палец).
   const exampleSelect = document.getElementById("example-select");
-  exampleSelect.addEventListener("change", () => {
-    const name = exampleSelect.value;
+  let examplePending = ""; // выбранный, но ещё не открытый пример
+  let exampleByPointer = false; // выбор сделан указателем — открываем сразу
+  function commitExample(name) {
+    examplePending = "";
+    exampleByPointer = false;
     exampleSelect.value = "";
     if (name) openExample(name);
+  }
+  exampleSelect.addEventListener("pointerdown", () => {
+    exampleByPointer = true;
+  });
+  exampleSelect.addEventListener("change", () => {
+    if (exampleByPointer) commitExample(exampleSelect.value);
+    else examplePending = exampleSelect.value;
+  });
+  exampleSelect.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    // Пробел на закрытом списке открывает выпадающий список — здесь он должен
+    // открывать пример, поэтому гасим нативное поведение.
+    const name = examplePending || exampleSelect.value;
+    if (!name) return;
+    event.preventDefault();
+    commitExample(name);
+  });
+  // Уход с поля отменяет неоткрытый выбор: список возвращается к «—».
+  exampleSelect.addEventListener("blur", () => {
+    examplePending = "";
+    exampleByPointer = false;
+    exampleSelect.value = "";
   });
   // Смена языка интерфейса: пересобрать тулбар и aria-метку редактора на новом
   // языке. Тексты предпросмотра и демо остаются на языке документа — это md.
