@@ -7,9 +7,9 @@
 <title>Руководство — mathmd</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=55">
-<script src="i18n.js?v=55"></script>
-<script src="manual-i18n.js?v=55"></script>
+<link rel="stylesheet" href="style.css?v=56">
+<script src="i18n.js?v=56"></script>
+<script src="manual-i18n.js?v=56"></script>
 
 <script>
   // Человек уже нашёл руководство — подсказка «первый раз здесь? начните с
@@ -373,14 +373,17 @@ chess:
 
   // Escape выходит из руководства — на шаг назад. Внутри графика или доски
   // шаг назад — это возврат к руководству: фокус встаёт на кнопку входа в
-  // график (или на анонс доски), и текст читается дальше стрелками. Проверяем
-  // это по моменту нажатия: дальше браузер (и сам Desmos) может увести фокус
-  // своим действием по умолчанию, и тогда решение «закрывать страницу или нет»
-  // принимается уже неверно.
+  // график (или на анонс доски), и текст читается дальше стрелками.
+  // Смотрим на event.target, а не только на activeElement: Desmos на Escape
+  // успевает убрать фокус из своего поля сам (его обработчик срабатывает
+  // раньше — он на внутреннем элементе), и по activeElement нажатие выглядело
+  // бы как «Escape в тексте» — руководство закрывалось бы из графика.
   document.addEventListener("keydown", function (event) {
     if (event.key !== "Escape" || event.defaultPrevented) return;
-    var active = document.activeElement;
-    var inside = active && active.closest ? active.closest(".desmos, chessjax-board") : null;
+    function insideOf(node) {
+      return node && node.closest ? node.closest(".desmos, chessjax-board") : null;
+    }
+    var inside = insideOf(event.target) || insideOf(document.activeElement);
     if (inside) {
       var example = inside.closest(".example");
       var entry = example && example.querySelector(".desmos-enter, .chessjax-board-intro");
@@ -401,6 +404,6 @@ chess:
     window.location.href = back;
   });
 </script>
-<script src="manual-examples.js?v=55"></script>
+<script src="manual-examples.js?v=56"></script>
 </body>
 </html>
