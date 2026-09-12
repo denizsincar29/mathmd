@@ -307,6 +307,7 @@
         "<li><strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд (она же <strong>Ctrl+Alt+P</strong>). F1 привычнее видеть справкой, поэтому палитра переехала.</li>" +
         "<li><strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить документ, <strong>F9</strong> — новый документ. То же самое делают кнопки рядом со списком документов.</li>" +
         "<li><strong>Ctrl+S</strong> — сохранить готовый HTML, <strong>Ctrl+Shift+S</strong> — скачать .md, <strong>Ctrl+O</strong> — открыть .md с диска.</li>" +
+        "<li><strong>F8</strong> и <strong>Shift+F8</strong> — следующая и предыдущая ошибка в документе: курсор переходит на строку, а редактор сообщает, что не так. Alt+ё с ошибками показывает их списком вместо предпросмотра. Когда курсор сам встаёт на строку с ошибкой, звучит короткий сигнал.</li>" +
         "</ul>",
       en: "<ul>" +
         "<li><strong>Alt+`</strong> — a switch between the editor and the preview. From the editor it opens the preview, rebuilds the graphs and moves the focus to the cursor's place; from the preview it returns to the editor on the same line. <strong>Ctrl+Shift+Enter</strong> — hide the preview.</li>" +
@@ -316,6 +317,7 @@
         "<li><strong>F1</strong> — help, <strong>Shift+F1</strong> — the command palette (also <strong>Ctrl+Alt+P</strong>). F1 is more usually expected to bring up help, so the palette moved.</li>" +
         "<li><strong>F2</strong> — rename the document, <strong>Shift+F2</strong> — delete it, <strong>F9</strong> — a new document. The buttons next to the document list do the same.</li>" +
         "<li><strong>Ctrl+S</strong> — save the ready HTML, <strong>Ctrl+Shift+S</strong> — download the .md, <strong>Ctrl+O</strong> — open a .md from disk.</li>" +
+        "<li><strong>F8</strong> and <strong>Shift+F8</strong> — the next and the previous error in the document: the cursor moves to the line and the editor says what is wrong. Alt+` with errors shows them as a list instead of the preview. When the cursor lands on a line with an error, a short signal sounds.</li>" +
         "</ul>",
     },
     "manual.keysButtons": {

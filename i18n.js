@@ -72,10 +72,10 @@
       tr: "Önizleme",
     },
     "ui.previewHint": {
-      ru: "Текст обновляется при наборе. Alt+ё — переключатель: открывает предпросмотр на строке курсора, а из предпросмотра возвращает в редактор на ту же строку. Ctrl+Shift+Enter — скрыть. Шахматная доска — fenced-блок <code>```chess</code> с атрибутами (например <code>```chess fen=\"…\"</code>).",
-      en: "Text updates as you type. Alt+` is a switch: it opens the preview at the cursor line and returns from the preview to the editor on the same line. Ctrl+Shift+Enter — hide. A chessboard is a fenced block <code>```chess</code> with attributes (e.g. <code>```chess fen=\"…\"</code>).",
-      de: "Text aktualisiert sich beim Tippen. Alt+` ist ein Umschalter: öffnet die Vorschau an der Cursorzeile und führt aus der Vorschau zurück in den Editor zur selben Zeile. Ctrl+Shift+Enter — ausblenden. Ein Schachbrett ist ein Fenced-Block <code>```chess</code> mit Attributen (z. B. <code>```chess fen=\"…\"</code>).",
-      tr: "Metin yazdıkça güncellenir. Alt+` bir açma-kapama tuşudur: imleç satırında önizlemeyi açar, önizlemeden aynı satıra düzenleyiciye döndürür. Ctrl+Shift+Enter — gizle. Satranç tahtası, öznitelikli <code>```chess</code> fenced bloğudur (ör. <code>```chess fen=\"…\"</code>).",
+      ru: "Текст обновляется при наборе. Alt+ё — переключатель: открывает предпросмотр на строке курсора, а из предпросмотра возвращает в редактор на ту же строку. Есть ошибка — вместо предпросмотра покажется список ошибок, по ним ходят <strong>F8</strong> и <strong>Shift+F8</strong>. Ctrl+Shift+Enter — скрыть. Шахматная доска — fenced-блок <code>```chess</code> с атрибутами (например <code>```chess fen=\"…\"</code>).",
+      en: "Text updates as you type. Alt+` is a switch: it opens the preview at the cursor line and returns from the preview to the editor on the same line. If there is an error, the error list appears instead of the preview; <strong>F8</strong> and <strong>Shift+F8</strong> walk the errors. Ctrl+Shift+Enter — hide. A chessboard is a fenced block <code>```chess</code> with attributes (e.g. <code>```chess fen=\"…\"</code>).",
+      de: "Text aktualisiert sich beim Tippen. Alt+` ist ein Umschalter: öffnet die Vorschau an der Cursorzeile und führt aus der Vorschau zurück in den Editor zur selben Zeile. Bei einem Fehler erscheint statt der Vorschau die Fehlerliste; <strong>F8</strong> und <strong>Shift+F8</strong> gehen durch die Fehler. Ctrl+Shift+Enter — ausblenden. Ein Schachbrett ist ein Fenced-Block <code>```chess</code> mit Attributen (z. B. <code>```chess fen=\"…\"</code>).",
+      tr: "Metin yazdıkça güncellenir. Alt+` bir açma-kapama tuşudur: imleç satırında önizlemeyi açar, önizlemeden aynı satıra düzenleyiciye döndürür. Hata varsa önizleme yerine hata listesi görünür; <strong>F8</strong> ve <strong>Shift+F8</strong> hatalar arasında gezer. Ctrl+Shift+Enter — gizle. Satranç tahtası, öznitelikli <code>```chess</code> fenced bloğudur (ör. <code>```chess fen=\"…\"</code>).",
     },
     "ui.fileHeading": {
       ru: "Файл и вывод",
@@ -215,6 +215,130 @@
       tr: "Kopyalanamadı. Kodu seçip elle kopyalayın.",
     },
 
+    // --- Линтер -------------------------------------------------------------
+    // Линтер отдаёт ключ и переменные, текст собирается здесь — так одна и та
+    // же формулировка идёт и в список на экране, и в речь скринридера.
+    "ui.lintHeading": {
+      ru: "Ошибки в документе",
+      en: "Errors in the document",
+      de: "Fehler im Dokument",
+      tr: "Belgedeki hatalar",
+    },
+    "msg.lintItem": {
+      ru: "{i} из {n}: строка {line}. {text}",
+      en: "{i} of {n}: line {line}. {text}",
+      de: "{i} von {n}: Zeile {line}. {text}",
+      tr: "{i}/{n}: satır {line}. {text}",
+    },
+    "msg.lintAt": {
+      ru: "Ошибка {i} из {n}. Строка {line}. {text}",
+      en: "Error {i} of {n}. Line {line}. {text}",
+      de: "Fehler {i} von {n}. Zeile {line}. {text}",
+      tr: "Hata {i}/{n}. Satır {line}. {text}",
+    },
+    "msg.lintNone": {
+      ru: "Ошибок нет.",
+      en: "No errors.",
+      de: "Keine Fehler.",
+      tr: "Hata yok.",
+    },
+    "lint.fmOpen": {
+      ru: "Не закрыт блок настроек в начале файла: нужна вторая строка с тремя дефисами.",
+      en: "The settings block at the top is not closed: a second line of three dashes is missing.",
+      de: "Der Einstellungsblock am Dateianfang ist nicht geschlossen: die zweite Zeile mit drei Strichen fehlt.",
+      tr: "Dosyanın başındaki ayar bloğu kapatılmamış: üç çizgili ikinci satır eksik.",
+    },
+    "lint.fenceOpen": {
+      ru: "Не закрыт блок кода: нет закрывающих трёх кавычек.",
+      en: "Unclosed code block: the closing three backticks are missing.",
+      de: "Nicht geschlossener Codeblock: die drei schließenden Backticks fehlen.",
+      tr: "Kapatılmamış kod bloğu: kapanış üç ters tırnak yok.",
+    },
+    "lint.mathOpen": {
+      ru: "Не закрыта формула: открыт {delim}, а закрывающего нет.",
+      en: "Unclosed formula: {delim} opened, nothing closes it.",
+      de: "Nicht geschlossene Formel: {delim} geöffnet, nichts schließt sie.",
+      tr: "Kapatılmamış formül: {delim} açıldı, kapatan yok.",
+    },
+    "lint.braceOpen": {
+      ru: "В формуле не закрыта фигурная скобка.",
+      en: "A curly brace is left unclosed in the formula.",
+      de: "In der Formel ist eine geschweifte Klammer nicht geschlossen.",
+      tr: "Formülde bir süslü parantez kapatılmamış.",
+    },
+    "lint.braceClose": {
+      ru: "В формуле лишняя закрывающая фигурная скобка.",
+      en: "A stray closing curly brace in the formula.",
+      de: "In der Formel steht eine überzählige schließende geschweifte Klammer.",
+      tr: "Formülde fazladan bir kapanış süslü parantezi var.",
+    },
+    "lint.chessMoves": {
+      ru: "У шахматного блока нет ключа moves: партию задают через pgn или fen.",
+      en: "A chess block has no moves key: the game is set with pgn or fen.",
+      de: "Ein Schachblock hat keinen Schlüssel moves: die Partie wird mit pgn oder fen gesetzt.",
+      tr: "Satranç bloğunda moves anahtarı yok: parti pgn veya fen ile verilir.",
+    },
+    "lint.chessKey": {
+      ru: "Шахматный блок не знает ключа {key}.",
+      en: "The chess block does not know the key {key}.",
+      de: "Der Schachblock kennt den Schlüssel {key} nicht.",
+      tr: "Satranç bloğu {key} anahtarını bilmiyor.",
+    },
+    "lint.chessQuote": {
+      ru: "FEN с пробелами нужно брать в кавычки.",
+      en: "A FEN with spaces must be quoted.",
+      de: "Ein FEN mit Leerzeichen muss in Anführungszeichen stehen.",
+      tr: "Boşluk içeren FEN tırnak içine alınmalı.",
+    },
+    "lint.chessNoPos": {
+      ru: "У шахматного блока нет ни fen, ни pgn — доска останется пустой.",
+      en: "The chess block has neither fen nor pgn — the board will stay empty.",
+      de: "Der Schachblock hat weder fen noch pgn — das Brett bleibt leer.",
+      tr: "Satranç bloğunda ne fen ne pgn var — tahta boş kalır.",
+    },
+    "lint.chessDupId": {
+      ru: "Две доски с одним id: {id}.",
+      en: "Two boards share the id {id}.",
+      de: "Zwei Bretter teilen die id {id}.",
+      tr: "İki tahta aynı id'yi paylaşıyor: {id}.",
+    },
+    "lint.desmosEmpty": {
+      ru: "Пустой блок графика Desmos.",
+      en: "Empty Desmos graph block.",
+      de: "Leerer Desmos-Block.",
+      tr: "Boş Desmos grafik bloğu.",
+    },
+    "lint.btnNoBoard": {
+      ru: "У кнопки-хода нет атрибута chess — нажимать не на что.",
+      en: "A move button has no chess attribute — there is nothing to press.",
+      de: "Ein Zugknopf hat kein chess-Attribut — er drückt auf nichts.",
+      tr: "Bir hamle düğmesinde chess özniteliği yok — basacak bir şey yok.",
+    },
+    "lint.btnBoard": {
+      ru: "Кнопка-хода ведёт на доску {id}, которой в документе нет.",
+      en: "A move button points at board {id}, which is not in the document.",
+      de: "Ein Zugknopf zeigt auf das Brett {id}, das es im Dokument nicht gibt.",
+      tr: "Bir hamle düğmesi belgede olmayan {id} tahtasını gösteriyor.",
+    },
+    "lint.btnNoMove": {
+      ru: "У кнопки-хода нет атрибута move — нажатие ничего не сделает.",
+      en: "A move button has no move attribute — pressing it does nothing.",
+      de: "Ein Zugknopf hat kein move-Attribut — der Druck bewirkt nichts.",
+      tr: "Bir hamle düğmesinde move özniteliği yok — basmak hiçbir şey yapmaz.",
+    },
+    "lint.btnMoveNum": {
+      ru: "Номер хода должен быть числом, а не {move}.",
+      en: "The move number must be a number, not {move}.",
+      de: "Die Zugnummer muss eine Zahl sein, nicht {move}.",
+      tr: "Hamle numarası sayı olmalı, {move} değil.",
+    },
+    "lint.btnRange": {
+      ru: "Ход {move} за пределами партии: последний ход — {max}.",
+      en: "Move {move} is beyond the game: the last move is {max}.",
+      de: "Zug {move} liegt außerhalb der Partie: der letzte Zug ist {max}.",
+      tr: "Hamle {move} partinin dışında: son hamle {max}.",
+    },
+
     // --- Справка ------------------------------------------------------------
     "help.title": {
       ru: "Справка: как пользоваться редактором",
@@ -301,10 +425,10 @@
       tr: "Önizleme ve tuşlar",
     },
     "help.previewText": {
-      ru: "Alt+ё — переключатель между редактором и предпросмотром: открывает предпросмотр на строке курсора, из предпросмотра возвращает в редактор на ту же строку. Ctrl+Shift+Enter — скрыть предпросмотр. Текст предпросмотра обновляется при наборе. <strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд, <strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить, <strong>F9</strong> — новый документ.",
-      en: "Alt+` switches between the editor and the preview: it opens the preview at the cursor line and returns from the preview to the editor on the same line. Ctrl+Shift+Enter — hide the preview. Preview text updates as you type. <strong>F1</strong> — help, <strong>Shift+F1</strong> — command palette, <strong>F2</strong> — rename document, <strong>Shift+F2</strong> — delete, <strong>F9</strong> — new document.",
-      de: "Alt+` schaltet zwischen Editor und Vorschau um: öffnet die Vorschau an der Cursorzeile und führt aus der Vorschau zurück in den Editor zur selben Zeile. Ctrl+Shift+Enter — Vorschau ausblenden. Der Vorschautext aktualisiert sich beim Tippen. <strong>F1</strong> — Hilfe, <strong>Shift+F1</strong> — Befehlspalette, <strong>F2</strong> — Dokument umbenennen, <strong>Shift+F2</strong> — löschen, <strong>F9</strong> — neues Dokument.",
-      tr: "Alt+` düzenleyici ile önizleme arasında geçiş yapar: imleç satırında önizlemeyi açar, önizlemeden aynı satıra düzenleyiciye döndürür. Ctrl+Shift+Enter — önizlemeyi gizle. Önizleme metni yazdıkça güncellenir. <strong>F1</strong> — yardım, <strong>Shift+F1</strong> — komut paleti, <strong>F2</strong> — belgeyi yeniden adlandır, <strong>Shift+F2</strong> — sil, <strong>F9</strong> — yeni belge.",
+      ru: "Alt+ё — переключатель между редактором и предпросмотром: открывает предпросмотр на строке курсора, из предпросмотра возвращает в редактор на ту же строку. Если в документе есть ошибка, вместо предпросмотра показывается список ошибок, курсор встаёт на первую, а сигнал сообщает о ней; <strong>F8</strong> и <strong>Shift+F8</strong> ведут по ошибкам, а курсор на строке с ошибкой подаёт звук. Ctrl+Shift+Enter — скрыть предпросмотр. Текст предпросмотра обновляется при наборе. <strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд, <strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить, <strong>F9</strong> — новый документ.",
+      en: "Alt+` switches between the editor and the preview: it opens the preview at the cursor line and returns from the preview to the editor on the same line. If the document has an error, the error list is shown instead of the preview, the cursor moves to the first one and a signal plays; <strong>F8</strong> and <strong>Shift+F8</strong> walk the errors, and the cursor beeps when it lands on an error line. Ctrl+Shift+Enter — hide the preview. Preview text updates as you type. <strong>F1</strong> — help, <strong>Shift+F1</strong> — command palette, <strong>F2</strong> — rename document, <strong>Shift+F2</strong> — delete, <strong>F9</strong> — new document.",
+      de: "Alt+` schaltet zwischen Editor und Vorschau um: öffnet die Vorschau an der Cursorzeile und führt aus der Vorschau zurück in den Editor zur selben Zeile. Hat das Dokument einen Fehler, erscheint statt der Vorschau die Fehlerliste, der Cursor springt zum ersten und ein Signal ertönt; <strong>F8</strong> und <strong>Shift+F8</strong> gehen durch die Fehler, und auf einer Fehlerzeile piept der Cursor. Ctrl+Shift+Enter — Vorschau ausblenden. Der Vorschautext aktualisiert sich beim Tippen. <strong>F1</strong> — Hilfe, <strong>Shift+F1</strong> — Befehlspalette, <strong>F2</strong> — Dokument umbenennen, <strong>Shift+F2</strong> — löschen, <strong>F9</strong> — neues Dokument.",
+      tr: "Alt+` düzenleyici ile önizleme arasında geçiş yapar: imleç satırında önizlemeyi açar, önizlemeden aynı satıra düzenleyiciye döndürür. Belgede hata varsa önizleme yerine hata listesi görünür, imleç ilkine gider ve bir sinyal çalar; <strong>F8</strong> ve <strong>Shift+F8</strong> hatalar arasında gezer, hata satırına gelen imleç ses verir. Ctrl+Shift+Enter — önizlemeyi gizle. Önizleme metni yazdıkça güncellenir. <strong>F1</strong> — yardım, <strong>Shift+F1</strong> — komut paleti, <strong>F2</strong> — belgeyi yeniden adlandır, <strong>Shift+F2</strong> — sil, <strong>F9</strong> — yeni belge.",
     },
     "help.fileTitle": {
       ru: "Файл и вывод",

@@ -213,6 +213,36 @@ h2 {
   line-height: 1.3;
 }
 
+/* Панель ошибок линтера: показывается вместо предпросмотра, когда линтер
+   что-то нашёл. Красная рамка — тот же сигнал, что и звук. */
+.lint-panel {
+  border: 1px solid rgba(248, 113, 113, 0.55);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem 0.8rem;
+  background: rgba(248, 113, 113, 0.06);
+}
+
+.lint-panel h3 { margin: 0 0 0.4rem; font-size: 1rem; color: #f87171; }
+
+.lint-list { margin: 0; padding-left: 1.2rem; }
+
+.lint-list li { margin: 0.3rem 0; }
+
+.lint-list li[aria-current="true"] { font-weight: 700; }
+
+/* Пункт списка — кнопка: Enter/пробел на нём возвращает курсор к ошибке. */
+.lint-list button {
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+}
+
+.lint-list button:hover { text-decoration: underline; }
+
 /* Заглушка графика в живом режиме (Desmos не пересоздаётся при наборе). */
 .preview .desmos-placeholder {
   border: 1px dashed var(--border);

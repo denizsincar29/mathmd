@@ -11,6 +11,8 @@ import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.6.3/chessjax.js";
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
 const previewSection = document.getElementById("preview-section");
+const lintPanel = document.getElementById("lint-panel");
+const lintList = document.getElementById("lint-list");
 const fileStatusEl = document.getElementById("file-status");
 const toolbarEl = document.getElementById("toolbar");
 
@@ -434,7 +436,9 @@ async function renderPreview(live) {
 // графики Desmos пересоздаются только по Ctrl+Enter.
 let liveTimer = null;
 function scheduleLivePreview() {
-  if (previewSection.hidden) return;
+  // В режиме ошибок предпросмотр скрыт — живой рендер только жёг бы процессор
+  // впустую.
+  if (previewSection.hidden || !lintPanel.hidden) return;
   clearTimeout(liveTimer);
   liveTimer = setTimeout(() => renderPreview(true), 800);
 }
@@ -475,6 +479,367 @@ function focusPreviewAtLine(line) {
 function showPreviewAndFocus(line) {
   previewSection.hidden = false;
   renderPreview().then(() => focusPreviewAtLine(line));
+}
+
+// --- Линтер документа --------------------------------------------------------
+//
+// Проверяем по тексту то, что иначе молчит: незакрытый блок кода или
+// frontmatter, незакрытые делимитеры математики, непарные фигурные скобки в
+// формулах, ошибки в шахматных блоках и кнопках-ходах, пустой график Desmos.
+// Это не компилятор, а сетка на частые опечатки: пустой предпросмотр без
+// объяснений хуже всего именно для незрячего — он не видит, что доска молча
+// осталась из одной позиции.
+//
+// Найденное кладём маркерами Монако (`setModelMarkers`): редактор сам рисует
+// волнистое подчёркивание и метки на полосе прокрутки и сам заводит переходы
+// F8 / Shift+F8 по маркерам. Отдельного механизма навигации не нужно.
+
+// Атрибуты, которые понимает <chessjax-board>: observedAttributes в chessjax.js
+// (fen, pgn, move, lang, controls) плюс читаемые вручную pgn-src, sound, tone и
+// штатный id. Всё остальное компонент молча игнорирует — в этом и беда: блок с
+// `moves = 1. e4 e5` не жалуется, а показывает одну начальную позицию.
+const CHESS_KEYS = ["id", "fen", "pgn", "pgn-src", "move", "lang", "controls", "sound", "tone"];
+
+function lintText(err) {
+  return I18N.t(err.key, err.vars || {});
+}
+
+function lintSignature(errors) {
+  return errors.map((e) => e.line + ":" + e.key + ":" + JSON.stringify(e.vars || {})).join("|");
+}
+
+// Разбор одного fenced-блока: у шахматного проверяем атрибуты, у графика —
+// что тело не пустое. Содержимое прочих блоков (код) не трогаем.
+function lintFenceBlock(fence, errors, ctx) {
+  if (fence.lang === "chess") {
+    const attrs = new Map();
+    for (const { line, text } of fence.body) {
+      const re = /([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+))/g;
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        const key = m[1];
+        const value = m[2] !== undefined ? m[2] : m[3] !== undefined ? m[3] : m[4];
+        if (!attrs.has(key)) attrs.set(key, { value, line });
+        if (!CHESS_KEYS.includes(key)) {
+          errors.push({ line, key: key === "moves" ? "lint.chessMoves" : "lint.chessKey", vars: { key } });
+        }
+      }
+      // FEN с пробелами обязан быть в кавычках. Без них парсер берёт только
+      // первое поле, а «w KQkq - 0 1» остаётся мусором в теле блока.
+      if (/(?:^|\s)fen\s*=\s*([^\s"']+)\s+(?![A-Za-z0-9_-]+\s*=)/.test(text)) {
+        errors.push({ line, key: "lint.chessQuote" });
+      }
+    }
+    ctx.count += 1;
+    const idAttr = attrs.get("id");
+    const id = idAttr ? idAttr.value : "chessjax-" + ctx.count;
+    if (ctx.boards.has(id)) {
+      errors.push({ line: idAttr ? idAttr.line : fence.line, key: "lint.chessDupId", vars: { id } });
+    } else {
+      ctx.boards.set(id, fence.line);
+    }
+    if (!attrs.has("fen") && !attrs.has("pgn") && !attrs.has("pgn-src")) {
+      errors.push({ line: fence.line, key: "lint.chessNoPos" });
+    }
+  } else if (fence.lang === "desmos") {
+    if (!fence.body.some((l) => l.text.trim())) errors.push({ line: fence.line, key: "lint.desmosEmpty" });
+  }
+}
+
+// Делимитеры математики и скобки в формулах — по «маске» документа, где тело
+// блоков кода заменено пустыми строками (внутри ``` может лежать что угодно,
+// и ругаться на это нечестно). Номера строк в маске те же, что в документе.
+function lintMath(lines, errors) {
+  let open = null; // { delim, line, braces }
+  const closeMath = (frag) => {
+    if (frag.delim === "`") return; // в AsciiMath скобки круглые, фигурных нет
+    if (frag.braces > 0) errors.push({ line: frag.line, key: "lint.braceOpen" });
+    else if (frag.braces < 0) errors.push({ line: frag.line, key: "lint.braceClose" });
+  };
+  for (let n = 0; n < lines.length; n++) {
+    const line = lines[n];
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      const next = line[i + 1];
+      if (c === "\\") {
+        // \( \) \[ \] — тоже делимитеры математики (MathJax их понимает).
+        if (next === "(" || next === "[") {
+          if (!open) { open = { delim: "\\" + next, line: n + 1, braces: 0 }; i += 1; continue; }
+        } else if (next === ")" || next === "]") {
+          const want = "\\" + (next === ")" ? "(" : "[");
+          if (open && open.delim === want) { closeMath(open); open = null; i += 1; continue; }
+        }
+        i += 1; // экранированный символ: \{ \} \$ \` в счёт не идут
+        continue;
+      }
+      if (!open) {
+        if (c === "$") {
+          const two = next === "$";
+          open = { delim: two ? "$$" : "$", line: n + 1, braces: 0 };
+          if (two) i += 1;
+        } else if (c === "`") {
+          open = { delim: "`", line: n + 1, braces: 0 };
+        }
+        continue;
+      }
+      if (open.delim === "$" && c === "$") { closeMath(open); open = null; continue; }
+      if (open.delim === "$$" && c === "$" && next === "$") { closeMath(open); open = null; i += 1; continue; }
+      if (open.delim === "`" && c === "`") { open = null; continue; }
+      if (open.delim !== "`") {
+        if (c === "{") open.braces += 1;
+        else if (c === "}") open.braces -= 1;
+      }
+    }
+  }
+  if (open) errors.push({ line: open.line, key: "lint.mathOpen", vars: { delim: open.delim } });
+}
+
+// Кнопки-ходы <button chess="id" move="N">: id должен указывать на доску из
+// документа, move — быть целым числом в пределах партии. Вне партии проверяем
+// только статику: длину партии знает сама доска, и то лишь когда предпросмотр
+// уже отрисован (тогда её позиции лежат в boardPositions).
+function lintStoryButtons(lines, errors, ctx, boardPositions) {
+  for (let n = 0; n < lines.length; n++) {
+    const line = lines[n];
+    if (line.indexOf("<button") === -1) continue;
+    const tags = /<button\b([^>]*)>/gi;
+    let tag;
+    while ((tag = tags.exec(line)) !== null) {
+      const attrs = {};
+      const re = /([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
+      let a;
+      while ((a = re.exec(tag[1])) !== null) {
+        attrs[a[1].toLowerCase()] = a[2] !== undefined ? a[2] : a[3] !== undefined ? a[3] : a[4];
+      }
+      if (!("chess" in attrs) && !("move" in attrs)) continue; // обычная кнопка
+      const id = attrs.chess;
+      if (id === undefined) { errors.push({ line: n + 1, key: "lint.btnNoBoard" }); continue; }
+      if (!ctx.boards.has(id)) { errors.push({ line: n + 1, key: "lint.btnBoard", vars: { id } }); continue; }
+      if (!("move" in attrs)) { errors.push({ line: n + 1, key: "lint.btnNoMove", vars: { id } }); continue; }
+      if (!/^\d+$/.test(attrs.move)) {
+        errors.push({ line: n + 1, key: "lint.btnMoveNum", vars: { move: attrs.move } });
+        continue;
+      }
+      const total = boardPositions[id];
+      if (total && Number(attrs.move) > total - 1) {
+        errors.push({ line: n + 1, key: "lint.btnRange", vars: { move: attrs.move, max: total - 1 } });
+      }
+    }
+  }
+}
+
+// Позиции уже отрисованных досок: id → сколько всего позиций в партии. Нужны
+// для проверки «ход вне партии» — по тексту её не сделать, PGN грузится сетью.
+function boardPositionsFromDom() {
+  const out = {};
+  if (typeof document === "undefined" || !previewEl) return out;
+  for (const b of previewEl.querySelectorAll("chessjax-board")) {
+    if (b.id && Array.isArray(b._positions)) out[b.id] = b._positions.length;
+  }
+  return out;
+}
+
+function lintDocument(md, boardPositions) {
+  const errors = [];
+  const raw = String(md).split("\n");
+  const masked = [];
+  const ctx = { boards: new Map(), count: 0 };
+
+  // Frontmatter: открыт и не закрыт. Тогда parseFrontmatter отдаёт весь текст
+  // как тело — метаданные молча становятся обычным абзацем с горизонтальной
+  // линией, и в экспорт не попадут ни title, ни отключённые модули.
+  let bodyStart = 0;
+  if (raw.length && /^\s*---\s*$/.test(raw[0])) {
+    let close = -1;
+    for (let i = 1; i < raw.length; i++) {
+      if (/^\s*---\s*$/.test(raw[i])) { close = i; break; }
+    }
+    if (close === -1) errors.push({ line: 1, key: "lint.fmOpen" });
+    else bodyStart = close + 1;
+  }
+
+  let fence = null;
+  for (let i = 0; i < raw.length; i++) {
+    const line = raw[i];
+    if (i < bodyStart) { masked.push(""); continue; }
+    const isFence = /^\s*```/.test(line);
+    if (!fence && isFence) {
+      fence = { line: i + 1, lang: line.replace(/^\s*```/, "").trim().toLowerCase(), body: [] };
+      masked.push("");
+      continue;
+    }
+    if (fence) {
+      masked.push("");
+      if (isFence) {
+        lintFenceBlock(fence, errors, ctx);
+        fence = null;
+      } else {
+        fence.body.push({ line: i + 1, text: line });
+      }
+      continue;
+    }
+    masked.push(line);
+  }
+  if (fence) errors.push({ line: fence.line, key: "lint.fenceOpen" });
+
+  lintMath(masked, errors);
+  lintStoryButtons(masked, errors, ctx, boardPositions || {});
+  errors.sort((a, b) => a.line - b.line);
+  return errors;
+}
+
+// --- Ошибки в интерфейсе -----------------------------------------------------
+
+let lintErrors = [];      // последний прогон — по нему курсор «бубупает» на строке
+let lintState = null;     // { sig, index } — обход ошибок по Alt+ё
+let lastBeepLine = 0;     // строка, на которой звук уже сыграл
+
+// Звук ошибки — тот самый сигнал из VS Code (репозиторий microsoft/vscode,
+// MIT; файл лежит рядом, в error.mp3).
+let lintAudio = null;
+function playErrorSound() {
+  try {
+    if (!lintAudio) {
+      lintAudio = new Audio(new URL("error.mp3", import.meta.url).href);
+      lintAudio.volume = 0.7;
+    }
+    lintAudio.currentTime = 0;
+    const p = lintAudio.play();
+    if (p && p.catch) p.catch(() => {});
+  } catch (err) {
+    // Звук — украшение: без него линтер работает.
+  }
+}
+
+// Маркеры Монако: F8 и Shift+F8 по ним ходят штатными действиями редактора.
+function applyLintMarkers(errors) {
+  lintErrors = errors;
+  if (!editor || typeof monaco === "undefined") return;
+  const model = editor.getModel();
+  if (!model) return;
+  const lines = model.getValue().split("\n");
+  monaco.editor.setModelMarkers(
+    model,
+    "mathmd-lint",
+    errors.map((e) => ({
+      severity: monaco.MarkerSeverity.Error,
+      message: lintText(e),
+      startLineNumber: e.line,
+      startColumn: 1,
+      endLineNumber: e.line,
+      endColumn: (lines[e.line - 1] || "").length + 1,
+    })),
+  );
+}
+
+// Живой прогон по правке: маркеры должны стоять до того, как пользователь
+// вспомнит про Alt+ё, иначе F8 нечего показывать.
+let liveLintTimer = null;
+function scheduleLiveLint() {
+  clearTimeout(liveLintTimer);
+  liveLintTimer = setTimeout(() => {
+    if (!editor) return;
+    applyLintMarkers(lintDocument(editor.getValue(), boardPositionsFromDom()));
+  }, 600);
+}
+
+function runLint() {
+  const errors = lintDocument(editor.getValue(), boardPositionsFromDom());
+  applyLintMarkers(errors);
+  return errors;
+}
+
+function lintItemLabel(err, i, n) {
+  return I18N.t("msg.lintItem", { i: i + 1, n, line: err.line, text: lintText(err) });
+}
+
+function renderLintPanel(errors, index) {
+  lintList.replaceChildren(
+    ...errors.map((err, i) => {
+      const li = document.createElement("li");
+      if (i === index) li.setAttribute("aria-current", "true");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = lintItemLabel(err, i, errors.length);
+      btn.addEventListener("click", () => showLintError(errors, i));
+      li.appendChild(btn);
+      return li;
+    }),
+  );
+}
+
+// Показать ошибку вместо предпросмотра: панель со списком, курсор редактора на
+// строке ошибки, звук и объявление. Список остаётся на экране — он же и
+// «Problems» для зрячего, и точка возврата мышью.
+function showLintError(errors, index) {
+  const err = errors[index];
+  previewSection.hidden = false;
+  previewEl.hidden = true;
+  lintPanel.hidden = false;
+  renderLintPanel(errors, index);
+  lastBeepLine = err.line; // звук играем сами, обработчик курсора молчит
+  editor.setPosition({ lineNumber: err.line, column: 1 });
+  editor.revealLineInCenterIfOutsideViewport(err.line);
+  editor.focus();
+  playErrorSound();
+  speak(I18N.t("msg.lintAt", { i: index + 1, n: errors.length, line: err.line, text: lintText(err) }));
+}
+
+function hideLint() {
+  if (!lintPanel || lintPanel.hidden) return;
+  lintPanel.hidden = true;
+  previewEl.hidden = false;
+  lintState = null;
+  lastBeepLine = 0;
+}
+
+// Alt+ё: ошибки есть — показываем их (каждое следующее нажатие — следующая
+// ошибка, по кругу), ошибок нет — обычный предпросмотр.
+function runPreviewOrLint(line) {
+  const errors = runLint();
+  if (!errors.length) {
+    hideLint();
+    showPreviewAndFocus(line);
+    return;
+  }
+  const sig = lintSignature(errors);
+  const index = lintState && lintState.sig === sig ? (lintState.index + 1) % errors.length : 0;
+  lintState = { sig, index };
+  showLintError(errors, index);
+}
+
+// F8 / Shift+F8: следующая (предыдущая) ошибка после курсора, по кругу. Идём
+// от строки курсора, а не от сохранённого индекса: курсор могли подвинуть
+// мышью или стрелками, и «следующая» должна значить следующую отсюда.
+function goToLintError(step) {
+  const errors = runLint();
+  if (!errors.length) {
+    hideLint();
+    speak(I18N.t("msg.lintNone"));
+    return;
+  }
+  const cur = editor.getPosition().lineNumber;
+  let index = -1;
+  if (step > 0) {
+    index = errors.findIndex((e) => e.line > cur);
+  } else {
+    for (let i = errors.length - 1; i >= 0; i--) {
+      if (errors[i].line < cur) { index = i; break; }
+    }
+  }
+  if (index === -1) index = step > 0 ? 0 : errors.length - 1;
+  lintState = { sig: lintSignature(errors), index };
+  showLintError(errors, index);
+}
+
+// Курсор встал на строку с ошибкой — бубуп. Повторно на той же строке молчим:
+// иначе набор текста на ошибке превратился бы в трещотку.
+function beepOnErrorLine(lineNumber) {
+  if (!lintErrors.length) return;
+  if (!lintErrors.some((e) => e.line === lineNumber)) { lastBeepLine = 0; return; }
+  if (lineNumber === lastBeepLine) return;
+  lastBeepLine = lineNumber;
+  playErrorSound();
 }
 
 // Обратный ход того же переключателя: из предпросмотра в редактор — курсор
@@ -1988,6 +2353,18 @@ require(["vs/editor/editor.main"], function () {
   // Живой предпросмотр: формулы обновляются по мере набора (с дебаунсом).
   editor.onDidChangeModelContent(() => scheduleLivePreview());
 
+  // Линтер: маркеры пересчитываются по правке (тоже с дебаунсом). Так F8 и
+  // Shift+F8 работают сразу, без предварительного Alt+ё.
+  editor.onDidChangeModelContent(() => scheduleLiveLint());
+  scheduleLiveLint();
+  editor.onDidChangeCursorPosition((e) => beepOnErrorLine(e.position.lineNumber));
+
+  // F8 / Shift+F8 — по ошибкам. Маркеры в модели дают волнистое подчёркивание и
+  // метки на полосе прокрутки, но переход делаем свой: он гарантированно
+  // объявляет ошибку голосом и работает одинаково на любой сборке Монако.
+  editor.addCommand(monaco.KeyCode.F8, () => goToLintError(1));
+  editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.F8, () => goToLintError(-1));
+
   // Автосохранение: пишем в хранилище через SAVE_IDLE_MS тишины после правки.
   // Программные подстановки (смена документа, пример, шаг по истории) за
   // правку не считаем — иначе они бы сами себя записывали в черновик.
@@ -2113,23 +2490,26 @@ require(["vs/editor/editor.main"], function () {
       // Desmos и объявить содержимое строки курсора. Из предпросмотра: вернуть
       // фокус в редактор на ту строку, с которой пришли.
       // Так правка идёт циклом: набрал — Alt+ё — послушал — Alt+ё — поправил.
+      // Если в документе есть ошибки, вместо предпросмотра показываем их:
+      // следующее Alt+ё ведёт к следующей ошибке (см. runPreviewOrLint).
       if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.code === "Backquote") {
         e.preventDefault();
         e.stopImmediatePropagation();
-        if (previewSection.contains(document.activeElement)) {
+        if (previewSection.contains(document.activeElement) && lintPanel.hidden) {
           backToEditor();
         } else {
-          const line = editor.getPosition().lineNumber;
-          showPreviewAndFocus(line);
+          runPreviewOrLint(editor.getPosition().lineNumber);
         }
         return;
       }
-      // Ctrl+Shift+Enter — скрыть предпросмотр.
+      // Ctrl+Shift+Enter — скрыть предпросмотр (и панель ошибок вместе с ним:
+      // секция одна, а следующее Alt+ё всё равно пересчитает линтер).
       const ctrl = e.ctrlKey || e.metaKey;
       if (ctrl && e.shiftKey && e.code === "Enter") {
         e.preventDefault();
         e.stopImmediatePropagation();
         previewSection.hidden = true;
+        hideLint();
         speak(I18N.t("msg.previewHidden"));
         return;
       }
@@ -2198,7 +2578,7 @@ require(["vs/editor/editor.main"], function () {
 
   document.getElementById("btn-preview").addEventListener("click", () => {
     const line = editor.getPosition().lineNumber;
-    showPreviewAndFocus(line);
+    runPreviewOrLint(line);
   });
   // Клик по блоку предпросмотра (удобно зрячему): курсор редактора прыгает
   // на строку этого блока, и можно сразу править markdown.

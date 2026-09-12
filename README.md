@@ -12,6 +12,13 @@ and AsciiMath formulas, Desmos graphs, and chess boards. Designed for NVDA.
 - **Desmos** — interactive graphs, fenced block ` ```desmos `
 - **chessjax** — accessible chess boards, fenced block ` ```chess `
 - Live preview, one-click export to standalone HTML
+- **Linter** — unclosed formulas, broken chess blocks and dangling move
+  buttons are underlined in the editor; `Alt+ё` shows the list instead of the
+  preview, `F8` / `Shift+F8` jump between errors.
+
+`error.mp3` is the accessibility error signal from
+[VS Code](https://github.com/microsoft/vscode) (`src/vs/platform/accessibilitySignal/browser/media/error.mp3`),
+MIT licensed.
 
 ## Writing
 
@@ -65,6 +72,7 @@ text never pops the list.
 | `Alt+L` | Formula syntax: LaTeX / AsciiMath |
 | `Alt+1` … `Alt+9` | Insert formula templates (fraction, root, sum, …) |
 | `Ctrl+Space` | Scaffolding suggestions (delimiters, blocks, keys) |
+| `F8` / `Shift+F8` | Next / previous error, cursor jumps to the line |
 
 ## File & export
 

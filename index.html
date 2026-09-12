@@ -9,9 +9,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=48">
-<script src="i18n.js?v=48"></script>
-<script src="docstore.js?v=48"></script>
+<link rel="stylesheet" href="style.css?v=49">
+<script src="i18n.js?v=49"></script>
+<script src="docstore.js?v=49"></script>
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -75,6 +75,13 @@
     <h2 id="preview-heading" data-i18n="ui.previewHeading">Предпросмотр</h2>
     <p class="hint" data-i18n="ui.previewHint">Текст обновляется при наборе. Alt+ё — полный предпросмотр: пересоздать графики и перейти к строке курсора. Ctrl+Shift+Enter — скрыть. Шахматная доска — fenced-блок <code>```chess</code> с атрибутами (например <code>```chess fen="…"```</code>).</p>
     <div id="preview" class="preview"></div>
+    <!-- Панель ошибок: показывается вместо предпросмотра, когда линтер что-то
+         нашёл. Список читается скринридером, по Enter на пункте курсор
+         редактора прыгает на строку ошибки. -->
+    <div id="lint-panel" class="lint-panel" hidden>
+      <h3 id="lint-heading" data-i18n="ui.lintHeading">Ошибки в документе</h3>
+      <ul id="lint-list" class="lint-list"></ul>
+    </div>
   </section>
 
   <!-- Live-регион вне #preview-section: NVDA обязан читать объявления и когда
@@ -145,6 +152,6 @@
   <button id="help-close" type="button" data-i18n="help.close">Закрыть справку (Esc)</button>
 </dialog>
 
-<script src="script.js?v=48" type="module"></script>
+<script src="script.js?v=49" type="module"></script>
 </body>
 </html>
