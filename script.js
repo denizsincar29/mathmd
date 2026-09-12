@@ -1657,6 +1657,23 @@ async function openFromDisk() {
   }
 }
 
+// Право на запись. Файл, открытый через showOpenFilePicker, браузер по
+// умолчанию отдаёт только на чтение — запись спрашивают отдельно. Запрос
+// разрешения возможен лишь из действия человека, а Ctrl+S и нажатие кнопки —
+// как раз оно.
+async function ensureWritable(handle) {
+  if (typeof handle.queryPermission !== "function" || typeof handle.requestPermission !== "function") {
+    return true; // браузер без этих методов: пусть решает createWritable
+  }
+  const opts = { mode: "readwrite" };
+  try {
+    if ((await handle.queryPermission(opts)) === "granted") return true;
+    return (await handle.requestPermission(opts)) === "granted";
+  } catch (err) {
+    return false;
+  }
+}
+
 // Сохранение .md: в тот же файл, если он известен; иначе спрашиваем, куда
 // (или скачиваем — там, где API нет). asNew — «Сохранить как»: спросить всегда.
 async function saveMdToDisk({ asNew = false } = {}) {
@@ -1673,6 +1690,7 @@ async function saveMdToDisk({ asNew = false } = {}) {
       saveMd(); // незнакомая ошибка: привычный путь надёжнее
       return;
     }
+    if (!handle || !handle.name) return; // браузер отдал пустой выбор — молчим
     // Сначала отдать текущее состояние в хранилище: имя документа вот-вот
     // сменится на имя файла, и незаписанная правка осталась бы под старым.
     if (docTouched) persistNow();
@@ -1683,6 +1701,10 @@ async function saveMdToDisk({ asNew = false } = {}) {
     bindDiskHandle(handle);
   }
   try {
+    if (!(await ensureWritable(handle))) {
+      speak(I18N.t("msg.saveFailed", { name: handle.name }), fileStatusEl);
+      return;
+    }
     const writable = await handle.createWritable();
     await writable.write(editor.getValue());
     await writable.close();
