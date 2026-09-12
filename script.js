@@ -2501,6 +2501,16 @@ require(["vs/editor/editor.main"], function () {
   editor.addCommand(monaco.KeyCode.F8, () => goToLintError(1));
   editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.F8, () => goToLintError(-1));
 
+  // Escape выпускает фокус из редактора. Tab внутри Монако вставляет отступ и
+  // из редактора не выводит, так что без этого клавиатурой из него не выйти.
+  // Третий аргумент — условие: пока Монако занят своим делом (подсказки,
+  // переименование, поиск, вставка сниппета), Escape остаётся за ним.
+  editor.addCommand(
+    monaco.KeyCode.Escape,
+    () => releaseEditorFocus(),
+    "!suggestWidgetVisible && !renameInputVisible && !parameterHintsVisible && !findWidgetVisible && !inSnippetMode"
+  );
+
   // Автосохранение: пишем в хранилище через SAVE_IDLE_MS тишины после правки.
   // Программные подстановки (смена документа, пример, шаг по истории) за
   // правку не считаем — иначе они бы сами себя записывали в черновик.
@@ -2723,6 +2733,16 @@ require(["vs/editor/editor.main"], function () {
     const line = editor.getPosition().lineNumber;
     runPreviewOrLint(line);
   });
+
+  // Выход из редактора по Escape: фокус уходит на первое, что стоит после
+  // редактора — на кнопку предпросмотра. Дальше Tab идёт по файловой панели
+  // обычным порядком, а Shift+Tab возвращает в редактор. Имя кнопки скринридер
+  // прочитает сам, так что объявлять словами тут нечего.
+  function releaseEditorFocus() {
+    const next = document.getElementById("btn-preview");
+    if (next) next.focus();
+  }
+
   // Клик по блоку предпросмотра (удобно зрячему): курсор редактора прыгает
   // на строку этого блока, и можно сразу править markdown.
   previewEl.addEventListener("click", (e) => {
@@ -2797,18 +2817,34 @@ require(["vs/editor/editor.main"], function () {
   if (docDeleteBtn) docDeleteBtn.addEventListener("click", deleteDoc);
 
   // Справка: модальный диалог (native <dialog>), Esc закрывает сам.
+  // Фокус ставим на заголовок: по умолчанию браузер отдаёт его первой
+  // фокусируемой вещи внутри, а это ссылка на руководство в самом низу, — из-за
+  // этого справка открывалась «с конца». С заголовка скринридер сначала скажет,
+  // что за диалог открылся, а Tab пойдёт по тексту вниз.
   const helpDialog = document.getElementById("help-dialog");
   const helpClose = document.getElementById("help-close");
+  const helpHeading = document.getElementById("help-heading");
+  let helpReturnFocus = null;
   function openHelpDialog() {
-    if (!helpDialog.open) {
-      helpDialog.showModal();
-      speak(I18N.t("msg.helpOpen"), fileStatusEl);
-    }
+    if (helpDialog.open) return;
+    helpReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    helpDialog.showModal();
+    if (helpHeading) helpHeading.focus();
+    speak(I18N.t("msg.helpOpen"), fileStatusEl);
   }
   document.getElementById("btn-help").addEventListener("click", openHelpDialog);
   helpClose.addEventListener("click", () => helpDialog.close());
   helpDialog.addEventListener("close", () => {
-    document.getElementById("btn-help").focus();
+    // Возвращаем фокус туда, откуда справку открыли: из редактора — в редактор,
+    // с кнопки — на кнопку. Иначе F1, закрытый Escape, выкидывал бы в панель
+    // файла, и работу пришлось бы искать заново.
+    if (helpReturnFocus && document.contains(helpReturnFocus)) {
+      const dom = editor.getDomNode();
+      if (dom && dom.contains(helpReturnFocus)) editor.focus();
+      else if (typeof helpReturnFocus.focus === "function") helpReturnFocus.focus();
+    } else {
+      document.getElementById("btn-help").focus();
+    }
     speak(I18N.t("msg.helpClosed"), fileStatusEl);
   });
 
@@ -2850,7 +2886,7 @@ require(["vs/editor/editor.main"], function () {
     add({ id: "mathmd.saveMd", label: I18N.t("cmd.saveMd"), run: () => saveMdToDisk() });
     add({ id: "mathmd.saveMdAs", label: I18N.t("cmd.saveMdAs"), run: () => saveMdToDisk({ asNew: true }) });
     add({ id: "mathmd.exportHtml", label: I18N.t("cmd.exportHtml"), run: exportHtml });
-    add({ id: "mathmd.help", label: I18N.t("cmd.help"), run: openHelpCmd });
+    add({ id: "mathmd.help", label: I18N.t("cmd.help"), run: openHelpDialog });
     add({ id: "mathmd.manual", label: I18N.t("cmd.manual"), run: openManual });
     add({ id: "mathmd.docNew", label: I18N.t("cmd.docNew"), run: newDoc });
     add({ id: "mathmd.docRename", label: I18N.t("cmd.docRename"), run: renameDoc });
@@ -2898,13 +2934,6 @@ require(["vs/editor/editor.main"], function () {
     editor.setPosition({ lineNumber: 2, column: 8 });
     speak(I18N.t("msg.frontmatterExpanded"), fileStatusEl);
     editor.focus();
-  }
-  function openHelpCmd() {
-    const dlg = document.getElementById("help-dialog");
-    if (dlg && !dlg.open) {
-      dlg.showModal();
-      speak(I18N.t("msg.helpOpen"), fileStatusEl);
-    }
   }
   registerEditorActions();
 

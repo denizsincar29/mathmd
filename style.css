@@ -37,8 +37,8 @@ header h1 {
 
 header p { margin: 0; color: var(--fg-muted); font-size: 0.95rem; }
 
-/* «С чего начать»: ссылка стоит до редактора, поэтому первый Tab с клавиатуры
-   попадает на руководство, а Shift+Tab из редактора — на неё же. */
+/* «С чего начать»: кнопка руководства стоит до редактора, поэтому первый Tab
+   с клавиатуры попадает на неё, а Shift+Tab из редактора — на неё же. */
 #first-steps {
   margin-top: 0.5rem;
   display: flex;
@@ -47,13 +47,22 @@ header p { margin: 0; color: var(--fg-muted); font-size: 0.95rem; }
   align-items: baseline;
 }
 
-#manual-top {
-  color: var(--accent);
+/* Кнопка выглядит приглашением, а не элементом формы: в шапке это ссылка по
+   смыслу, но кнопкой она попадает в первый Tab и не уводит язык страницы. */
+#btn-manual {
+  font: inherit;
   font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: 0;
   padding: 0.15rem 0;
+  cursor: pointer;
+  text-align: left;
 }
 
-#manual-top:focus-visible {
+#btn-manual:hover { text-decoration: underline; }
+
+#btn-manual:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }

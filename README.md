@@ -73,6 +73,7 @@ text never pops the list.
 | `Alt+1` … `Alt+9` | Insert formula templates (fraction, root, sum, …) |
 | `Ctrl+Space` | Scaffolding suggestions (delimiters, blocks, keys) |
 | `F8` / `Shift+F8` | Next / previous error, cursor jumps to the line |
+| `Escape` | Leave the editor (focus goes to the preview button) |
 | `Ctrl+S` | Save `.md` (into the same file on disk) |
 | `Ctrl+Alt+S` | Save `.md` as a new file |
 | `Ctrl+Shift+S` | Save the standalone HTML |

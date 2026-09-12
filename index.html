@@ -9,9 +9,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=51">
-<script src="i18n.js?v=51"></script>
-<script src="docstore.js?v=51"></script>
+<link rel="stylesheet" href="style.css?v=52">
+<script src="i18n.js?v=52"></script>
+<script src="docstore.js?v=52"></script>
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -57,11 +57,11 @@
 <header>
   <h1 data-i18n="h1.title">Математический редактор</h1>
   <p data-i18n="h1.subtitle">Markdown + LaTeX, AsciiMath, графики Desmos и шахматные доски. Предпросмотр — <strong>Alt+ё</strong>, вставка формул — кнопки (хоткеи Alt+1..9).</p>
-  <!-- С чего начать: ссылка идёт до редактора, поэтому первый же Tab с
-       клавиатуры попадает на руководство, а Shift+Tab из редактора — на неё
-       же. Новичку не нужно искать её среди кнопок файла. -->
+  <!-- С чего начать: кнопка руководства идёт до редактора, поэтому первый же
+       Tab с клавиатуры попадает на неё. Новичку не нужно искать руководство
+       среди кнопок файла, а в файловой панели она не дублируется. -->
   <nav id="first-steps" aria-label="С чего начать" data-i18n-aria="ui.firstSteps">
-    <a id="manual-top" href="manual.html" data-i18n="ui.manualTop">Руководство — начните с него</a>
+    <button id="btn-manual" type="button" data-i18n="ui.manualTop">Руководство — начните с него</button>
     <span class="first-steps-hint" data-i18n="ui.helpTop">Справка — <strong>F1</strong>.</span>
   </nav>
 </header>
@@ -103,7 +103,6 @@
       <button id="btn-save" type="button" data-i18n="ui.btnSave">Сохранить .md</button>
       <button id="btn-open" type="button" data-i18n="ui.btnOpen">Открыть .md</button>
       <button id="btn-help" type="button" data-i18n="ui.btnHelp">Справка</button>
-      <button id="btn-manual" type="button" data-i18n="ui.btnManual">Руководство</button>
       <input id="open-input" type="file" accept=".md,.markdown,.txt,text/markdown" hidden>
       <label for="doc-select" data-i18n="ui.docLabel">Документ:</label>
       <select id="doc-select" aria-label="Открыть документ" data-i18n-aria="ui.docSelectAria"></select>
@@ -129,7 +128,9 @@
 </main>
 
 <dialog id="help-dialog" aria-labelledby="help-heading">
-  <h2 id="help-heading" data-i18n="help.title">Справка: как пользоваться редактором</h2>
+  <!-- tabindex="-1": фокус при открытии ставится на заголовок, а не на первую
+       фокусируемую вещь внутри (это ссылка на руководство внизу диалога). -->
+  <h2 id="help-heading" tabindex="-1" data-i18n="help.title">Справка: как пользоваться редактором</h2>
 
   <h3 data-i18n="help.formulasTitle">Формулы</h3>
   <p data-i18n="help.formulasText">LaTeX пишется в долларах: <code>$x^2$</code> — формула в строке, <code>$$...$$</code> — на отдельной строке. Работают и скобки: <code>\(...\)</code> и <code>\[...\]</code>.</p>
@@ -159,6 +160,6 @@
   <button id="help-close" type="button" data-i18n="help.close">Закрыть справку (Esc)</button>
 </dialog>
 
-<script src="script.js?v=51" type="module"></script>
+<script src="script.js?v=52" type="module"></script>
 </body>
 </html>

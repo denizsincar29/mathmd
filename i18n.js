@@ -133,12 +133,8 @@
     },
     // Полное руководство — отдельная страница manual.html; эти строки только
     // про переход на неё. Сами тексты руководства — в manual-i18n.js (ru и en).
-    "ui.btnManual": {
-      ru: "Руководство",
-      en: "Manual",
-      de: "Handbuch",
-      tr: "Kılavuz",
-    },
+    // Кнопка руководства живёт в шапке и подписана ui.manualTop — отдельной
+    // строки «Руководство» в файловой панели больше нет.
     // Это текст ссылки в справке, отсюда и форма «открыть …».
     "help.manualLink": {
       ru: "Открыть полное руководство: markdown, AsciiMath, LaTeX, Desmos и шахматы",
@@ -711,10 +707,10 @@
       tr: "Tarayıcı yeni sekmeyi engelledi — açılır pencerelere izin verip tekrar deneyin.",
     },
     "msg.firstRun": {
-      ru: "Первый раз здесь? Начните с руководства — ссылка «Руководство» в начале страницы, сразу под заголовком. Справка по клавишам — F1.",
-      en: "First time here? Start with the manual — the “Manual” link is at the top of the page, right below the heading. For the keys, press F1.",
-      de: "Zum ersten Mal hier? Beginnen Sie mit der Anleitung — der Link „Anleitung“ steht oben auf der Seite, direkt unter der Überschrift. Für die Tasten drücken Sie F1.",
-      tr: "İlk kez mi buradasınız? Kılavuzla başlayın — “Kılavuz” bağlantısı sayfanın başında, başlığın hemen altında. Tuşlar için F1'e basın.",
+      ru: "Первый раз здесь? Начните с руководства — кнопка «Руководство — начните с него» вверху страницы, сразу под заголовком. Справка по клавишам — F1.",
+      en: "First time here? Start with the manual — the “Manual — start here” button is at the top of the page, right below the heading. For the keys, press F1.",
+      de: "Zum ersten Mal hier? Beginnen Sie mit der Anleitung — die Schaltfläche „Anleitung — hier anfangen“ steht oben auf der Seite, direkt unter der Überschrift. Für die Tasten drücken Sie F1.",
+      tr: "İlk kez mi buradasınız? Kılavuzla başlayın — “Kılavuz — buradan başlayın” düğmesi sayfanın başında, başlığın hemen altında. Tuşlar için F1'e basın.",
     },
     "msg.editorReady": {
       ru: "Редактор готов. Нажмите Alt+ё для предпросмотра на строке курсора.",

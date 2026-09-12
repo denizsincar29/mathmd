@@ -304,6 +304,7 @@
         "<li><strong>Alt+M</strong> — следующая формула будет в строке или отдельным блоком. <strong>Alt+L</strong> — синтаксис: LaTeX или AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — вставить дробь, корень, сумму и другие заготовки. Те же номера написаны на кнопках.</li>" +
         "<li><strong>Ctrl+Space</strong> — подсказки: делимитеры, блоки, ключи настроек, разметка markdown. Внутри формулы подсказки появляются сами.</li>" +
+        "<li><strong>Escape</strong> — выйти из редактора: фокус уходит на кнопку предпросмотра, и дальше Tab идёт по странице обычным порядком. Внутри редактора Tab вставляет отступ и из редактора не выводит — выход именно по Escape.</li>" +
         "<li><strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд (она же <strong>Ctrl+Alt+P</strong>). F1 привычнее видеть справкой, поэтому палитра переехала.</li>" +
         "<li><strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить документ, <strong>F9</strong> — новый документ. То же самое делают кнопки рядом со списком документов.</li>" +
         "<li><strong>Ctrl+S</strong> — сохранить .md, <strong>Ctrl+Alt+S</strong> — сохранить как новый файл, <strong>Ctrl+Shift+S</strong> — готовый HTML, <strong>Ctrl+O</strong> — открыть .md с диска.</li>" +
@@ -314,6 +315,7 @@
         "<li><strong>Alt+M</strong> — the next formula goes inline or as a separate block. <strong>Alt+L</strong> — the syntax: LaTeX or AsciiMath.</li>" +
         "<li><strong>Alt+1 … Alt+9, Alt+0, Alt+-, Alt+=</strong> — insert a fraction, a root, a sum and other templates. The same numbers are printed on the buttons.</li>" +
         "<li><strong>Ctrl+Space</strong> — suggestions: delimiters, blocks, settings keys, markdown markup. Inside a formula they appear by themselves.</li>" +
+        "<li><strong>Escape</strong> — leave the editor: the focus moves to the preview button and from there Tab goes through the page in the usual order. Inside the editor Tab inserts indentation and does not take you out — Escape is the way out.</li>" +
         "<li><strong>F1</strong> — help, <strong>Shift+F1</strong> — the command palette (also <strong>Ctrl+Alt+P</strong>). F1 is more usually expected to bring up help, so the palette moved.</li>" +
         "<li><strong>F2</strong> — rename the document, <strong>Shift+F2</strong> — delete it, <strong>F9</strong> — a new document. The buttons next to the document list do the same.</li>" +
         "<li><strong>Ctrl+S</strong> — save the .md, <strong>Ctrl+Alt+S</strong> — save as a new file, <strong>Ctrl+Shift+S</strong> — the ready HTML, <strong>Ctrl+O</strong> — open a .md from disk.</li>" +
