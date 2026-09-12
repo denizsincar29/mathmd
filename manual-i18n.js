@@ -260,14 +260,14 @@
     },
     "manual.chessAttrs": {
       ru: "<ul>" +
-        "<li><code>fen=\"…\"</code> — позиция. Расстановка вроде <code>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</code> — начальная.</li>" +
+        "<li><code>fen=\"…\"</code> — позиция. Расстановка вроде <code>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</code> — начальная. Кавычки нужны не для красоты: без них значение обрывается на первом пробеле, и доска не построится.</li>" +
         "<li><code>pgn=\"адрес\"</code> — партия из файла, <code>move=\"10\"</code> — сразу перейти к десятому ходу.</li>" +
         "<li><code>id=\"имя\"</code> — имя доски. По нему из текста делается кнопка перехода к ходу: <code>&lt;button chess=\"имя\" move=\"29\"&gt;</code>. Кнопка работает и в предпросмотре, и в готовой странице.</li>" +
         "<li><code>lang=\"ru\"</code> — язык доски: ru, en, de, tr.</li>" +
         "<li><code>controls=\"off\"</code> — убрать кнопки под доской, <code>sound=\"off\"</code> — без звуков, <code>tone=\"off\"</code> — без тональных отметок в разборе.</li>" +
         "</ul>",
       en: "<ul>" +
-        "<li><code>fen=\"…\"</code> — a position. <code>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</code> is the starting one.</li>" +
+        "<li><code>fen=\"…\"</code> — a position. <code>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</code> is the starting one. The quotes are not decoration: without them the value stops at the first space and the board will not build.</li>" +
         "<li><code>pgn=\"address\"</code> — a game from a file, <code>move=\"10\"</code> — jump straight to move ten.</li>" +
         "<li><code>id=\"name\"</code> — the board's name. Text can then link a button to it: <code>&lt;button chess=\"name\" move=\"29\"&gt;</code>. The button works both in the preview and in the exported page.</li>" +
         "<li><code>lang=\"ru\"</code> — the board language: ru, en, de, tr.</li>" +
