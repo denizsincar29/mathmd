@@ -34,10 +34,28 @@
       tr: "Matematik editörü",
     },
     "h1.subtitle": {
-      ru: "Markdown + LaTeX, AsciiMath, графики Desmos и шахматные доски. Предпросмотр — <strong>Alt+ё</strong>, вставка формул — кнопки (хоткеи Alt+1..9).",
-      en: "Markdown + LaTeX, AsciiMath, Desmos graphs and chessboards. Preview — <strong>Alt+`</strong>, formula insert — buttons (hotkeys Alt+1..9).",
-      de: "Markdown + LaTeX, AsciiMath, Desmos-Grafiken und Schachbretter. Vorschau — <strong>Alt+`</strong>, Formeln einfügen — Schaltflächen (Hotkeys Alt+1..9).",
-      tr: "Markdown + LaTeX, AsciiMath, Desmos grafikleri ve satranç tahtaları. Önizleme — <strong>Alt+`</strong>, formül ekleme — butonlar (kısayollar Alt+1..9).",
+      ru: "Markdown + LaTeX, AsciiMath, графики Desmos и шахматные доски. Предпросмотр — <strong>Alt+ё</strong>, вставка формул — кнопки (хоткеи Alt+1..9). Первый раз здесь — начните с руководства: ссылка сразу под этим текстом.",
+      en: "Markdown + LaTeX, AsciiMath, Desmos graphs and chessboards. Preview — <strong>Alt+`</strong>, formula insert — buttons (hotkeys Alt+1..9). Here for the first time — start with the manual: the link is right below this text.",
+      de: "Markdown + LaTeX, AsciiMath, Desmos-Grafiken und Schachbretter. Vorschau — <strong>Alt+`</strong>, Formeln einfügen — Schaltflächen (Hotkeys Alt+1..9). Zum ersten Mal hier — beginnen Sie mit der Anleitung: der Link steht direkt unter diesem Text.",
+      tr: "Markdown + LaTeX, AsciiMath, Desmos grafikleri ve satranç tahtaları. Önizleme — <strong>Alt+`</strong>, formül ekleme — butonlar (kısayollar Alt+1..9). İlk kez buradaysanız — kılavuzla başlayın: bağlantı bu metnin hemen altında.",
+    },
+    "ui.firstSteps": {
+      ru: "С чего начать",
+      en: "Where to start",
+      de: "Wo anfangen",
+      tr: "Nereden başlamalı",
+    },
+    "ui.manualTop": {
+      ru: "Руководство — начните с него",
+      en: "Manual — start here",
+      de: "Anleitung — hier anfangen",
+      tr: "Kılavuz — buradan başlayın",
+    },
+    "ui.helpTop": {
+      ru: "Справка — <strong>F1</strong>.",
+      en: "Help — <strong>F1</strong>.",
+      de: "Hilfe — <strong>F1</strong>.",
+      tr: "Yardım — <strong>F1</strong>.",
     },
 
     // --- Статический UI ------------------------------------------------------
@@ -662,11 +680,17 @@
       de: "Der Browser hat den neuen Tab blockiert — erlauben Sie Pop-ups und versuchen Sie es erneut.",
       tr: "Tarayıcı yeni sekmeyi engelledi — açılır pencerelere izin verip tekrar deneyin.",
     },
+    "msg.firstRun": {
+      ru: "Первый раз здесь? Начните с руководства — ссылка «Руководство» в начале страницы, сразу под заголовком. Справка по клавишам — F1.",
+      en: "First time here? Start with the manual — the “Manual” link is at the top of the page, right below the heading. For the keys, press F1.",
+      de: "Zum ersten Mal hier? Beginnen Sie mit der Anleitung — der Link „Anleitung“ steht oben auf der Seite, direkt unter der Überschrift. Für die Tasten drücken Sie F1.",
+      tr: "İlk kez mi buradasınız? Kılavuzla başlayın — “Kılavuz” bağlantısı sayfanın başında, başlığın hemen altında. Tuşlar için F1'e basın.",
+    },
     "msg.editorReady": {
-      ru: "Редактор готов. Нажмите Ctrl+Enter для предпросмотра на строке курсора.",
-      en: "Editor ready. Press Ctrl+Enter for preview at the cursor line.",
-      de: "Editor bereit. Drücken Sie Ctrl+Enter für die Vorschau an der Cursorzeile.",
-      tr: "Editör hazır. İmleç satırında önizleme için Ctrl+Enter'a basın.",
+      ru: "Редактор готов. Нажмите Alt+ё для предпросмотра на строке курсора.",
+      en: "Editor ready. Press Alt+` for preview at the cursor line.",
+      de: "Editor bereit. Drücken Sie Alt+` für die Vorschau an der Cursorzeile.",
+      tr: "Editör hazır. İmleç satırında önizleme için Alt+` tuşuna basın.",
     },
     "msg.badUrl": {
       ru: "Некорректный URL: допустим только http/https.",
@@ -699,10 +723,10 @@
       tr: "Arayüz dili: {lang}.",
     },
     "msg.desmosLive": {
-      ru: "График Desmos обновится по Ctrl+Enter.",
-      en: "Desmos graph will update on Ctrl+Enter.",
-      de: "Desmos-Diagramm wird bei Ctrl+Enter aktualisiert.",
-      tr: "Desmos grafiği Ctrl+Enter'da güncellenecek.",
+      ru: "График Desmos обновится по Alt+ё.",
+      en: "Desmos graph will update on Alt+`.",
+      de: "Desmos-Diagramm wird bei Alt+` aktualisiert.",
+      tr: "Desmos grafiği Alt+` ile güncellenecek.",
     },
     "msg.desmosFallback": {
       ru: "График Desmos недоступен — не удалось загрузить API.",

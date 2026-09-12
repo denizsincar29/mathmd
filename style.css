@@ -37,6 +37,29 @@ header h1 {
 
 header p { margin: 0; color: var(--fg-muted); font-size: 0.95rem; }
 
+/* «С чего начать»: ссылка стоит до редактора, поэтому первый Tab с клавиатуры
+   попадает на руководство, а Shift+Tab из редактора — на неё же. */
+#first-steps {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+}
+
+#manual-top {
+  color: var(--accent);
+  font-weight: 600;
+  padding: 0.15rem 0;
+}
+
+#manual-top:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.first-steps-hint { color: var(--fg-muted); font-size: 0.9rem; }
+
 header code {
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -147,7 +170,7 @@ h2 {
 }
 
 .preview:empty::before {
-  content: "Предпросмотра пока нет — нажмите Ctrl+Enter.";
+  content: "Предпросмотра пока нет — нажмите Alt+ё.";
   color: var(--fg-muted);
 }
 

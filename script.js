@@ -1,6 +1,6 @@
 // Математический редактор: Monaco + Markdown + MathJax 4 (LaTeX/AsciiMath) + Desmos.
 //
-// Рендер markdown с математикой и графиками, предпросмотр по Ctrl+Enter на
+// Рендер markdown с математикой и графиками, предпросмотр по Alt+ё на
 // строке курсора, помощники вставки формул, доступность для скринридера.
 
 // Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
@@ -328,7 +328,7 @@ const DESMOS_ENTER_STYLE =
   "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap";
 
 // Живой рендер (пока печатаешь) не грузит тяжёлый SDK Desmos на каждый тик —
-// вместо графика показываем подсказку; график пересоздаётся по Ctrl+Enter.
+// вместо графика показываем подсказку; график пересоздаётся по Alt+ё.
 function desmosSlot(idx, live) {
   if (live) {
     return `<div class="desmos-placeholder" data-desmos-idx="${idx}">${I18N.t("msg.desmosLive")}</div>`;
@@ -433,7 +433,7 @@ async function renderPreview(live) {
 
 // Живой предпросмотр: при наборе рендер откладывается на 800 мс, чтобы
 // каждое нажатие не грузило процессор (MathJax). Формулы обновляются сами;
-// графики Desmos пересоздаются только по Ctrl+Enter.
+// графики Desmos пересоздаются только по Alt+ё.
 let liveTimer = null;
 function scheduleLivePreview() {
   // В режиме ошибок предпросмотр скрыт — живой рендер только жёг бы процессор
@@ -491,8 +491,9 @@ function showPreviewAndFocus(line) {
 // осталась из одной позиции.
 //
 // Найденное кладём маркерами Монако (`setModelMarkers`): редактор сам рисует
-// волнистое подчёркивание и метки на полосе прокрутки и сам заводит переходы
-// F8 / Shift+F8 по маркерам. Отдельного механизма навигации не нужно.
+// волнистое подчёркивание и метки на полосе прокрутки. Переходы F8 / Shift+F8
+// сделаны своими командами (goToLintError), а не штатным marker.next: только
+// так объявление об ошибке гарантированно звучит под скринридером.
 
 // Атрибуты, которые понимает <chessjax-board>: observedAttributes в chessjax.js
 // (fen, pgn, move, lang, controls) плюс читаемые вручную pgn-src, sound, tone и
@@ -711,7 +712,7 @@ function playErrorSound() {
   }
 }
 
-// Маркеры Монако: F8 и Shift+F8 по ним ходят штатными действиями редактора.
+// Маркеры Монако: подчёркивание строки и метка на полосе прокрутки.
 function applyLintMarkers(errors) {
   lintErrors = errors;
   if (!editor || typeof monaco === "undefined") return;
@@ -733,7 +734,7 @@ function applyLintMarkers(errors) {
 }
 
 // Живой прогон по правке: маркеры должны стоять до того, как пользователь
-// вспомнит про Alt+ё, иначе F8 нечего показывать.
+// вспомнит про Alt+ё, иначе F8 переходить некуда.
 let liveLintTimer = null;
 function scheduleLiveLint() {
   clearTimeout(liveLintTimer);
@@ -2792,4 +2793,29 @@ require(["vs/editor/editor.main"], function () {
   if (store && !store.isPersistent()) {
     speak(I18N.t("msg.storageOff"), fileStatusEl);
   }
+
+  // Первый заход: подсказать, где руководство. Ссылка стоит выше редактора, но
+  // новичок про неё не знает — проговариваем один раз, дальше молчим (флаг в
+  // localStorage). Не перебиваем объявления о примере по ссылке.
+  if (!quietRestore) announceFirstRun();
 });
+
+// Флаг «уже был здесь». Отдельный ключ, чтобы не путаться с хранилищем
+// документов и не мешать восстановлению черновика.
+const VISITED_KEY = "mathmd-visited-v1";
+
+function announceFirstRun() {
+  let seen = null;
+  try {
+    seen = localStorage.getItem(VISITED_KEY);
+  } catch (err) {
+    return; // приватный режим: молчим, подсказка не критична
+  }
+  if (seen) return;
+  try {
+    localStorage.setItem(VISITED_KEY, "1");
+  } catch (err) {
+    /* записать не получилось — не беда */
+  }
+  setTimeout(() => speak(I18N.t("msg.firstRun")), 1500);
+}
