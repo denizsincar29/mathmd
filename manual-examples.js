@@ -14,6 +14,25 @@
   var blocks = Array.prototype.slice.call(document.querySelectorAll("pre[data-example]"));
   if (!blocks.length) return;
 
+  // Кнопка входа в график Desmos: невидима, но стоит в потоке фокуса, а Enter
+  // переводит фокус внутрь калькулятора, сразу в список выражений. Инлайном —
+  // как в script.js: стили не должны зависеть от того, какой CSS подключён.
+  var DESMOS_ENTER_STYLE =
+    "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap";
+
+  function enterDesmos(calc, el) {
+    if (calc && typeof calc.focusFirstExpression === "function") {
+      try {
+        calc.focusFirstExpression();
+        return;
+      } catch (err) {
+        console.warn("[mathmd] вход в график Desmos:", err);
+      }
+    }
+    var frame = el.querySelector("iframe");
+    if (frame) frame.focus();
+  }
+
   // --- объявления для скринридера -------------------------------------------
   var status = document.createElement("div");
   status.className = "visually-hidden";
@@ -112,6 +131,15 @@
       return;
     }
     parts.forEach(function (part) {
+      // Кнопка входа перед графиком — ровно как в редакторе и в готовой
+      // странице (см. desmosSlot в script.js): невидимая, но в потоке фокуса.
+      var enter = document.createElement("button");
+      enter.type = "button";
+      enter.className = "desmos-enter";
+      enter.hidden = true;
+      enter.style.cssText = DESMOS_ENTER_STYLE;
+      enter.textContent = I18N.t("msg.desmosEnter");
+      el.appendChild(enter);
       var holder = document.createElement("div");
       holder.className = "desmos";
       el.appendChild(holder);
@@ -133,6 +161,10 @@
               console.warn("[mathmd] выражение Desmos не распознано:", expr, err);
             }
           });
+        enter.hidden = false;
+        enter.addEventListener("click", function () {
+          enterDesmos(calc, holder);
+        });
       } catch (err) {
         console.error("[mathmd] график Desmos в руководстве:", err);
       }

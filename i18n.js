@@ -586,6 +586,14 @@
       de: "Desmos-Diagramm nicht verfügbar — API konnte nicht geladen werden.",
       tr: "Desmos grafiği kullanılamıyor — API yüklenemedi.",
     },
+    // Подпись невидимой кнопки входа в график. Скринридер читает её как
+    // «…, кнопка» — по ней и понятно, что нажать.
+    "msg.desmosEnter": {
+      ru: "График Desmos — перейти к списку выражений",
+      en: "Desmos graph — go to the expression list",
+      de: "Desmos-Diagramm — zur Ausdrucksliste",
+      tr: "Desmos grafiği — ifade listesine git",
+    },
     "msg.syntaxLatex": { ru: "LaTeX", en: "LaTeX", de: "LaTeX", tr: "LaTeX" },
     "msg.syntaxAscii": { ru: "AsciiMath", en: "AsciiMath", de: "AsciiMath", tr: "AsciiMath" },
 

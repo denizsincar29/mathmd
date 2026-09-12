@@ -320,6 +320,11 @@ function renderMarkdown(md, live) {
   return renderMarkdownBody(parsed.body, live);
 }
 
+// Невидимость кнопки входа — инлайном, а не классом: те же стили нужны и в
+// готовой странице, где подключён не весь style.css.
+const DESMOS_ENTER_STYLE =
+  "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap";
+
 // Живой рендер (пока печатаешь) не грузит тяжёлый SDK Desmos на каждый тик —
 // вместо графика показываем подсказку; график пересоздаётся по Ctrl+Enter.
 function desmosSlot(idx, live) {
@@ -329,7 +334,31 @@ function desmosSlot(idx, live) {
   // В готовом HTML массива desmosBlocks нет — тело графика кладём прямо в DOM
   // (encodeURIComponent), его разберёт init-скрипт документа.
   const body = desmosBlocks[idx] || "";
-  return `<div class="desmos" data-desmos-idx="${idx}" data-desmos-body="${encodeURIComponent(body)}"></div>`;
+  // Кнопка входа перед графиком. График — чужой iframe: Tab внутрь не доводит,
+  // стрелки его не трогают, и без такой кнопки незрячему в калькулятор не
+  // попасть. Кнопка невидимая, но стоит в потоке фокуса: скринридер читает её
+  // как «График Desmos — перейти к списку выражений, кнопка», а Enter (пробел)
+  // переводит фокус внутрь, сразу в список выражений. Пока график не создан,
+  // кнопка скрыта — обещать вход в то, чего нет, незачем.
+  const enter =
+    `<button type="button" class="desmos-enter" hidden style="${DESMOS_ENTER_STYLE}">` +
+    `${escHtml(I18N.t("msg.desmosEnter"))}</button>`;
+  return enter + `<div class="desmos" data-desmos-idx="${idx}" data-desmos-body="${encodeURIComponent(body)}"></div>`;
+}
+
+// Вход в график: штатный метод Desmos ставит фокус в список выражений; если
+// версия API его не знает, фокусируем сам iframe — тогда до списка дойдёт Tab.
+function enterDesmos(calc, el) {
+  if (calc && typeof calc.focusFirstExpression === "function") {
+    try {
+      calc.focusFirstExpression();
+      return;
+    } catch (err) {
+      console.warn("[mathmd] вход в график Desmos:", err);
+    }
+  }
+  const frame = el.querySelector("iframe");
+  if (frame) frame.focus();
 }
 
 function initDesmosGraphs() {
@@ -363,6 +392,12 @@ function initDesmosGraphs() {
             console.warn("[mathmd] выражение Desmos не распознано:", expr, err);
           }
         });
+      // График готов — открываем вход: кнопка перед графиком (см. desmosSlot).
+      const enter = el.previousElementSibling;
+      if (enter && enter.classList.contains("desmos-enter")) {
+        enter.hidden = false;
+        enter.addEventListener("click", () => enterDesmos(calc, el));
+      }
     } catch (err) {
       console.error("[mathmd] не удалось создать график Desmos:", err);
     }
@@ -721,6 +756,14 @@ function withCopyButtons(html, label) {
   return html.replace(/<pre(?:\s[^>]*)?>[\s\S]*?<\/pre>/g, (block) => block + button);
 }
 
+// Подпись кнопки входа в график — тоже на языке документа (см. withCopyButtons).
+function withDesmosEnter(html, label) {
+  return html.replace(
+    /(<button type="button" class="desmos-enter"[^>]*>)[\s\S]*?(<\/button>)/g,
+    (m, open, close) => open + escHtml(label) + close
+  );
+}
+
 // Полный самодостаточный HTML-документ из текущего markdown: используется и
 // для скачивания (exportHtml), и для показа по ?preview=html. Шахматные доски
 // остаются живыми <chessjax-board> — документ подключает компонент с CDN, а
@@ -777,7 +820,10 @@ function buildDocumentHtml() {
   const lang = fm.lang || detectDocLang(md);
   // Подписи внутри готового документа — на его языке, а не на языке интерфейса
   // редактора: страницу читает тот, кому её отдали.
-  const docBody = withCopyButtons(bodyHtml, I18N.tIn("ui.copyCode", lang));
+  const docBody = withDesmosEnter(
+    withCopyButtons(bodyHtml, I18N.tIn("ui.copyCode", lang)),
+    I18N.tIn("msg.desmosEnter", lang)
+  );
   const author = fm.author ? `<meta name="author" content="${escHtml(fm.author)}">\n` : "";
   const description = fm.description ? `<meta name="description" content="${escHtml(fm.description)}">\n` : "";
   const extraCss = fm.css ? `<link rel="stylesheet" href="${escHtml(fm.css)}">\n` : "";
@@ -836,6 +882,8 @@ document.addEventListener("click", function (event) {
       { expressions: true, settingsMenu: false, border: false, projectorMode: true },
       fm.desmos && typeof fm.desmos === "object" ? fm.desmos : {}
     );
+    // Кнопка входа перед графиком (см. desmosSlot): показываем её только когда
+    // график создан, и ведём фокус в список выражений.
     desmosInit = `<script>
 document.querySelectorAll(".desmos[data-desmos-idx]").forEach(function (el) {
   var body = el.getAttribute("data-desmos-body");
@@ -844,6 +892,16 @@ document.querySelectorAll(".desmos[data-desmos-idx]").forEach(function (el) {
   decodeURIComponent(body).split("\\n").map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (expr, i) {
     try { calc.setExpression({ id: "e" + i, latex: expr }); }
     catch (err) { console.warn("Desmos:", expr, err); }
+  });
+  var enter = el.previousElementSibling;
+  if (!enter || enter.className.indexOf("desmos-enter") === -1) return;
+  enter.hidden = false;
+  enter.addEventListener("click", function () {
+    if (typeof calc.focusFirstExpression === "function") {
+      try { calc.focusFirstExpression(); return; } catch (err) { console.warn("Desmos:", err); }
+    }
+    var frame = el.querySelector("iframe");
+    if (frame) frame.focus();
   });
 });
 </script>
