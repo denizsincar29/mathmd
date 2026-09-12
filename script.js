@@ -2211,10 +2211,17 @@ require(["vs/editor/editor.main"], function () {
     }
     if (e.target.closest("a")) return;
     // Встроенные вставки — чужое интерактивное содержимое, у них своя работа с
-    // фокусом. Щелчок по кнопке входа, по графику Desmos или по шахматной доске
-    // не должен уводить в редактор: Monaco тут же отбирает фокус, который
-    // вставка только что взяла себе (клетка доски, поле выражения).
-    if (e.target.closest(".desmos-enter") || e.target.closest(".desmos") || e.target.closest("chessjax-board")) return;
+    // фокусом. Щелчок по кнопке входа, по графику Desmos, по шахматной доске или
+    // по кнопке-ходу в тексте не должен уводить в редактор: Monaco тут же
+    // отбирает фокус, который вставка только что взяла себе (клетка доски, поле
+    // выражения), а кнопка-ход вообще теряет нажатие.
+    if (
+      e.target.closest(".desmos-enter") ||
+      e.target.closest(".desmos") ||
+      e.target.closest("chessjax-board") ||
+      e.target.closest("button[chess][move]")
+    )
+      return;
     const block = e.target.closest(".preview-block");
     if (!block) return;
     const line = parseInt(block.dataset.line, 10);
