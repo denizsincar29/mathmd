@@ -73,12 +73,21 @@ text never pops the list.
 | `Alt+1` … `Alt+9` | Insert formula templates (fraction, root, sum, …) |
 | `Ctrl+Space` | Scaffolding suggestions (delimiters, blocks, keys) |
 | `F8` / `Shift+F8` | Next / previous error, cursor jumps to the line |
+| `Ctrl+S` | Save `.md` (into the same file on disk) |
+| `Ctrl+Alt+S` | Save `.md` as a new file |
+| `Ctrl+Shift+S` | Save the standalone HTML |
 
 ## File & export
 
-- Open `.md`, download `.md`, or save a standalone HTML page. Graphs are
-  embedded into the HTML; chess boards render as static semantic tables, so the
-  file works without JavaScript.
+- **Open `.md` / Save `.md`** use the File System Access API where it exists
+  (Chromium): the editor keeps the file handle and `Ctrl+S` writes straight
+  back into the same file on disk, with `Ctrl+Alt+S` for “save as”. `Ctrl+Shift+S`
+  saves a standalone HTML page for sharing. Firefox and Safari have no file
+  API — there saving downloads a copy into “Downloads” and the editor says so.
+- Handles live for the session only: after a reload the first save asks where
+  to write again.
+- Graphs are embedded into the exported HTML; chess boards render as static
+  semantic tables, so the file works without JavaScript.
 - The **Examples** dropdown loads demo documents.
 
 ## Run locally

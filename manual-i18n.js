@@ -89,7 +89,7 @@
         "<li>Изучите пример, который уже написан в редакторе, и его разметку: заголовки, формулы, списки.</li>" +
         "<li>Нажмите <strong>Alt+ё</strong> — откроется предпросмотр, и вы услышите, как этот пример выглядит в готовом документе.</li>" +
         "<li>Нажмите <strong>Alt+ё</strong> ещё раз — вы вернётесь в редактор на ту же строку. Правьте пример по своему усмотрению и снова проверяйте предпросмотром.</li>" +
-        "<li>Когда текст готов, найдите кнопку <strong>Сохранить готовый HTML</strong> и сохраните страницу. Рядом кнопки <strong>Скачать .md</strong> — исходник для правки — и <strong>Открыть .md</strong> — вернуть сохранённый файл.</li>" +
+        "<li>Когда текст готов, сохраните его: <strong>Ctrl+S</strong> пишет в файл .md — тот самый, из которого вы открывали документ, — а если файла ещё нет, спросит, куда его положить. Кнопка <strong>Сохранить готовый HTML</strong> делает страницу для раздачи, кнопка <strong>Открыть .md</strong> возвращает сохранённый файл.</li>" +
         "</ol>",
       en: "<ol>" +
         "<li>Open the editor site.</li>" +
@@ -97,12 +97,12 @@
         "<li>Study the example already written in the editor and its markup: headings, formulas, lists.</li>" +
         "<li>Press <strong>Alt+`</strong> — the preview opens, and you can hear how that example looks in a finished document.</li>" +
         "<li>Press <strong>Alt+`</strong> again — you return to the editor on the same line. Edit the example as you like and check it in the preview again.</li>" +
-        "<li>When the text is ready, find the <strong>Export HTML</strong> button and save the page. Next to it are <strong>Download .md</strong> — the source for editing — and <strong>Open .md</strong> — to bring a saved file back.</li>" +
+        "<li>When the text is ready, save it: <strong>Ctrl+S</strong> writes into the .md file — the very one you opened — and if there is no file yet it asks where to put it. The <strong>Export HTML</strong> button makes a page for sharing, and <strong>Open .md</strong> brings a saved file back.</li>" +
         "</ol>",
     },
     "manual.startKeys": {
-      ru: "Кнопки файла работают и по горячим клавишам: <strong>Ctrl+S</strong> — сохранить готовый HTML, <strong>Ctrl+Shift+S</strong> — скачать .md, <strong>Ctrl+O</strong> — открыть .md. Браузер тоже умеет эти сочетания, но редактор перехватывает их первым, поэтому его действие и срабатывает. Функциональные клавиши: <strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд, <strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить, <strong>F9</strong> — новый документ.",
-      en: "The file buttons also have hotkeys: <strong>Ctrl+S</strong> — save the ready HTML, <strong>Ctrl+Shift+S</strong> — download the .md, <strong>Ctrl+O</strong> — open a .md. The browser knows these combinations too, but the editor catches them first, so its action is the one that runs. Function keys: <strong>F1</strong> — help, <strong>Shift+F1</strong> — the command palette, <strong>F2</strong> — rename the document, <strong>Shift+F2</strong> — delete, <strong>F9</strong> — a new document.",
+      ru: "Кнопки файла работают и по горячим клавишам: <strong>Ctrl+S</strong> — сохранить .md, <strong>Ctrl+Alt+S</strong> — сохранить .md как новый файл, <strong>Ctrl+Shift+S</strong> — сохранить готовый HTML, <strong>Ctrl+O</strong> — открыть .md. Браузер тоже умеет эти сочетания, но редактор перехватывает их первым, поэтому его действие и срабатывает. Функциональные клавиши: <strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд, <strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить, <strong>F9</strong> — новый документ.",
+      en: "The file buttons also have hotkeys: <strong>Ctrl+S</strong> — save the .md, <strong>Ctrl+Alt+S</strong> — save the .md as a new file, <strong>Ctrl+Shift+S</strong> — save the ready HTML, <strong>Ctrl+O</strong> — open a .md. The browser knows these combinations too, but the editor catches them first, so its action is the one that runs. Function keys: <strong>F1</strong> — help, <strong>Shift+F1</strong> — the command palette, <strong>F2</strong> — rename the document, <strong>Shift+F2</strong> — delete, <strong>F9</strong> — a new document.",
     },
 
     // --- markdown -----------------------------------------------------------
@@ -306,7 +306,7 @@
         "<li><strong>Ctrl+Space</strong> — подсказки: делимитеры, блоки, ключи настроек, разметка markdown. Внутри формулы подсказки появляются сами.</li>" +
         "<li><strong>F1</strong> — справка, <strong>Shift+F1</strong> — палитра команд (она же <strong>Ctrl+Alt+P</strong>). F1 привычнее видеть справкой, поэтому палитра переехала.</li>" +
         "<li><strong>F2</strong> — переименовать документ, <strong>Shift+F2</strong> — удалить документ, <strong>F9</strong> — новый документ. То же самое делают кнопки рядом со списком документов.</li>" +
-        "<li><strong>Ctrl+S</strong> — сохранить готовый HTML, <strong>Ctrl+Shift+S</strong> — скачать .md, <strong>Ctrl+O</strong> — открыть .md с диска.</li>" +
+        "<li><strong>Ctrl+S</strong> — сохранить .md, <strong>Ctrl+Alt+S</strong> — сохранить как новый файл, <strong>Ctrl+Shift+S</strong> — готовый HTML, <strong>Ctrl+O</strong> — открыть .md с диска.</li>" +
         "<li><strong>F8</strong> и <strong>Shift+F8</strong> — следующая и предыдущая ошибка в документе: курсор переходит на строку, а редактор сообщает, что не так. Alt+ё с ошибками показывает их списком вместо предпросмотра. Когда курсор сам встаёт на строку с ошибкой, звучит короткий сигнал.</li>" +
         "</ul>",
       en: "<ul>" +
@@ -316,7 +316,7 @@
         "<li><strong>Ctrl+Space</strong> — suggestions: delimiters, blocks, settings keys, markdown markup. Inside a formula they appear by themselves.</li>" +
         "<li><strong>F1</strong> — help, <strong>Shift+F1</strong> — the command palette (also <strong>Ctrl+Alt+P</strong>). F1 is more usually expected to bring up help, so the palette moved.</li>" +
         "<li><strong>F2</strong> — rename the document, <strong>Shift+F2</strong> — delete it, <strong>F9</strong> — a new document. The buttons next to the document list do the same.</li>" +
-        "<li><strong>Ctrl+S</strong> — save the ready HTML, <strong>Ctrl+Shift+S</strong> — download the .md, <strong>Ctrl+O</strong> — open a .md from disk.</li>" +
+        "<li><strong>Ctrl+S</strong> — save the .md, <strong>Ctrl+Alt+S</strong> — save as a new file, <strong>Ctrl+Shift+S</strong> — the ready HTML, <strong>Ctrl+O</strong> — open a .md from disk.</li>" +
         "<li><strong>F8</strong> and <strong>Shift+F8</strong> — the next and the previous error in the document: the cursor moves to the line and the editor says what is wrong. Alt+` with errors shows them as a list instead of the preview. When the cursor lands on a line with an error, a short signal sounds.</li>" +
         "</ul>",
     },
@@ -358,7 +358,7 @@
       ru: "<ul>" +
         "<li><strong>Показать предпросмотр</strong> — то же, что Alt+ё.</li>" +
         "<li><strong>Сохранить готовый HTML</strong> — страница для чтения и раздачи, с формулами и, если включено, с досками и графиками.</li>" +
-        "<li><strong>Скачать .md</strong> — сохранить исходник, чтобы вернуться к работе позже.</li>" +
+        "<li><strong>Сохранить .md</strong> — записать исходник: в тот же файл на диске, а если его ещё нет — спросить, куда. Браузеры без доступа к файлам (Firefox, Safari) кладут копию в «Загрузки» и говорят об этом.</li>" +
         "<li><strong>Открыть .md</strong> — открыть файл с диска.</li>" +
         "<li><strong>Пример:</strong> — готовые документы: демо редактора, партия Морфи и пример с комментариями и вариантами.</li>" +
         "<li><strong>Переименовать</strong> и <strong>Удалить</strong> — про текущий, открытый документ. Стоят рядом со списком документов; то же делают F2 и Shift+F2.</li>" +
@@ -366,7 +366,7 @@
       en: "<ul>" +
         "<li><strong>Show preview</strong> — the same as Alt+`.</li>" +
         "<li><strong>Export HTML</strong> — a page for reading and sharing, with formulas and, if switched on, boards and graphs.</li>" +
-        "<li><strong>Download .md</strong> — save the source to come back to later.</li>" +
+        "<li><strong>Save .md</strong> — write the source: into the same file on disk, or ask where if there is none yet. Browsers without file access (Firefox, Safari) put a copy into “Downloads” and say so.</li>" +
         "<li><strong>Open .md</strong> — open a file from disk.</li>" +
         "<li><strong>Example:</strong> — ready-made documents: the editor demo, Morphy's game, and a sample with comments and variations.</li>" +
         "<li><strong>Rename</strong> and <strong>Delete</strong> act on the current, open document. They sit next to the document list; F2 and Shift+F2 do the same.</li>" +

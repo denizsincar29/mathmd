@@ -1579,6 +1579,119 @@ function openMd() {
   document.getElementById("open-input").click();
 }
 
+// Текст с диска становится документом с тем же именем: повторное открытие того
+// же файла продолжает его, а не заводит копию. Общий путь для обоих способов
+// открытия — выбора файла и настоящего дескриптора.
+function applyOpenedFile(name, text) {
+  clearTimeout(saveTimer);
+  if (store) {
+    if (store.current()) store.setValue(editor.getValue());
+    store.openNamed(name, text);
+    docTouched = true;
+    refreshDocSelect();
+  }
+  setEditorValue(text);
+  showPreviewAndFocus(1);
+}
+
+// --- Файлы на диске ---------------------------------------------------------
+// Chromium умеет работать с настоящим файлом: showOpenFilePicker отдаёт
+// дескриптор, и сохранение пишет прямо в тот же файл, а не кладёт ещё одну
+// копию в «Загрузки». Firefox и Safari такого API не дают — там остаётся
+// прежний путь: выбор файла через <input type=file> и скачивание. Для незрячего
+// разница не косметическая: папку загрузок он не видит и не может на глаз
+// определить, какая из трёх копий свежая.
+const fsApi = typeof window.showOpenFilePicker === "function";
+const MD_TYPES = [
+  { description: "Markdown", accept: { "text/markdown": [".md", ".markdown"], "text/plain": [".txt"] } },
+];
+
+let diskHandle = null;  // FileSystemFileHandle файла, с которым сейчас работаем
+let diskDocId = null;   // какому документу он принадлежит
+
+// Дескриптор помним вместе с документом: переключение документа его не роняет
+// (вернулся к документу — пишешь снова в тот же файл). Дескрипторы живут только
+// эту сессию: после перезагрузки страницы браузер их не отдаёт обратно, и
+// первое сохранение снова спросит, куда писать.
+function bindDiskHandle(handle) {
+  diskDocId = store && store.current() ? store.current().id : null;
+  diskHandle = handle;
+}
+
+function currentDiskHandle() {
+  if (!diskHandle) return null;
+  const id = store && store.current() ? store.current().id : null;
+  return id === diskDocId ? diskHandle : null;
+}
+
+function suggestedName() {
+  const d = store && store.current();
+  const name = d && d.name ? d.name : "document.md";
+  return /\.(md|markdown|txt)$/i.test(name) ? name : name.replace(/\.[^.]*$/, "") + ".md";
+}
+
+function sameFileName(handle, name) {
+  return !!handle && handle.name === name;
+}
+
+async function openFromDisk() {
+  if (!fsApi) {
+    openMd();
+    return;
+  }
+  let handle = null;
+  try {
+    [handle] = await window.showOpenFilePicker({ types: MD_TYPES, multiple: false });
+  } catch (err) {
+    if (err && err.name === "AbortError") return; // человек передумал — молчим
+    openMd(); // незнакомая ошибка: уходим на привычный путь
+    return;
+  }
+  try {
+    const file = await handle.getFile();
+    applyOpenedFile(file.name, await file.text());
+    bindDiskHandle(handle);
+    speak(I18N.t("msg.fileOpenedDisk", { name: file.name }), fileStatusEl);
+  } catch (err) {
+    speak(I18N.t("msg.fileReadFailed", { name: handle.name }), fileStatusEl);
+  }
+}
+
+// Сохранение .md: в тот же файл, если он известен; иначе спрашиваем, куда
+// (или скачиваем — там, где API нет). asNew — «Сохранить как»: спросить всегда.
+async function saveMdToDisk({ asNew = false } = {}) {
+  if (!fsApi) {
+    saveMd();
+    return;
+  }
+  let handle = asNew ? null : currentDiskHandle();
+  if (!handle) {
+    try {
+      handle = await window.showSaveFilePicker({ suggestedName: suggestedName(), types: MD_TYPES });
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+      saveMd(); // незнакомая ошибка: привычный путь надёжнее
+      return;
+    }
+    // Сначала отдать текущее состояние в хранилище: имя документа вот-вот
+    // сменится на имя файла, и незаписанная правка осталась бы под старым.
+    if (docTouched) persistNow();
+    // Имя файла становится именем документа: дальше они совпадают.
+    if (store && store.current() && !sameFileName(handle, store.current().name)) {
+      if (store.rename(handle.name)) refreshDocSelect();
+    }
+    bindDiskHandle(handle);
+  }
+  try {
+    const writable = await handle.createWritable();
+    await writable.write(editor.getValue());
+    await writable.close();
+    speak(I18N.t("msg.mdSavedToDisk", { name: handle.name }), fileStatusEl);
+  } catch (err) {
+    speak(I18N.t("msg.saveFailed", { name: handle.name }), fileStatusEl);
+  }
+}
+
 // Открыть чужой текст (пример по ссылке, документ по URL) отдельным
 // документом: прежний черновик не пропадает, а остаётся в списке «Документ».
 // Одно и то же имя переиспользуется — повторное открытие примера продолжает
@@ -2514,28 +2627,35 @@ require(["vs/editor/editor.main"], function () {
         speak(I18N.t("msg.previewHidden"));
         return;
       }
-      // Файл: Ctrl+S — готовый HTML, Ctrl+Shift+S — .md, Ctrl+O — открыть .md.
-      // Первые две браузер обычно забирает себе (сохранить страницу), поэтому
-      // перехватываем их здесь, до браузера.
+      // Файл: Ctrl+S — сохранить .md (в тот же файл, если он известен),
+      // Ctrl+Shift+S — готовый HTML, Ctrl+Alt+S — сохранить как новый файл,
+      // Ctrl+O — открыть .md. Ctrl+S и Ctrl+Shift+S браузер обычно забирает
+      // себе (сохранить страницу), поэтому перехватываем их здесь, до браузера.
       if (ctrl && !e.altKey) {
         if (e.code === "KeyS" && !e.shiftKey) {
           e.preventDefault();
           e.stopImmediatePropagation();
-          exportHtml();
+          saveMdToDisk();
           return;
         }
         if (e.code === "KeyS" && e.shiftKey) {
           e.preventDefault();
           e.stopImmediatePropagation();
-          saveMd();
+          exportHtml();
           return;
         }
         if (e.code === "KeyO" && !e.shiftKey) {
           e.preventDefault();
           e.stopImmediatePropagation();
-          openMd();
+          openFromDisk();
           return;
         }
+      }
+      if (ctrl && e.altKey && !e.shiftKey && e.code === "KeyS") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        saveMdToDisk({ asNew: true });
+        return;
       }
       // F-клавиши. Незнакомую отдаём браузеру: он вправе перезагрузить
       // страницу по F5 или открыть поиск по F3.
@@ -2612,8 +2732,8 @@ require(["vs/editor/editor.main"], function () {
     editor.focus();
   });
   document.getElementById("btn-export").addEventListener("click", exportHtml);
-  document.getElementById("btn-save").addEventListener("click", saveMd);
-  document.getElementById("btn-open").addEventListener("click", openMd);
+  document.getElementById("btn-save").addEventListener("click", () => saveMdToDisk());
+  document.getElementById("btn-open").addEventListener("click", openFromDisk);
   const exampleSelect = document.getElementById("example-select");
   exampleSelect.addEventListener("change", () => {
     const name = exampleSelect.value;
@@ -2630,18 +2750,10 @@ require(["vs/editor/editor.main"], function () {
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result);
-      clearTimeout(saveTimer);
-      if (store) {
-        // Файл с диска становится документом с тем же именем: повторное
-        // открытие того же файла продолжает его, а не заводит копию.
-        if (store.current()) store.setValue(editor.getValue());
-        store.openNamed(file.name, text);
-        docTouched = true;
-        refreshDocSelect();
-      }
-      setEditorValue(text);
-      showPreviewAndFocus(1);
-      speak(I18N.t("msg.fileOpened", { name: file.name }), fileStatusEl);
+      applyOpenedFile(file.name, text);
+      // Без File System Access API сохранение умеет только скачивать копию —
+      // об этом честнее сказать сразу, чем после первой потери файла.
+      speak(I18N.t(fsApi ? "msg.fileOpened" : "msg.fileOpenedNoDisk", { name: file.name }), fileStatusEl);
     };
     reader.readAsText(file, "utf-8");
     event.target.value = "";
@@ -2713,7 +2825,8 @@ require(["vs/editor/editor.main"], function () {
     add({ id: "mathmd.previewHide", label: I18N.t("cmd.previewHide"), run: () => { previewSection.hidden = true; speak(I18N.t("msg.previewHidden"), fileStatusEl); } });
     add({ id: "mathmd.desmosRerender", label: I18N.t("cmd.desmosRerender"), run: () => { previewSection.hidden = false; renderPreview(); } });
     add({ id: "mathmd.frontmatter", label: I18N.t("cmd.frontmatter"), run: insertFrontmatterCmd });
-    add({ id: "mathmd.saveMd", label: I18N.t("cmd.saveMd"), run: saveMd });
+    add({ id: "mathmd.saveMd", label: I18N.t("cmd.saveMd"), run: () => saveMdToDisk() });
+    add({ id: "mathmd.saveMdAs", label: I18N.t("cmd.saveMdAs"), run: () => saveMdToDisk({ asNew: true }) });
     add({ id: "mathmd.exportHtml", label: I18N.t("cmd.exportHtml"), run: exportHtml });
     add({ id: "mathmd.help", label: I18N.t("cmd.help"), run: openHelpCmd });
     add({ id: "mathmd.manual", label: I18N.t("cmd.manual"), run: openManual });
