@@ -6,7 +6,7 @@
 // Шахматные доски: fenced-блок ```chess ... ``` рендерится в <chessjax-board>.
 // Импорт с CDN (jsdelivr, GH-тег v0.6.1) по side-effect: регистрирует
 // кастомный элемент и document-level делегат для кнопок <button chess="id" move="N">.
-import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.7.1/chessjax.js";
+import "https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.0/chessjax.js";
 
 const previewEl = document.getElementById("preview");
 const previewStatusEl = document.getElementById("preview-status");
@@ -212,6 +212,13 @@ function extractChess(md) {
   });
 }
 
+// Код языка документа из frontmatter, если он из тех, что знает chessjax.
+function docLangCode() {
+  const v = fmState && typeof fmState.lang === "string" ? fmState.lang.trim().toLowerCase() : "";
+  const code = v.slice(0, 2);
+  return ["ru", "en", "de", "tr"].indexOf(code) !== -1 ? code : "";
+}
+
 function chessSlot(idx) {
   const attrs = chessBlocks[idx];
   if (!attrs) return "";
@@ -223,6 +230,13 @@ function chessSlot(idx) {
       if (k === "id" || k in merged) continue;
       merged[k] = yamlAttr(fmState.chess[k]);
     }
+  }
+  // Язык озвучки доски: атрибут блока → chess.lang из frontmatter → язык
+  // документа (frontmatter lang). Так доска в немецком документе говорит
+  // по-немецки и в предпросмотре, и в готовом HTML.
+  if (!("lang" in merged)) {
+    const docLang = docLangCode();
+    if (docLang) merged.lang = docLang;
   }
   const id = merged.id || "chessjax-" + (idx + 1);
   const attrHtml = Object.entries({ id, ...merged })
@@ -1220,7 +1234,7 @@ window.MathJax = ${JSON.stringify(mjConfig)};
 
   let chessBlock = "";
   if (mods.chessjax) {
-    chessBlock = `<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.7.1/chessjax.js"></script>
+    chessBlock = `<script type="module" src="https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.0/chessjax.js"></script>
 <script>
 // Кнопки-ходы <button chess="id" move="N"> в тексте. Свой делегат chessjax
 // навешивает при загрузке модуля, но при показе готового HTML через
@@ -1735,6 +1749,21 @@ function loadAsDocument(name, text) {
   setEditorValue(text);
 }
 
+// Примеры лежат по языкам: examples/ru/demo.md, examples/en/demo.md и так далее.
+// Если перевода нет (или это старая ссылка на плоский examples/<имя>.md) — берём
+// общий файл. Возвращает текст или null.
+async function fetchExample(safe) {
+  for (const url of ["examples/" + I18N.getLang() + "/" + safe + ".md", "examples/" + safe + ".md"]) {
+    const res = await fetch(url);
+    if (res.ok) return await res.text();
+  }
+  return null;
+}
+
+// Последний открытый пример: имя и ровно тот текст, что лежит в редакторе.
+// По нему смена языка перечитывает пример — если человек его ещё не правил.
+let exampleState = null;
+
 // Открыть пример из examples/: загрузить в редактор и сразу показать
 // предпросмотр. Имя — простой файл (латиница/цифры/_-), без путей.
 async function openExample(name) {
@@ -1743,15 +1772,16 @@ async function openExample(name) {
     speak(I18N.t("msg.badExample"), fileStatusEl);
     return;
   }
-  const res = await fetch("examples/" + safe + ".md");
-  if (!res.ok) {
+  const text = await fetchExample(safe);
+  if (text === null) {
     speak(I18N.t("msg.exampleNotFound", { name: safe }), fileStatusEl);
     return;
   }
   // Пример — отдельный документ: то, что человек писал, остаётся в списке
   // «Документ» и возвращается оттуда, а не растворяется в истории правок.
   const separate = !!store && !store.isEmpty();
-  loadAsDocument(safe + ".md", await res.text());
+  exampleState = { name: safe, text };
+  loadAsDocument(safe + ".md", text);
   showPreviewAndFocus(1);
   speak(
     I18N.t(separate ? "msg.exampleAsDocument" : "msg.exampleOpened", { name: safe }),
@@ -1824,12 +1854,12 @@ async function loadFromUrl() {
       return;
     }
     const safe = name.replace(/\.md$/i, "");
-    const res = await fetch("examples/" + safe + ".md");
-    if (!res.ok) {
+    const md = await fetchExample(safe);
+    if (md === null) {
       speak(I18N.t("msg.exampleNotFound", { name: safe }), fileStatusEl);
       return;
     }
-    const md = await res.text();
+    exampleState = { name: safe, text: md };
     const preview = params.get("preview");
     const standalone = preview === "html" || preview === "readyhtml";
     // Готовый HTML (раздача материала) отдаём всегда: это не редактирование.
@@ -2966,7 +2996,7 @@ require(["vs/editor/editor.main"], function () {
       add({ id: "mathmd.insert." + item.labelKey, label: I18N.t(item.labelKey), contextMenuGroupId: "mathmd/insert", contextMenuOrder: i, run: () => insertItem(item) });
     });
   }
-  function changeUiLang(lang) {
+  async function changeUiLang(lang) {
     I18N.setLang(lang);
     toolbarEl.replaceChildren();
     buildToolbar();
@@ -2976,6 +3006,15 @@ require(["vs/editor/editor.main"], function () {
     docSelectSig = ""; // пункт «Новый документ» переводится — пересобрать список
     refreshDocSelect();
     speak(I18N.t("msg.langChanged", { lang: I18N.langName(lang) }), fileStatusEl);
+    // Пример берётся из папки своего языка: если он открыт и человек его не
+    // правил — перечитываем на новом языке, иначе правка человека важнее.
+    if (exampleState && editor.getValue() === exampleState.text) {
+      const text = await fetchExample(exampleState.name);
+      if (text !== null && text !== exampleState.text) {
+        exampleState = { name: exampleState.name, text };
+        loadAsDocument(exampleState.name + ".md", text);
+      }
+    }
     editor.focus();
   }
   function insertFrontmatterCmd() {

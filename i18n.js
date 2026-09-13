@@ -154,6 +154,12 @@
       de: "mathmd-Demo",
       tr: "mathmd demosu",
     },
+    "ui.exampleMorphy": {
+      ru: "Опера-партия",
+      en: "The Opera Game",
+      de: "Die Opernpartie",
+      tr: "Opera Partisi",
+    },
     "ui.exampleVariations": {
       ru: "Комментарии и варианты",
       en: "Comments and variations",
