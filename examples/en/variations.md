@@ -15,7 +15,7 @@ replaces the move and is played back with the V key.
 ## Italian Game with variations
 
 ```chess
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.0/examples/variations.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.1/examples/variations.pgn
 move=3
 ```
 

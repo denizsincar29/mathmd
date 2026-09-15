@@ -49,7 +49,7 @@ Und das ist das Ende von Morphys Opernpartie — ein Brett aus einer PGN, geöff
 beim letzten Zug:
 
 ```chess
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.0/examples/morphy.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.1/examples/morphy.pgn
 move=17
 ```
 
