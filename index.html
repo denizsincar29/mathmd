@@ -9,9 +9,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=65">
-<script src="i18n.js?v=65"></script>
-<script src="docstore.js?v=65"></script>
+<link rel="stylesheet" href="style.css?v=66">
+<script src="i18n.js?v=66"></script>
+<script src="docstore.js?v=66"></script>
 
 <script>
   // MathJax must be configured before the MathJax script loads.
@@ -102,6 +102,7 @@
       <button id="btn-export" type="button" data-i18n="ui.btnExport">Сохранить готовый HTML</button>
       <button id="btn-save" type="button" data-i18n="ui.btnSave">Сохранить .md</button>
       <button id="btn-open" type="button" data-i18n="ui.btnOpen">Открыть .md</button>
+      <button id="btn-cloud" type="button" data-i18n="ui.btnCloud">Облако документов (Alt+O)</button>
       <button id="btn-help" type="button" data-i18n="ui.btnHelp">Справка</button>
       <input id="open-input" type="file" accept=".md,.markdown,.txt,text/markdown" hidden>
       <label for="doc-select" data-i18n="ui.docLabel">Документ:</label>
@@ -155,11 +156,50 @@
   <h3 data-i18n="help.fileTitle">Файл и вывод</h3>
   <p data-i18n="help.fileText">Открыть .md — файл с диска, Скачать .md — сохранить исходник, Сохранить готовый HTML — скачать страницу для раздачи. Примеры открываются из списка «Пример:».</p>
 
+  <h3 data-i18n="help.cloudTitle">Облако документов</h3>
+  <p data-i18n="help.cloudText">Alt+O — список документов в облаке: выбрать и открыть. Открытый из облака документ сохраняется туда же по <strong>Ctrl+S</strong>, Ctrl+Alt+S — сохранить под новым адресом в облаке. Ссылка <code>#cloud=имя/путь</code> открывает документ из облака сразу.</p>
+
   <p><a href="manual.html" data-manual-link data-i18n="help.manualLink">Открыть полное руководство</a></p>
 
   <button id="help-close" type="button" data-i18n="help.close">Закрыть справку (Esc)</button>
 </dialog>
 
-<script src="script.js?v=65" type="module"></script>
+<dialog id="cloud-dialog" aria-labelledby="cloud-heading">
+  <h2 id="cloud-heading" tabindex="-1" data-i18n="cloud.title">Облако документов</h2>
+  <p id="cloud-hint" class="hint"></p>
+
+  <!-- Вход: логин и пароль от облака. Сессия ставится кукой, поэтому после
+       входа и редактор, и страница облака видят одного и того же человека. -->
+  <form id="cloud-login-form" hidden>
+    <h3 data-i18n="cloud.loginTitle">Вход в облако</h3>
+    <label for="cloud-login-name" data-i18n="cloud.login">Логин или почта</label>
+    <input id="cloud-login-name" name="login" autocomplete="username">
+    <label for="cloud-login-pass" data-i18n="cloud.password">Пароль</label>
+    <input id="cloud-login-pass" name="password" type="password" autocomplete="current-password">
+    <button type="submit" data-i18n="cloud.signIn">Войти</button>
+    <p class="hint" data-i18n="cloud.registerHint">Аккаунта нет? Он заводится в облаке по приглашению — кнопка «Открыть облако» ниже.</p>
+  </form>
+
+  <div id="cloud-list-block" hidden>
+    <h3 id="cloud-list-heading" data-i18n="cloud.listTitle">Мои документы</h3>
+    <ul id="cloud-list" class="cloud-list" tabindex="-1" aria-labelledby="cloud-list-heading"></ul>
+  </div>
+
+  <form id="cloud-save-form" hidden>
+    <h3 data-i18n="cloud.saveTitle">Сохранить в облако</h3>
+    <label for="cloud-path" data-i18n="cloud.pathLabel">Адрес в облаке: папка/имя</label>
+    <input id="cloud-path" name="path" placeholder="ДЗ/ИИ/задачи" autocomplete="off">
+    <button id="cloud-save-submit" type="submit" data-i18n="cloud.saveNew">Сохранить документ в облако</button>
+  </form>
+
+  <p class="cloud-actions">
+    <button id="cloud-open-site" type="button" data-i18n="cloud.openSite">Открыть облако в браузере</button>
+    <button id="cloud-logout" type="button" hidden data-i18n="cloud.signOut">Выйти из облака</button>
+    <button id="cloud-close" type="button" data-i18n="cloud.close">Закрыть (Esc)</button>
+  </p>
+</dialog>
+
+<script src="cloud.js?v=66"></script>
+<script src="script.js?v=66" type="module"></script>
 </body>
 </html>

@@ -15,6 +15,8 @@ and AsciiMath formulas, Desmos graphs, and chess boards. Designed for NVDA.
 - **Linter** — unclosed formulas, broken chess blocks and dangling move
   buttons are underlined in the editor; `Alt+ё` shows the list instead of the
   preview, `F8` / `Shift+F8` jump between errors.
+- **Cloud documents** — open and save documents in an
+  [mdcloud](https://github.com/denizsincar29/mdcloud) instance (`Alt+O`).
 
 `error.mp3` is the accessibility error signal from
 [VS Code](https://github.com/microsoft/vscode) (`src/vs/platform/accessibilitySignal/browser/media/error.mp3`),
@@ -74,9 +76,10 @@ text never pops the list.
 | `Ctrl+Space` | Scaffolding suggestions (delimiters, blocks, keys) |
 | `F8` / `Shift+F8` | Next / previous error, cursor jumps to the line |
 | `Escape` | Leave the editor (focus goes to the preview button) |
-| `Ctrl+S` | Save `.md` (into the same file on disk) |
-| `Ctrl+Alt+S` | Save `.md` as a new file |
+| `Ctrl+S` | Save (into the cloud document or the same file on disk) |
+| `Ctrl+Alt+S` | Save as a new cloud address / a new file |
 | `Ctrl+Shift+S` | Save the standalone HTML |
+| `Alt+O` | Cloud documents: list, open, save, sign in |
 
 ## File & export
 
@@ -90,6 +93,28 @@ text never pops the list.
 - Graphs are embedded into the exported HTML; chess boards render as static
   semantic tables, so the file works without JavaScript.
 - The **Examples** dropdown loads demo documents.
+
+## Cloud documents
+
+`Alt+O` (or the **Cloud documents** button) talks to an
+[mdcloud](https://github.com/denizsincar29/mdcloud) server — by default
+`https://mdcloud.denizsincar.ru`; set `window.MATHMD_CLOUD` before `cloud.js`
+loads to point somewhere else.
+
+- The dialog signs you in (username/password) and lists your documents; picking
+  one opens it as a normal editor document, with the local draft kept in the
+  **Document** list.
+- `Ctrl+S` on a document that came from the cloud writes it back to the cloud:
+  the server bumps *edited at*, and the cloud page shows the new text. Documents
+  that came from a file still save to that file.
+- `Ctrl+Alt+S` saves under a new cloud address; the *Save to the cloud* form in
+  the dialog does the same for the current document.
+- A link `mathmd.denizsincar.ru/#cloud=owner/path` (fragment, never sent to the
+  server) opens that document straight away — it is what the cloud page's
+  **Edit** button uses, so the path stays out of server logs.
+- The session is an httpOnly cookie on the shared parent domain, so signing in
+  once covers both the editor and the cloud page. `cloud.js` holds no tokens —
+  the browser attaches the cookie itself.
 
 ## Run locally
 

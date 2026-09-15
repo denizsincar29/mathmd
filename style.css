@@ -462,3 +462,41 @@ h2 {
 #help-close {
   margin-top: 0.6rem;
 }
+
+/* Окно облака: тот же native <dialog>, что и справка. */
+#cloud-dialog {
+  max-width: 42rem;
+  max-height: 82vh;
+  overflow: auto;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #1c2126;
+  color: #e6e6e6;
+  padding: 1rem 1.4rem;
+}
+#cloud-dialog h3 {
+  margin-top: 1.1rem;
+}
+#cloud-dialog label {
+  display: block;
+  margin-top: 0.5rem;
+}
+#cloud-dialog input {
+  width: 100%;
+  max-width: 28rem;
+}
+.cloud-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.4rem 0;
+}
+.cloud-list li {
+  margin: 0.35rem 0;
+}
+.cloud-list button {
+  width: 100%;
+  text-align: left;
+}
+.cloud-actions {
+  margin-top: 1rem;
+}

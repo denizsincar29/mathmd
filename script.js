@@ -1648,6 +1648,40 @@ function sameFileName(handle, name) {
   return !!handle && handle.name === name;
 }
 
+// --- Облако -----------------------------------------------------------------
+// Адрес документа в облаке помним вместе с документом — так же, как дескриптор
+// файла: переключение документа его не роняет, а вернувшись к документу, снова
+// сохраняешь туда же. Живёт адрес эту сессию: после перезагрузки страницы
+// документ снова просто локальный, пока его не откроют из облака.
+
+let cloudDoc = null;   // { owner, path } — адрес этого документа в облаке
+let cloudDocId = null; // какому документу он принадлежит
+
+function currentDocId() {
+  return store && store.current() ? store.current().id : null;
+}
+
+function bindCloudDoc(owner, path) {
+  cloudDocId = currentDocId();
+  cloudDoc = { owner: owner, path: path };
+}
+
+function currentCloudDoc() {
+  if (!cloudDoc) return null;
+  return currentDocId() === cloudDocId ? cloudDoc : null;
+}
+
+// Имя документа для облачного файла — последний сегмент пути. Так «ДЗ/ИИ/задачи»
+// открывается как «задачи.md»: в списке документов видно, что это за работа.
+function cloudDocName(path) {
+  const last = String(path).split("/").filter(Boolean).pop() || "cloud";
+  return /\.(md|markdown|txt)$/i.test(last) ? last : last + ".md";
+}
+
+function cloudAvailable() {
+  return Boolean(window.MathmdCloud);
+}
+
 async function openFromDisk() {
   if (!fsApi) {
     openMd();
@@ -2693,11 +2727,13 @@ require(["vs/editor/editor.main"], function () {
       // Ctrl+Shift+S — готовый HTML, Ctrl+Alt+S — сохранить как новый файл,
       // Ctrl+O — открыть .md. Ctrl+S и Ctrl+Shift+S браузер обычно забирает
       // себе (сохранить страницу), поэтому перехватываем их здесь, до браузера.
+      // У облачного документа Ctrl+S пишет в облако, а не в файл на диске:
+      // где документ живёт, туда и сохраняется.
       if (ctrl && !e.altKey) {
         if (e.code === "KeyS" && !e.shiftKey) {
           e.preventDefault();
           e.stopImmediatePropagation();
-          saveMdToDisk();
+          saveCurrent();
           return;
         }
         if (e.code === "KeyS" && e.shiftKey) {
@@ -2716,7 +2752,17 @@ require(["vs/editor/editor.main"], function () {
       if (ctrl && e.altKey && !e.shiftKey && e.code === "KeyS") {
         e.preventDefault();
         e.stopImmediatePropagation();
-        saveMdToDisk({ asNew: true });
+        // Для облачного документа «сохранить как» — это новый адрес в облаке.
+        if (currentCloudDoc()) cloudSave({ asNew: true });
+        else saveMdToDisk({ asNew: true });
+        return;
+      }
+      // Alt+O (и Ctrl+Alt+O) — облако документов. F8 занят переходом по
+      // ошибкам, поэтому у облака своя клавиша: «О» как «Облако».
+      if (e.altKey && !e.shiftKey && e.code === "KeyO") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        openCloudDialog();
         return;
       }
       // F-клавиши. Незнакомую отдаём браузеру: он вправе перезагрузить
@@ -2956,6 +3002,314 @@ require(["vs/editor/editor.main"], function () {
   document.getElementById("btn-manual").addEventListener("click", openManual);
   syncManualLinks();
 
+  // --- Облако ----------------------------------------------------------------
+  // Диалог облака — про то, что лежит на сервере. Вход живёт в куке, поэтому
+  // «войти» здесь значит просто попросить сервер поставить куку; после этого
+  // и редактор, и облако видят одну и ту же сессию.
+  const cloudDialog = document.getElementById("cloud-dialog");
+  const cloudHeading = document.getElementById("cloud-heading");
+  const cloudHint = document.getElementById("cloud-hint");
+  const cloudLoginForm = document.getElementById("cloud-login-form");
+  const cloudListBlock = document.getElementById("cloud-list-block");
+  const cloudList = document.getElementById("cloud-list");
+  const cloudSaveForm = document.getElementById("cloud-save-form");
+  const cloudPathInput = document.getElementById("cloud-path");
+  const cloudSaveBtn = document.getElementById("cloud-save-submit");
+  const cloudLogoutBtn = document.getElementById("cloud-logout");
+  const cloudOpenSiteBtn = document.getElementById("cloud-open-site");
+  const cloudCloseBtn = document.getElementById("cloud-close");
+  let cloudUser = null;       // кто вошёл, по данным сервера
+  let cloudReturnFocus = null;
+  let cloudBusy = false;      // в диалоге идёт запрос — не дёргаем его дважды
+
+  // cloudSay — объявление для скринридера: и в подсказку диалога (её прочитают
+  // при переходе по Tab), и в live-регион (её услышат сразу).
+  function cloudSay(text) {
+    if (cloudHint) cloudHint.textContent = text;
+    speak(text, fileStatusEl);
+  }
+
+  function cloudPaint() {
+    const signed = Boolean(cloudUser);
+    if (cloudLoginForm) cloudLoginForm.hidden = signed;
+    if (cloudListBlock) cloudListBlock.hidden = !signed;
+    if (cloudSaveForm) cloudSaveForm.hidden = !signed;
+    if (cloudLogoutBtn) cloudLogoutBtn.hidden = !signed;
+    if (cloudHint) {
+      cloudHint.textContent = signed
+        ? I18N.t("cloud.signedAs", { name: cloudUser.username })
+        : I18N.t("cloud.signedOut");
+    }
+    if (cloudSaveBtn) {
+      const bound = currentCloudDoc();
+      cloudSaveBtn.textContent = I18N.t(bound ? "cloud.saveCurrent" : "cloud.saveNew");
+    }
+  }
+
+  async function cloudFillList() {
+    if (!cloudUser) return;
+    const docs = await window.MathmdCloud.list();
+    cloudList.replaceChildren();
+    for (const doc of docs) {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      const state = doc.visibility === "public" ? I18N.t("cloud.public") : I18N.t("cloud.private");
+      const when = new Date(doc.updated_at).toLocaleString(I18N.getLang());
+      btn.textContent = I18N.t("cloud.listItem", {
+        name: doc.title || doc.path,
+        path: doc.path,
+        state: state,
+        when: when,
+      });
+      btn.addEventListener("click", () => {
+        cloudDialog.close();
+        cloudOpen(doc.owner || cloudUser.username, doc.path);
+      });
+      li.append(btn);
+      cloudList.append(li);
+    }
+    if (!docs.length) {
+      const li = document.createElement("li");
+      li.textContent = I18N.t("cloud.listEmpty");
+      cloudList.append(li);
+    }
+  }
+
+  // cloudRefresh перечитывает и «кто вошёл», и список. Ошибки не глотаем: без
+  // входа это обычное состояние, а не поломка.
+  async function cloudRefresh(announce) {
+    if (!cloudAvailable()) {
+      cloudSay(I18N.t("msg.cloudUnavailable"));
+      return;
+    }
+    if (cloudBusy) return;
+    cloudBusy = true;
+    try {
+      cloudUser = await window.MathmdCloud.me();
+      cloudPaint();
+      if (cloudUser) {
+        await cloudFillList();
+        if (announce) cloudSay(I18N.t("cloud.signedAs", { name: cloudUser.username }));
+      } else if (announce) {
+        cloudSay(I18N.t("cloud.signedOut"));
+      }
+    } catch (err) {
+      cloudSay(I18N.t("msg.cloudError", { text: err.message }));
+    } finally {
+      cloudBusy = false;
+    }
+  }
+
+  function openCloudDialog() {
+    if (!cloudAvailable()) {
+      speak(I18N.t("msg.cloudUnavailable"), fileStatusEl);
+      return;
+    }
+    if (cloudDialog.open) {
+      if (cloudHeading) cloudHeading.focus();
+      return;
+    }
+    cloudReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    cloudDialog.showModal();
+    cloudPaint();
+    // Фокус на заголовок: сначала «что открылось», потом поля.
+    if (cloudHeading) cloudHeading.focus();
+    cloudRefresh(false).then(() => {
+      if (!cloudUser && cloudLoginForm) cloudLoginForm.querySelector("input").focus();
+      cloudSay(cloudUser ? I18N.t("cloud.signedAs", { name: cloudUser.username }) : I18N.t("cloud.signedOut"));
+    });
+  }
+
+  cloudDialog.addEventListener("close", () => {
+    if (cloudReturnFocus && document.contains(cloudReturnFocus)) {
+      const dom = editor.getDomNode();
+      if (dom && dom.contains(cloudReturnFocus)) editor.focus();
+      else if (typeof cloudReturnFocus.focus === "function") cloudReturnFocus.focus();
+    } else {
+      editor.focus();
+    }
+  });
+
+  // openFromCloud — открыть документ из облака документом редактора. Локальный
+  // черновик при этом не пропадает: он остаётся в списке «Документ».
+  async function cloudOpen(owner, path) {
+    if (!cloudAvailable()) {
+      speak(I18N.t("msg.cloudUnavailable"), fileStatusEl);
+      return;
+    }
+    speak(I18N.t("msg.cloudLoading", { path: path }), fileStatusEl);
+    try {
+      const doc = await window.MathmdCloud.load(owner, path);
+      const realPath = doc.path || path;
+      loadAsDocument(cloudDocName(realPath), doc.content || "");
+      bindCloudDoc(doc.owner || owner, realPath);
+      speak(I18N.t("msg.cloudOpened", { path: realPath }), fileStatusEl);
+    } catch (err) {
+      if (err.status === 401) {
+        speak(I18N.t("msg.cloudNeedLogin"), fileStatusEl);
+        openCloudDialog();
+        return;
+      }
+      speak(I18N.t("msg.cloudError", { text: err.message }), fileStatusEl);
+    }
+  }
+
+  // cloudSave — Ctrl+S для облачного документа: правит то, что лежит на
+  // сервере. Для нового адреса спрашиваем путь: тем же путём документ и
+  // заводится в облаке.
+  async function cloudSave({ asNew = false } = {}) {
+    if (!cloudAvailable()) {
+      speak(I18N.t("msg.cloudUnavailable"), fileStatusEl);
+      return;
+    }
+    let target = asNew ? null : currentCloudDoc();
+    if (!target) {
+      cloudUser = cloudUser || (await window.MathmdCloud.me().catch(() => null));
+      if (!cloudUser) {
+        speak(I18N.t("msg.cloudNeedLogin"), fileStatusEl);
+        openCloudDialog();
+        return;
+      }
+      const answer = window.prompt(I18N.t("msg.cloudPathPrompt"), suggestedName().replace(/\.md$/i, ""));
+      if (answer === null) return;
+      const clean = answer.trim().replace(/^\/+/, "").replace(/\s+/g, "-");
+      if (!clean) {
+        speak(I18N.t("msg.cloudBadPath"), fileStatusEl);
+        return;
+      }
+      target = { owner: cloudUser.username, path: clean };
+    }
+    try {
+      const md = editor.getValue();
+      const title = (fmState && fmState.title) || docTitleFromMarkdown(md) || "";
+      const doc = await window.MathmdCloud.save(target.owner, target.path, { content: md, title: title });
+      const realPath = doc.path || target.path;
+      bindCloudDoc(doc.owner || target.owner, realPath);
+      // Сохранение идёт в файл — локальный черновик тоже подтягиваем, чтобы
+      // в списке документов имя совпадало с тем, что лежит в облаке.
+      if (docTouched) persistNow();
+      speak(
+        I18N.t(asNew ? "msg.cloudSavedAs" : "msg.cloudSaved", { path: realPath }),
+        fileStatusEl
+      );
+    } catch (err) {
+      if (err.status === 401) {
+        cloudUser = null;
+        speak(I18N.t("msg.cloudNeedLogin"), fileStatusEl);
+        openCloudDialog();
+        return;
+      }
+      speak(I18N.t("msg.cloudSaveFailed", { text: err.message }), fileStatusEl);
+    }
+  }
+
+  // Ctrl+S в облачном документе — это запись в облако, а не файл на диске.
+  function saveCurrent() {
+    if (currentCloudDoc()) cloudSave();
+    else saveMdToDisk();
+  }
+
+  if (document.getElementById("btn-cloud")) {
+    document.getElementById("btn-cloud").addEventListener("click", openCloudDialog);
+  }
+  if (cloudCloseBtn) cloudCloseBtn.addEventListener("click", () => cloudDialog.close());
+  if (cloudOpenSiteBtn) {
+    cloudOpenSiteBtn.addEventListener("click", () => {
+      if (!cloudAvailable()) return;
+      if (window.open(window.MathmdCloud.homeUrl(), "_blank")) {
+        speak(I18N.t("msg.cloudSiteOpen"), fileStatusEl);
+      } else {
+        speak(I18N.t("msg.manualBlocked"), fileStatusEl);
+      }
+    });
+  }
+  if (cloudLogoutBtn) {
+    cloudLogoutBtn.addEventListener("click", async () => {
+      try {
+        await window.MathmdCloud.logout();
+      } catch (err) {
+        // выйти должно получиться всегда
+      }
+      cloudUser = null;
+      cloudPathInput.value = "";
+      cloudPaint();
+      if (cloudLoginForm) cloudLoginForm.querySelector("input").focus();
+      cloudSay(I18N.t("cloud.signedOut"));
+    });
+  }
+  if (cloudLoginForm) {
+    cloudLoginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const name = document.getElementById("cloud-login-name").value.trim();
+      const pass = document.getElementById("cloud-login-pass").value;
+      cloudSay(I18N.t("cloud.signingIn"));
+      try {
+        cloudUser = await window.MathmdCloud.login(name, pass);
+        document.getElementById("cloud-login-pass").value = "";
+        await cloudRefresh(false);
+        cloudSay(I18N.t("cloud.signedAs", { name: cloudUser.username }));
+        if (cloudList) cloudList.focus();
+      } catch (err) {
+        if (err.status === 401) cloudSay(I18N.t("cloud.badCredentials"));
+        else cloudSay(I18N.t("msg.cloudError", { text: err.message }));
+        if (cloudLoginForm) cloudLoginForm.querySelector("input").focus();
+      }
+    });
+  }
+  if (cloudSaveForm) {
+    cloudSaveForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const raw = cloudPathInput.value.trim().replace(/^\/+/, "").replace(/\s+/g, "-");
+      if (!raw) {
+        cloudSay(I18N.t("msg.cloudBadPath"));
+        return;
+      }
+      if (!cloudUser) {
+        cloudSay(I18N.t("msg.cloudNeedLogin"));
+        return;
+      }
+      cloudSay(I18N.t("msg.cloudSaving", { path: raw }));
+      try {
+        const md = editor.getValue();
+        const title = (fmState && fmState.title) || docTitleFromMarkdown(md) || "";
+        const doc = await window.MathmdCloud.save(cloudUser.username, raw, { content: md, title: title });
+        bindCloudDoc(doc.owner || cloudUser.username, doc.path || raw);
+        if (docTouched) persistNow();
+        cloudPathInput.value = "";
+        await cloudFillList();
+        cloudPaint();
+        cloudSay(I18N.t("msg.cloudSavedAs", { path: doc.path || raw }));
+        if (cloudList) cloudList.focus();
+      } catch (err) {
+        cloudSay(I18N.t("msg.cloudSaveFailed", { text: err.message }));
+      }
+    });
+  }
+
+  // Облачный документ подставляется в редактор только после того, как прошли и
+  // черновик, и URL-параметры: ссылку #cloud=… открывают, чтобы работать именно
+  // с этим документом, а не чтобы посмотреть на восстановленный черновик.
+  async function openCloudFromHash() {
+    const m = /^#cloud=(.+)$/.exec(location.hash);
+    if (!m) return false;
+    history.replaceState(null, "", location.pathname + location.search);
+    let decoded = m[1];
+    try {
+      decoded = decodeURIComponent(m[1]);
+    } catch (err) {
+      decoded = m[1];
+    }
+    const parts = decoded.replace(/^\/+/, "").split("/").filter(Boolean);
+    if (parts.length < 2) {
+      speak(I18N.t("msg.cloudBadPath"), fileStatusEl);
+      return true;
+    }
+    const owner = parts.shift();
+    await cloudOpen(owner, parts.join("/"));
+    return true;
+  }
+
   // Команды в command palette (Shift+F1) и контекстное меню. Повседневные
   // действия — только в палитру; вставка формул и структур — в контекстное меню.
   const FORMULA_ITEM = TOOLBAR_GROUPS.flatMap((g) => g.items).find((i) => i.labelKey === "tool.formula");
@@ -2972,8 +3326,11 @@ require(["vs/editor/editor.main"], function () {
     add({ id: "mathmd.previewHide", label: I18N.t("cmd.previewHide"), run: () => { previewSection.hidden = true; speak(I18N.t("msg.previewHidden"), fileStatusEl); } });
     add({ id: "mathmd.desmosRerender", label: I18N.t("cmd.desmosRerender"), run: () => { previewSection.hidden = false; renderPreview(); } });
     add({ id: "mathmd.frontmatter", label: I18N.t("cmd.frontmatter"), run: insertFrontmatterCmd });
-    add({ id: "mathmd.saveMd", label: I18N.t("cmd.saveMd"), run: () => saveMdToDisk() });
+    add({ id: "mathmd.saveMd", label: I18N.t("cmd.saveMd"), run: saveCurrent });
     add({ id: "mathmd.saveMdAs", label: I18N.t("cmd.saveMdAs"), run: () => saveMdToDisk({ asNew: true }) });
+    add({ id: "mathmd.cloud", label: I18N.t("cmd.cloud"), run: openCloudDialog });
+    add({ id: "mathmd.cloudSave", label: I18N.t("cmd.cloudSave"), run: () => cloudSave() });
+    add({ id: "mathmd.cloudSaveAs", label: I18N.t("cmd.cloudSaveAs"), run: () => cloudSave({ asNew: true }) });
     add({ id: "mathmd.exportHtml", label: I18N.t("cmd.exportHtml"), run: exportHtml });
     add({ id: "mathmd.help", label: I18N.t("cmd.help"), run: openHelpDialog });
     add({ id: "mathmd.manual", label: I18N.t("cmd.manual"), run: openManual });
@@ -3046,11 +3403,17 @@ require(["vs/editor/editor.main"], function () {
   // Документ прошлого визита — раньше URL-параметров: пример по ссылке
   // грузится, только если черновик пуст (иначе он затёр бы работу).
   const urlParams = new URLSearchParams(location.search);
-  const quietRestore = urlParams.has("example") || urlParams.has("url");
+  const quietRestore =
+    urlParams.has("example") || urlParams.has("url") || location.hash.startsWith("#cloud=");
   restoreDraft(quietRestore);
 
   // URL-параметры должны сработать уже после инициализации редактора.
   loadFromUrl();
+
+  // Ссылка из облака (#cloud=владелец/путь) — после всего остального: она
+  // приходит, чтобы работать с конкретным документом, и потому главнее и
+  // черновика, и примеров по ссылке.
+  openCloudFromHash();
 
   if (store && !store.isPersistent()) {
     speak(I18N.t("msg.storageOff"), fileStatusEl);
