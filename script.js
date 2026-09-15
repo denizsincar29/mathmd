@@ -3424,6 +3424,14 @@ require(["vs/editor/editor.main"], function () {
   // черновика, и примеров по ссылке.
   openCloudFromHash();
 
+  // Ссылку из облака (#cloud=владелец/путь) открывают и в уже открытом
+  // редакторе: тогда браузер меняет только фрагмент адреса и страницу не
+  // перезагружает — скрипт второй раз не запускается, и документ не
+  // открывался бы. Слушатель доводит такой переход до конца.
+  window.addEventListener("hashchange", () => {
+    if (location.hash.startsWith("#cloud=")) openCloudFromHash();
+  });
+
   if (store && !store.isPersistent()) {
     speak(I18N.t("msg.storageOff"), fileStatusEl);
   }
