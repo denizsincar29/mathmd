@@ -116,6 +116,15 @@ loads to point somewhere else.
   once covers both the editor and the cloud page. `cloud.js` holds no tokens —
   the browser attaches the cookie itself.
 
+## Tests
+
+```sh
+node test/cloud.test.mjs
+```
+
+Checks `cloud.js` without a browser: URL building (Cyrillic and nested paths),
+request bodies, cookie credentials, and error mapping. No dependencies.
+
 ## Run locally
 
 Pure static site:
