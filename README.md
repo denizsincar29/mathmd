@@ -111,7 +111,10 @@ loads to point somewhere else.
   the dialog does the same for the current document.
 - A link `mathmd.denizsincar.ru/#cloud=owner/path` (fragment, never sent to the
   server) opens that document straight away — it is what the cloud page's
-  **Edit** button uses, so the path stays out of server logs.
+  **Edit** button uses, so the path stays out of server logs. The same link on
+  an address that does not exist yet opens an empty document bound to it: that
+  is how the cloud page's **Создать документ** button works, and `Ctrl+S`
+  creates the document on the server.
 - The session is an httpOnly cookie on the shared parent domain, so signing in
   once covers both the editor and the cloud page. `cloud.js` holds no tokens —
   the browser attaches the cookie itself.
@@ -120,10 +123,15 @@ loads to point somewhere else.
 
 ```sh
 node test/cloud.test.mjs
+node test/i18n.test.mjs
 ```
 
-Checks `cloud.js` without a browser: URL building (Cyrillic and nested paths),
-request bodies, cookie credentials, and error mapping. No dependencies.
+`cloud.test.mjs` checks `cloud.js` without a browser: URL building (Cyrillic and
+nested paths), request bodies, cookie credentials, and error mapping.
+`i18n.test.mjs` checks that every dictionary key exists in all four languages
+and that every key called from the code exists in the dictionary — a missing
+translation is only visible to whoever works in that language, so it is easy to
+ship by accident. No dependencies.
 
 ## Run locally
 

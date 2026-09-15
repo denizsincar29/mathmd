@@ -1206,6 +1206,12 @@
       de: "Cloud-Dokument {path} ist offen. Ctrl+S speichert es in der Cloud.",
       tr: "{path} bulut belgesi açıldı. Ctrl+S onu buluta kaydeder.",
     },
+    "msg.cloudNew": {
+      ru: "Новый облачный документ {path}. Ctrl+S создаст его в облаке.",
+      en: "New cloud document {path}. Ctrl+S creates it in the cloud.",
+      de: "Neues Cloud-Dokument {path}. Ctrl+S legt es in der Cloud an.",
+      tr: "Yeni bulut belgesi {path}. Ctrl+S onu bulutta oluşturur.",
+    },
     "msg.cloudSaving": { ru: "Сохраняю в облако: {path}…", en: "Saving to the cloud: {path}…", de: "Wird in der Cloud gespeichert: {path}…", tr: "Buluta kaydediliyor: {path}…" },
     "msg.cloudSaved": {
       ru: "Сохранено в облако: {path}.",

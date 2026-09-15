@@ -3151,6 +3151,15 @@ require(["vs/editor/editor.main"], function () {
         openCloudDialog();
         return;
       }
+      // Документа по этому адресу ещё нет — это не ошибка, а создание:
+      // открываем пустой лист, привязанный к облаку, и Ctrl+S его заведёт.
+      // Этим путём ходит кнопка «Создать документ» на странице облака.
+      if (err.status === 404) {
+        loadAsDocument(cloudDocName(path), "");
+        bindCloudDoc(owner, path);
+        speak(I18N.t("msg.cloudNew", { path: path }), fileStatusEl);
+        return;
+      }
       speak(I18N.t("msg.cloudError", { text: err.message }), fileStatusEl);
     }
   }
