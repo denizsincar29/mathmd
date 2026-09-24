@@ -17,7 +17,7 @@ description: Морфи против герцога Карла и графа И�
 
 ```chess
 id=opera
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.1/examples/morphy.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.3/examples/morphy.pgn
 move=0
 ```
 
