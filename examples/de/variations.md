@@ -15,7 +15,7 @@ und wird mit der V-Taste abgespielt.
 ## Italienische Partie mit Varianten
 
 ```chess
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.3/examples/variations.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.4/examples/variations.pgn
 move=3
 ```
 
