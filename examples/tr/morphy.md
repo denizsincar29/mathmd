@@ -17,7 +17,7 @@ son sırada kale matıyla bitirdi.
 
 ```chess
 id=opera
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.6/examples/morphy.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.7/examples/morphy.pgn
 move=0
 ```
 

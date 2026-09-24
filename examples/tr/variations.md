@@ -15,7 +15,7 @@ V tuşuyla oynatılır.
 ## Varyantlı İtalyan açılışı
 
 ```chess
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.6/examples/variations.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.7/examples/variations.pgn
 move=3
 ```
 
