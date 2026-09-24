@@ -48,7 +48,7 @@ And this is the end of Morphy's Opera Game — a board from PGN, opened on the l
 move:
 
 ```chess
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.7/examples/morphy.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.8/examples/morphy.pgn
 move=17
 ```
 
