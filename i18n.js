@@ -1192,6 +1192,12 @@
       de: "Unter neuer Adresse speichern",
       tr: "Yeni adresle kaydet",
     },
+    "cloud.openPage": {
+      ru: "Открыть документ в облаке",
+      en: "Open this document in the cloud",
+      de: "Dieses Dokument in der Cloud öffnen",
+      tr: "Bu belgeyi bulutta aç",
+    },
     "cloud.openSite": { ru: "Открыть облако в браузере", en: "Open the cloud in a browser", de: "Cloud im Browser öffnen", tr: "Bulutu tarayıcıda aç" },
     "cloud.close": { ru: "Закрыть (Esc)", en: "Close (Esc)", de: "Schließen (Esc)", tr: "Kapat (Esc)" },
     "msg.cloudLoading": {

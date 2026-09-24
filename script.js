@@ -3017,6 +3017,7 @@ require(["vs/editor/editor.main"], function () {
   const cloudSaveBtn = document.getElementById("cloud-save-submit");
   const cloudLogoutBtn = document.getElementById("cloud-logout");
   const cloudOpenSiteBtn = document.getElementById("cloud-open-site");
+  const cloudOpenPageBtn = document.getElementById("cloud-open-page");
   const cloudCloseBtn = document.getElementById("cloud-close");
   let cloudUser = null;       // кто вошёл, по данным сервера
   let cloudReturnFocus = null;
@@ -3040,10 +3041,13 @@ require(["vs/editor/editor.main"], function () {
         ? I18N.t("cloud.signedAs", { name: cloudUser.username })
         : I18N.t("cloud.signedOut");
     }
+    const bound = currentCloudDoc();
     if (cloudSaveBtn) {
-      const bound = currentCloudDoc();
       cloudSaveBtn.textContent = I18N.t(bound ? "cloud.saveCurrent" : "cloud.saveNew");
     }
+    // Ходить в облако есть за чем, только если документ там уже лежит: у
+    // нового листа страницы нет, и кнопка вела бы в 404.
+    if (cloudOpenPageBtn) cloudOpenPageBtn.hidden = !bound;
   }
 
   async function cloudFillList() {
@@ -3223,10 +3227,39 @@ require(["vs/editor/editor.main"], function () {
     document.getElementById("btn-cloud").addEventListener("click", openCloudDialog);
   }
   if (cloudCloseBtn) cloudCloseBtn.addEventListener("click", () => cloudDialog.close());
+  // Вкладка, в которой открыт редактор. Имя нужно, чтобы вернуть человека
+  // назад в ту же вкладку, из которой он пришёл: браузерное «назад» вернуло бы
+  // его правильно, но оно уводит и из редактора — а этому документу тут ещё
+  // работать. Имя примет только окно, открытое скриптом; вкладку человека
+  // браузер по имени не отдаст, и тогда мы не открываем ничего лишнего.
+  let cloudTabName = "";
+  try {
+    cloudTabName = window.name || "";
+    if (!cloudTabName) {
+      cloudTabName = "mathmd" + Date.now();
+      window.name = cloudTabName;
+    }
+  } catch (err) {
+    cloudTabName = "";
+  }
+
+  function cloudOpenPage() {
+    const at = currentCloudDoc();
+    if (!at) return;
+    const url = window.MathmdCloud.pageUrl(at.owner, at.path, cloudTabName);
+    if (window.open(url, cloudTabName)) {
+      speak(I18N.t("msg.cloudSiteOpen"), fileStatusEl);
+    } else {
+      speak(I18N.t("msg.manualBlocked"), fileStatusEl);
+    }
+  }
+
+  if (cloudOpenPageBtn) cloudOpenPageBtn.addEventListener("click", cloudOpenPage);
+
   if (cloudOpenSiteBtn) {
     cloudOpenSiteBtn.addEventListener("click", () => {
       if (!cloudAvailable()) return;
-      if (window.open(window.MathmdCloud.homeUrl(), "_blank")) {
+      if (window.open(window.MathmdCloud.homeUrl(cloudTabName), cloudTabName)) {
         speak(I18N.t("msg.cloudSiteOpen"), fileStatusEl);
       } else {
         speak(I18N.t("msg.manualBlocked"), fileStatusEl);
