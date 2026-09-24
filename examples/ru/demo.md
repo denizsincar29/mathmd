@@ -47,7 +47,7 @@ fen="r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 1 5"
 А это конец Оперы-партии Морфи — доска по PGN, открытая на последнем ходу:
 
 ```chess
-pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.4/examples/morphy.pgn
+pgn=https://cdn.jsdelivr.net/gh/denizsincar29/chessjax@v0.8.5/examples/morphy.pgn
 move=17
 ```
 
